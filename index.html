@@ -21,7 +21,7 @@
     --paper-dim:#a89c85;
     --line: rgba(201,168,118,0.18);
     --shadow: 0 20px 50px rgba(0,0,0,0.55);
-    --radius: 3px;
+    --radius: 6px;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -111,6 +111,7 @@
     font-size:20px; font-weight:600; color:var(--paper); margin:0 0 4px;
   }
   p.section-desc{ color:var(--paper-dim); font-size:13px; margin:0 0 22px; line-height:1.55; }
+  p.text-center{ text-align:center; }
 
   /* ---------- Form elements ---------- */
   .field{ margin-bottom:20px; }
@@ -158,10 +159,6 @@
   }
   .switch.on::after{ left:20px; }
 
-  .slider-row{ display:flex; align-items:center; gap:12px; }
-  input[type=range]{ flex:1; accent-color:var(--kraft); }
-  .slider-val{ font-family:'Oswald', sans-serif; font-size:15px; min-width:56px; text-align:right; color:var(--paper); }
-
   /* ---------- Buttons ---------- */
   .btn{
     display:block; width:100%; text-align:center;
@@ -179,53 +176,85 @@
 
   .error-msg{ color:var(--stamp-bright); font-size:12px; margin-top:-10px; margin-bottom:16px; min-height:14px; }
 
-  /* ---------- Pass screen ---------- */
-  .pass-wrap{ text-align:center; padding:36px 6px 10px; }
-  .pass-wrap .agent-eyebrow{ font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:var(--kraft-dim); }
-  .pass-wrap h2{
-    font-family:'Oswald', sans-serif; text-transform:uppercase; font-size:clamp(26px,8vw,36px);
-    margin:10px 0 6px; color:var(--paper);
-  }
-  .pass-wrap p{ color:var(--paper-dim); font-size:13px; line-height:1.6; margin:0 auto 30px; max-width:320px; }
+  /* ---------- 3D Pass / Reveal Mechanics ---------- */
+  .pass-wrap{ text-align:center; padding:10px 6px 10px; }
+  .pass-wrap p{ color:var(--paper-dim); font-size:13px; line-height:1.6; margin:0 auto 20px; max-width:320px; }
+  
   .progress-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:26px; }
   .progress-dots span{ width:7px; height:7px; border-radius:50%; background:var(--line); }
   .progress-dots span.done{ background:var(--kraft-dim); }
   .progress-dots span.current{ background:var(--kraft); }
 
-  /* ---------- Redacted reveal card ---------- */
-  .reveal-card{
-    position:relative; border-radius:var(--radius); overflow:hidden;
-    border:1px solid var(--line); background:var(--redact); min-height:230px;
-    display:flex; align-items:center; justify-content:center; cursor:pointer;
-    margin:0 0 22px;
+  /* 3D Card Stage */
+  .card-scene {
+    perspective: 1200px;
+    width: 100%;
+    height: 320px;
+    margin-bottom: 22px;
+    position: relative;
   }
-  .reveal-card .cover{
-    position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    background:
-      repeating-linear-gradient(135deg, #0a0908, #0a0908 10px, #100e0a 10px, #100e0a 20px);
-    transition:opacity 0.35s ease, transform 0.4s ease;
-    gap:14px;
+  .card-3d {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.4s ease, top 0.5s ease;
+    cursor: pointer;
+    top: 0;
   }
-  .reveal-card .cover .lock-label{
-    font-family:'Oswald', sans-serif; letter-spacing:0.2em; text-transform:uppercase;
-    font-size:13px; color:var(--kraft-dim);
+  /* Card States */
+  .card-3d.flipped {
+    transform: rotateY(180deg);
   }
-  .reveal-card .cover .tap-hint{ font-size:11px; color:var(--paper-dim); letter-spacing:0.05em; }
-  .reveal-card.open .cover{ opacity:0; transform:translateY(-14px); pointer-events:none; }
+  .card-3d.discarded {
+    top: 120%;
+    opacity: 0;
+    pointer-events: none;
+    transform: rotateY(180deg) scale(0.8);
+  }
+  
+  /* Card Faces */
+  .card-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px 22px;
+  }
+  
+  .card-front {
+    background: repeating-linear-gradient(135deg, #0a0908, #0a0908 10px, #100e0a 10px, #100e0a 20px);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+  }
+  .card-front .agent-eyebrow { font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:var(--kraft-dim); }
+  .card-front h2 {
+    font-family:'Oswald', sans-serif; text-transform:uppercase; font-size:clamp(26px,8vw,36px);
+    margin:10px 0 6px; color:var(--paper); text-align: center;
+  }
+  .card-front .tap-hint { font-size:11px; color:var(--paper-dim); letter-spacing:0.05em; margin-top: 15px; border: 1px dashed var(--line); padding: 5px 10px;}
 
-  .reveal-card .content{
-    text-align:center; padding:30px 22px; position:relative; z-index:1;
+  .card-back {
+    background: var(--redact);
+    transform: rotateY(180deg);
   }
+  
+  /* Card Content Styles */
   .role-kicker{
-    font-size:11px; letter-spacing:0.25em; text-transform:uppercase; color:var(--kraft-dim); margin-bottom:14px;
+    font-size:11px; letter-spacing:0.25em; text-transform:uppercase; color:var(--kraft-dim); margin-bottom:14px; text-align: center;
   }
   .role-word{
     font-family:'Oswald', sans-serif; font-weight:700; text-transform:uppercase;
     font-size:clamp(28px,8vw,40px); color:var(--paper); line-height:1.1;
-    letter-spacing:0.02em;
+    letter-spacing:0.02em; text-align: center;
   }
   .role-word.imposter{ color:var(--stamp-bright); }
-  .role-category{ margin-top:14px; font-size:12px; color:var(--paper-dim); }
+  .role-category{ margin-top:14px; font-size:12px; color:var(--paper-dim); text-align: center;}
   .role-category b{ color:var(--kraft); font-weight:600; }
   .corner-stamp{
     position:absolute; top:12px; right:14px; font-family:'Oswald', sans-serif; font-size:10px;
@@ -233,26 +262,9 @@
     padding:2px 6px; border-radius:2px; transform:rotate(6deg); opacity:0.85;
   }
 
-  /* ---------- Timer screen ---------- */
-  .timer-wrap{ text-align:center; padding:20px 6px 6px; }
-  .timer-ring{
-    width:220px; height:220px; margin:10px auto 26px; border-radius:50%;
-    border:2px solid var(--line); display:flex; align-items:center; justify-content:center;
-    position:relative;
-  }
-  .timer-ring .fill{
-    position:absolute; inset:-2px; border-radius:50%;
-  }
-  .timer-num{
-    font-family:'Oswald', sans-serif; font-size:52px; font-weight:600; color:var(--paper); z-index:1;
-  }
-  .timer-label{ font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--kraft-dim); margin-bottom:4px; }
-  .roster-strip{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:22px 0 6px; }
-  .roster-chip{
-    font-size:11.5px; padding:5px 10px; border:1px solid var(--line); border-radius:14px; color:var(--paper-dim);
-  }
-
-  /* ---------- Results ---------- */
+  /* ---------- Results & Interrogation ---------- */
+  .interrogate-wrap { padding: 40px 10px; text-align: center; }
+  .interrogate-icon { font-size: 40px; margin-bottom: 20px; }
   .results-list{ display:flex; flex-direction:column; gap:8px; margin:18px 0 22px; }
   .result-row{
     display:flex; justify-content:space-between; align-items:center;
@@ -310,16 +322,11 @@ let state = {
   activeCategories: Object.keys(PACKS),
   imposterCount: 1,
   categoryHint: true,
-  discussionMinutes: 4,
   // round data
-  players: [],       // [{name, role: 'crew'|'imposter'}]
+  players: [],       
   secretWord: "",
   secretCategory: "",
-  currentIndex: 0,   // whose turn to view
-  cardOpen: false,
-  timerSeconds: 0,
-  timerHandle: null,
-  timerRunning: false,
+  currentIndex: 0,   
 };
 
 const app = document.getElementById('app');
@@ -328,7 +335,7 @@ const footerNote = document.getElementById('footerNote');
 function render(){
   if(state.screen === 'setup') renderSetup();
   else if(state.screen === 'pass') renderPass();
-  else if(state.screen === 'timer') renderTimer();
+  else if(state.screen === 'interrogate') renderInterrogate();
   else if(state.screen === 'results') renderResults();
 }
 
@@ -388,23 +395,12 @@ function renderSetup(){
         </div>
         <div class="switch ${state.categoryHint?'on':''}" id="hintToggle"></div>
       </div>
-      <div class="toggle-row">
-        <div>
-          <div class="label-main">Discussion timer</div>
-          <div class="label-sub">Minutes to interrogate each other</div>
-        </div>
-      </div>
-      <div class="slider-row">
-        <input type="range" min="1" max="10" value="${state.discussionMinutes}" id="minuteSlider">
-        <div class="slider-val" id="minuteVal">${state.discussionMinutes} min</div>
-      </div>
     </div>
 
     <div class="error-msg" id="setupError"></div>
     <button class="btn" id="beginBtn">Begin Briefing →</button>
   `;
 
-  // name inputs
   const nameGrid = document.getElementById('nameGrid');
   state.names.forEach((val, i) => {
     const row = document.createElement('div');
@@ -419,7 +415,6 @@ function renderSetup(){
     });
   });
 
-  // category chips
   const chipGrid = document.getElementById('chipGrid');
   Object.keys(PACKS).forEach(cat=>{
     const chip = document.createElement('div');
@@ -455,10 +450,6 @@ function renderSetup(){
     state.categoryHint = !state.categoryHint;
     renderSetup();
   });
-  document.getElementById('minuteSlider').addEventListener('input', e=>{
-    state.discussionMinutes = parseInt(e.target.value);
-    document.getElementById('minuteVal').textContent = state.discussionMinutes + ' min';
-  });
   document.getElementById('beginBtn').addEventListener('click', startRound);
 }
 
@@ -473,7 +464,7 @@ function startRound(){
     errBox.textContent = "Select at least one category.";
     return;
   }
-  // build players
+  
   const finalNames = state.names.map((n,i)=> n.trim() || `Agent ${i+1}`);
   const dupCheck = new Set(finalNames);
   const usedNames = finalNames.map((n,i)=> dupCheck.size < finalNames.length ? `${n} #${i+1}` : n);
@@ -493,16 +484,15 @@ function startRound(){
   state.secretWord = word;
   state.secretCategory = category;
   state.currentIndex = 0;
-  state.cardOpen = false;
   state.screen = 'pass';
   render();
 }
 
-/* ---------------- PASS / REVEAL SCREEN ---------------- */
+/* ---------------- HOLD TO REVEAL SCREEN ---------------- */
 function renderPass(){
   const p = state.players[state.currentIndex];
   const total = state.players.length;
-  footerNote.textContent = `Agent ${state.currentIndex+1} of ${total} — keep the device face-down between turns`;
+  footerNote.textContent = `Agent ${state.currentIndex+1} of ${total} — keep the device flat between turns`;
 
   let dots = '';
   for(let i=0;i<total;i++){
@@ -513,117 +503,113 @@ function renderPass(){
   app.innerHTML = `
     <div class="pass-wrap">
       <div class="progress-dots">${dots}</div>
-      <div class="agent-eyebrow">Hand the device to</div>
-      <h2>${escapeHtml(p.name)}</h2>
-      <p>Nobody else should see this screen. Tap the file below when it's private.</p>
+      <p>Pass the device to <b>${escapeHtml(p.name)}</b>. Ensure no one else is looking.</p>
     </div>
-    <div class="reveal-card ${state.cardOpen?'open':''}" id="revealCard">
-      <div class="cover">
-        <div class="lock-label">Sealed File</div>
-        <div class="tap-hint">Tap to declassify</div>
-      </div>
-      <div class="content">
-        <div class="corner-stamp">${p.role==='imposter' ? 'Unverified' : 'Verified'}</div>
-        ${p.role === 'imposter' ? `
-          <div class="role-kicker">Status</div>
-          <div class="role-word imposter">You Are<br>The Imposter</div>
-          ${state.categoryHint ? `<div class="role-category">Category on record: <b>${escapeHtml(state.secretCategory)}</b></div>` : `<div class="role-category">No further intel provided.</div>`}
-        ` : `
-          <div class="role-kicker">The Secret Word</div>
-          <div class="role-word">${escapeHtml(state.secretWord)}</div>
-          <div class="role-category">Category: <b>${escapeHtml(state.secretCategory)}</b></div>
-        `}
+    
+    <div class="card-scene">
+      <div class="card-3d" id="activeCard">
+        <!-- Front of Card -->
+        <div class="card-face card-front">
+          <div class="agent-eyebrow">Classified File</div>
+          <h2>${escapeHtml(p.name)}</h2>
+          <div class="tap-hint">PRESS & HOLD TO REVEAL</div>
+        </div>
+        
+        <!-- Back of Card -->
+        <div class="card-face card-back">
+          <div class="corner-stamp">${p.role==='imposter' ? 'Unverified' : 'Verified'}</div>
+          ${p.role === 'imposter' ? `
+            <div class="role-kicker">Status</div>
+            <div class="role-word imposter">You Are<br>The Imposter</div>
+            ${state.categoryHint ? `<div class="role-category">Category on record: <br><b>${escapeHtml(state.secretCategory)}</b></div>` : `<div class="role-category">No further intel provided.</div>`}
+          ` : `
+            <div class="role-kicker">The Secret Word</div>
+            <div class="role-word">${escapeHtml(state.secretWord)}</div>
+            <div class="role-category">Category: <b>${escapeHtml(state.secretCategory)}</b></div>
+          `}
+        </div>
       </div>
     </div>
-    <button class="btn" id="passBtn" ${state.cardOpen ? '' : 'disabled'}>
-      ${state.currentIndex < total-1 ? "I've Seen It — Pass The Device" : "I've Seen It — Start Discussion"}
-    </button>
+    
     <button class="btn secondary" id="backBtn" style="margin-top:10px;">Cancel Round</button>
   `;
 
-  document.getElementById('revealCard').addEventListener('click', ()=>{
-    if(!state.cardOpen){
-      state.cardOpen = true;
-      renderPass();
-    }
-  });
-  document.getElementById('passBtn').addEventListener('click', ()=>{
-    if(!state.cardOpen) return;
-    if(state.currentIndex < total-1){
-      state.currentIndex++;
-      state.cardOpen = false;
-      renderPass();
-    } else {
-      state.timerSeconds = state.discussionMinutes * 60;
-      state.screen = 'timer';
-      render();
-    }
-  });
+  const card = document.getElementById('activeCard');
+  let hasDiscarded = false;
+
+  const startHold = (e) => {
+    if(hasDiscarded) return;
+    e.preventDefault();
+    card.classList.add('flipped');
+  };
+
+  const endHold = (e) => {
+    if(hasDiscarded || !card.classList.contains('flipped')) return;
+    hasDiscarded = true; // Prevent multiple fires
+    card.classList.remove('flipped');
+    card.classList.add('discarded');
+
+    // Cleanup events
+    card.removeEventListener('mousedown', startHold);
+    card.removeEventListener('touchstart', startHold);
+    window.removeEventListener('mouseup', endHold);
+    window.removeEventListener('touchend', endHold);
+
+    // Wait for the CSS discard animation to finish before moving on
+    setTimeout(() => {
+      if (state.currentIndex < total - 1) {
+        state.currentIndex++;
+        renderPass();
+      } else {
+        state.screen = 'interrogate';
+        render();
+      }
+    }, 500); 
+  };
+
+  // Bind Interactions
+  card.addEventListener('mousedown', startHold);
+  card.addEventListener('touchstart', startHold, {passive: false});
+  window.addEventListener('mouseup', endHold);
+  window.addEventListener('touchend', endHold);
+
   document.getElementById('backBtn').addEventListener('click', ()=>{
     if(confirm('Cancel this round and return to setup?')){
-      stopTimer();
+       // Cleanup window events just in case
+      window.removeEventListener('mouseup', endHold);
+      window.removeEventListener('touchend', endHold);
       state.screen = 'setup';
       render();
     }
   });
 }
 
-/* ---------------- TIMER SCREEN ---------------- */
-function stopTimer(){
-  if(state.timerHandle){ clearInterval(state.timerHandle); state.timerHandle = null; }
-  state.timerRunning = false;
-}
-
-function renderTimer(){
+/* ---------------- INTERROGATION (REPLACES TIMER) ---------------- */
+function renderInterrogate(){
   footerNote.textContent = "Discuss, question, and vote out whoever seems off.";
-  const mins = Math.floor(state.timerSeconds/60);
-  const secs = state.timerSeconds%60;
-  const timeStr = `${mins}:${secs.toString().padStart(2,'0')}`;
-  const totalSecs = state.discussionMinutes*60;
-  const pct = totalSecs>0 ? (state.timerSeconds/totalSecs) : 0;
-  const deg = Math.round(360*(1-pct));
-
+  
   app.innerHTML = `
     <div class="tag-row">
       <div class="case-no">FILE No. ${randomCaseNumber()}</div>
       <div class="stamp">In Session</div>
     </div>
-    <div class="timer-wrap">
-      <div class="timer-label">Interrogation Window</div>
-      <div class="timer-ring">
-        <div class="fill" style="background:conic-gradient(var(--kraft) ${360-deg}deg, var(--redact) 0deg); mask:radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px)); -webkit-mask:radial-gradient(farthest-side, transparent calc(100% - 6px), #000 calc(100% - 6px));"></div>
-        <div class="timer-num">${timeStr}</div>
-      </div>
-      <div class="roster-strip">
-        ${state.players.map(p=>`<div class="roster-chip">${escapeHtml(p.name)}</div>`).join('')}
-      </div>
+    
+    <div class="interrogate-wrap">
+      <div class="interrogate-icon">💬</div>
+      <h2 class="section-title">Interrogation Phase</h2>
+      <p class="section-desc">All agents have viewed their files. Determine who is lying about their intel.</p>
     </div>
+    
     <div class="btn-row">
-      <button class="btn secondary" id="toggleBtn">${state.timerRunning ? 'Pause' : (state.timerSeconds===state.discussionMinutes*60 ? 'Start' : 'Resume')}</button>
-      <button class="btn" id="revealAllBtn">Reveal Everyone</button>
+      <button class="btn danger" id="revealAllBtn">End Discussion & Reveal Roles</button>
     </div>
   `;
 
-  document.getElementById('toggleBtn').addEventListener('click', ()=>{
-    if(state.timerRunning){
-      stopTimer();
-    } else {
-      state.timerRunning = true;
-      state.timerHandle = setInterval(()=>{
-        if(state.timerSeconds > 0){
-          state.timerSeconds--;
-          if(state.screen === 'timer') renderTimer();
-        } else {
-          stopTimer();
-        }
-      }, 1000);
-    }
-    renderTimer();
-  });
   document.getElementById('revealAllBtn').addEventListener('click', ()=>{
-    stopTimer();
-    state.screen = 'results';
-    render();
+    if(confirm("Are you sure you want to reveal everyone's roles?")) {
+      state.screen = 'results';
+      render();
+    }
   });
 }
 
@@ -668,7 +654,7 @@ function renderResults(){
   });
 }
 
-/* ---------------- helpers ---------------- */
+/* ---------------- Helpers ---------------- */
 function shuffle(arr){
   for(let i=arr.length-1;i>0;i--){
     const j = Math.floor(Math.random()*(i+1));
