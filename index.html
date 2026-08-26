@@ -6,7 +6,7 @@
 <title>Imposter Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg-main: #121216;
@@ -49,11 +49,12 @@
   /* Among Us Run Animation */
   @keyframes runRight {
     0% { transform: translateX(0); }
-    10% { transform: translateX(-15px); } /* Wind up slightly backwards */
+    15% { transform: translateX(-20px); } /* Wind up backwards */
     100% { transform: translateX(150vw); } /* Sprint off screen */
   }
   .run-away {
-    animation: runRight 0.6s ease-in forwards !important;
+    /* Slowed down to 2 seconds */
+    animation: runRight 2s ease-in forwards !important;
     pointer-events: none; /* Disables clicking while running */
   }
 
@@ -393,9 +394,9 @@ function renderWelcome() {
       <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; background: var(--danger); filter: blur(120px); opacity: 0.35; pointer-events: none; z-index: 0;"></div>
       
       <!-- Main Title with Among Us SVG -->
-      <h1 style="font-size: clamp(34px, 8vw, 44px); color: #FFFFFF; margin-bottom: 30px; text-shadow: 0 4px 20px rgba(255,69,58,0.5); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 2;">
-        Imposter
-        <svg onclick="this.classList.add('run-away')" width="36" height="36" viewBox="0 0 512 512" style="cursor: pointer; filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8)); flex-shrink: 0;">
+      <h1 style="font-family: 'Inter', sans-serif; font-size: clamp(34px, 8vw, 44px); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #FFFFFF; margin-bottom: 30px; text-shadow: 0 4px 20px rgba(255,69,58,0.6); display: flex; align-items: center; justify-content: center; gap: 12px; position: relative; z-index: 2;">
+        IMPOSTER
+        <svg onclick="this.classList.add('run-away')" width="40" height="40" viewBox="0 0 512 512" style="cursor: pointer; filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8)); flex-shrink: 0;">
            <path fill="#FF453A" d="M379.7,85.2c-29.4-36.2-74-56.1-120.4-56.1c-84.3,0-152.7,68.4-152.7,152.7v174c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64v-38.3h43v38.3c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64V188.7C405.2,148.9,396.6,112.5,379.7,85.2z"/>
            <path fill="#71C7D5" d="M366.5,124.9H228.3c-29.6,0-53.5,24-53.5,53.5v15c0,29.6,24,53.5,53.5,53.5h138.2c29.6,0,53.5-24,53.5-53.5v-15C420,148.9,396.1,124.9,366.5,124.9z"/>
            <path fill="#FF453A" d="M106.6,193.3H78.9c-21.7,0-39.3,17.6-39.3,39.3v85.2c0,21.7,17.6,39.3,39.3,39.3h27.7V193.3z"/>
@@ -479,16 +480,6 @@ function renderSetup() {
           </div>
         </div>
         <div class="switch ${state.showImposterHint ? 'active' : ''}"></div>
-      </div>
-      
-      <div class="setting-row" onclick="window.location.hash='#admin'">
-        <div class="setting-info">
-          <div class="setting-icon">${icons.admin}</div>
-          <div class="setting-text">
-            <h3>Admin Panel</h3>
-            <p>Customize words and categories</p>
-          </div>
-        </div>
       </div>
     </div>
 
