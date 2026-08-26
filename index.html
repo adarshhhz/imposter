@@ -199,23 +199,16 @@
   .vote-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-muted); }
   .vote-option.selected .vote-radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 4px #3c2a12; }
   
-  /* 3D Cutout Style */
-  .cutout-3d {
+  /* Welcome Screen Image Style - Flat Square */
+  .hero-image {
     width: 220px;
     height: 220px;
     margin: 0 auto 40px;
-    
-    /* Using your provided Cloudinary link */
-    background: url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787770407/1461419466-3995.webp') center/cover no-repeat;
-    
+    background: url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787771294/FyvT48GaIAAx4l4.jpg') center/cover no-repeat;
     border-radius: 20px;
-    transform: rotateY(15deg) rotateX(10deg);
-    box-shadow: -15px 15px 30px rgba(0, 0, 0, 0.7);
     border: 3px solid var(--accent);
-    filter: drop-shadow(0 0 10px rgba(255, 159, 10, 0.3));
-    transition: transform 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4); 
   }
-  .cutout-scene { perspective: 1000px; }
 
   /* Overlay Modal */
   .overlay {
@@ -342,13 +335,24 @@ function renderWelcome() {
   app.innerHTML = `
     <div class="game-screen" style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 0; margin-top: -50px;">
       
-      <h1 style="font-size: 56px; color: var(--accent); margin-bottom: 40px; text-shadow: 0 4px 15px rgba(255,159,10,0.4); letter-spacing: 2px;">സ്വാഗതം</h1>
+      <!-- Main Title with Among Us SVG -->
+      <h1 style="font-size: clamp(26px, 6vw, 36px); color: var(--accent); margin-bottom: 30px; text-shadow: 0 4px 15px rgba(255,159,10,0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
+        Imposter(വഞ്ചകൻ)
+        <svg width="32" height="32" viewBox="0 0 512 512" style="filter: drop-shadow(0 2px 5px rgba(255,69,58,0.5)); flex-shrink: 0;">
+           <path fill="#FF453A" d="M379.7,85.2c-29.4-36.2-74-56.1-120.4-56.1c-84.3,0-152.7,68.4-152.7,152.7v174c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64v-38.3h43v38.3c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64V188.7C405.2,148.9,396.6,112.5,379.7,85.2z"/>
+           <path fill="#71C7D5" d="M366.5,124.9H228.3c-29.6,0-53.5,24-53.5,53.5v15c0,29.6,24,53.5,53.5,53.5h138.2c29.6,0,53.5-24,53.5-53.5v-15C420,148.9,396.1,124.9,366.5,124.9z"/>
+           <path fill="#FF453A" d="M106.6,193.3H78.9c-21.7,0-39.3,17.6-39.3,39.3v85.2c0,21.7,17.6,39.3,39.3,39.3h27.7V193.3z"/>
+        </svg>
+      </h1>
       
-      <div class="cutout-scene">
-        <div class="cutout-3d"></div>
-      </div>
+      <!-- Hero Image -->
+      <div class="hero-image" style="margin-bottom: 20px;"></div>
       
-      <button class="start-btn" style="width: 80%; max-width: 300px; margin-top: 20px;" onclick="showOnamPopup()">Enter Game</button>
+      <!-- Subtitle -->
+      <h2 style="font-size: 26px; color: var(--text-main); font-weight: 500; margin: 0 0 15px 0; letter-spacing: 1px;">സ്വാഗതം</h2>
+      
+      <!-- Action Button -->
+      <button class="start-btn" style="width: 80%; max-width: 300px;" onclick="showOnamPopup()">Enter Game</button>
     </div>
   `;
 }
