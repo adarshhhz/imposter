@@ -349,9 +349,11 @@ db.ref('packs').on('value', (snapshot) => {
 });
 
 function savePacks() {
-  // Save directly to live Firebase database. 
-  // Note: Firebase will silently strip empty arrays during transit, but our on('value') listener will rebuild them.
-  db.ref('packs').set(PACKS);
+  // Save directly to live Firebase database, WITH ERROR CHECKING!
+  db.ref('packs').set(PACKS).catch((error) => {
+    console.error("Firebase save failed:", error);
+    alert("Error saving to database! Check your Firebase Rules.\n\nError details: " + error.message);
+  });
 }
 
 /* ---------------- Onam Flowers Animation ---------------- */
