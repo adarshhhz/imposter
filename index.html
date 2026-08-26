@@ -46,6 +46,17 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
+  /* Among Us Run Animation */
+  @keyframes runRight {
+    0% { transform: translateX(0); }
+    10% { transform: translateX(-15px); } /* Wind up slightly backwards */
+    100% { transform: translateX(150vw); } /* Sprint off screen */
+  }
+  .run-away {
+    animation: runRight 0.6s ease-in forwards !important;
+    pointer-events: none; /* Disables clicking while running */
+  }
+
   /* Watermark */
   .watermark {
     position: fixed;
@@ -110,14 +121,16 @@
     background-position: center;
     position: relative;
     border: 2px solid transparent;
-    transition: 0.2s;
+    transition: all 0.2s ease;
   }
-  .player-idx:hover { border-color: var(--accent); }
+  .player-idx:hover { border-color: var(--accent); transform: scale(1.05); }
   .player-idx .add-photo-icon {
     position: absolute; bottom: -2px; right: -2px; background: var(--bg-input);
     border-radius: 50%; padding: 2px; width: 14px; height: 14px;
     display: flex; align-items: center; justify-content: center; font-size: 10px;
+    transition: all 0.2s ease;
   }
+  .player-idx:hover .add-photo-icon { background: var(--accent); color: #000; }
 
   .player-input-wrap {
     flex: 1;
@@ -125,23 +138,39 @@
     border-radius: var(--radius-sm);
     padding: 12px 14px;
     display: flex; align-items: center;
+    transition: all 0.2s ease;
+  }
+  .player-input-wrap:focus-within {
+    box-shadow: 0 0 0 1px var(--accent);
   }
   .player-input-wrap input {
     background: transparent; border: none; color: var(--text-main); font-size: 15px; width: 100%; outline: none; font-family: 'Inter', sans-serif;
   }
   .del-btn {
     background: none; border: none; color: var(--text-muted); padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease;
   }
-  .del-btn:hover { color: var(--danger); }
+  .del-btn:hover { color: var(--danger); transform: scale(1.15); }
   
   .add-player-btn {
     width: 100%; background: transparent; border: 1px dashed var(--text-muted); color: var(--text-muted); padding: 12px; border-radius: var(--radius-sm); margin-top: 10px; cursor: pointer; font-size: 15px; font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .add-player-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(255, 159, 10, 0.05);
   }
 
   /* Settings Toggles */
   .setting-row {
     display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #30303C; cursor: pointer;
+    transition: background 0.2s ease;
+    border-radius: 8px;
+    margin: 0 -8px;
+    padding: 12px 8px;
   }
+  .setting-row:hover { background: rgba(255, 255, 255, 0.02); }
   .setting-row:last-child { border-bottom: none; }
   .setting-info { display: flex; gap: 12px; align-items: center; }
   .setting-icon { color: var(--accent); font-size: 18px; }
@@ -165,38 +194,56 @@
   .bottom-bar .inner { width: 100%; max-width: 500px; }
   .start-btn {
     width: 100%; background: var(--accent); color: #000; font-weight: 600; font-size: 16px; padding: 16px; border: none; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s ease;
   }
-  .start-btn:active { opacity: 0.8; transform: scale(0.98); }
-  .start-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .start-btn:hover:not(:disabled) {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255, 159, 10, 0.3);
+  }
+  .start-btn:active { opacity: 0.8; transform: scale(0.98); box-shadow: none; }
+  .start-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; filter: none; }
 
   /* Chips */
   .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .chip { background: var(--bg-input); color: var(--text-muted); padding: 8px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+  .chip { background: var(--bg-input); color: var(--text-muted); padding: 8px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s ease; }
+  .chip:hover:not(.active) { background: #353545; color: #FFF; }
   .chip.active { background: var(--accent-dark); color: #FFF; border: 1px solid var(--accent); }
 
   /* Admin Panel specific */
   .admin-box { background: var(--bg-card); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;}
-  .admin-input { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid #30303C; color: #FFF; border-radius: 8px; margin-bottom: 10px; font-size: 16px;}
-  .admin-btn { background: var(--accent); color: #000; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
-  .admin-btn-secondary { background: var(--bg-input); color: #FFF; border: 1px solid #30303C; padding: 10px 16px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 15px; font-weight: 500; }
+  .admin-input { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid #30303C; color: #FFF; border-radius: 8px; margin-bottom: 10px; font-size: 16px; transition: border-color 0.2s;}
+  .admin-input:focus { outline: none; border-color: var(--accent); }
+  .admin-btn { background: var(--accent); color: #000; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
+  .admin-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .admin-btn:active { transform: scale(0.96); }
+  .admin-btn-secondary { background: var(--bg-input); color: #FFF; border: 1px solid #30303C; padding: 10px 16px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 15px; font-weight: 500; transition: all 0.2s ease; }
+  .admin-btn-secondary:hover { background: #2a2a36; border-color: var(--text-muted); }
+  .admin-btn-secondary:active { transform: scale(0.98); }
   .word-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .word-chip { background: var(--bg-input); padding: 5px 10px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+  .word-chip { background: var(--bg-input); padding: 5px 10px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 5px; transition: background 0.2s; }
+  .word-chip:hover { background: #2a2a36; }
+  .word-chip span { transition: transform 0.2s; display: inline-block; }
+  .word-chip span:hover { transform: scale(1.2); }
   
   /* In-game screens */
   .game-screen { text-align: center; padding-top: 40px; }
   .card-3d-wrap { perspective: 1000px; width: 100%; height: 300px; margin: 30px 0; position: relative; }
-  .card-3d { width: 100%; height: 100%; transition: transform 0.6s, top 0.5s, opacity 0.5s; transform-style: preserve-3d; cursor: pointer; position: absolute; top:0; }
+  .card-3d { width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), top 0.5s ease, opacity 0.5s ease; transform-style: preserve-3d; cursor: pointer; position: absolute; top:0; }
+  .card-3d:hover:not(.flipped):not(.discarded) { transform: scale(1.02); }
   .card-3d.flipped { transform: rotateY(180deg); }
   .card-3d.discarded { top: 100%; opacity: 0; pointer-events: none; transform: rotateY(180deg) scale(0.8); }
-  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid #30303C; }
+  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid #30303C; transition: box-shadow 0.3s ease; }
+  .card-3d:hover .card-face { box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
   .card-front { background: var(--bg-card); }
   .card-back { background: var(--bg-input); transform: rotateY(180deg); }
   .tap-hint { border: 1px dashed var(--text-muted); color: var(--text-muted); padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-top: 20px; transition: 0.3s; }
 
   /* Voting UI */
-  .vote-option { background: var(--bg-input); border: 2px solid transparent; padding: 16px; border-radius: var(--radius-sm); margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 16px; transition: 0.2s; }
+  .vote-option { background: var(--bg-input); border: 2px solid transparent; padding: 16px; border-radius: var(--radius-sm); margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 16px; transition: all 0.2s ease; }
+  .vote-option:hover:not(.selected) { background: #2a2a36; transform: translateX(4px); }
   .vote-option.selected { border-color: var(--accent); background: #3c2a12; }
-  .vote-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-muted); }
+  .vote-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-muted); transition: all 0.2s ease; }
   .vote-option.selected .vote-radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 4px #3c2a12; }
   
   /* Welcome Screen Image Style - Flat Square */
@@ -210,6 +257,11 @@
     box-shadow: 0 10px 40px rgba(255, 69, 58, 0.4); 
     position: relative;
     z-index: 2;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .hero-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 50px rgba(255, 69, 58, 0.6); 
   }
 
   /* Overlay Modal */
@@ -343,7 +395,7 @@ function renderWelcome() {
       <!-- Main Title with Among Us SVG -->
       <h1 style="font-size: clamp(34px, 8vw, 44px); color: #FFFFFF; margin-bottom: 30px; text-shadow: 0 4px 20px rgba(255,69,58,0.5); display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; z-index: 2;">
         Imposter
-        <svg width="36" height="36" viewBox="0 0 512 512" style="filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8)); flex-shrink: 0;">
+        <svg onclick="this.classList.add('run-away')" width="36" height="36" viewBox="0 0 512 512" style="cursor: pointer; filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8)); flex-shrink: 0;">
            <path fill="#FF453A" d="M379.7,85.2c-29.4-36.2-74-56.1-120.4-56.1c-84.3,0-152.7,68.4-152.7,152.7v174c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64v-38.3h43v38.3c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64V188.7C405.2,148.9,396.6,112.5,379.7,85.2z"/>
            <path fill="#71C7D5" d="M366.5,124.9H228.3c-29.6,0-53.5,24-53.5,53.5v15c0,29.6,24,53.5,53.5,53.5h138.2c29.6,0,53.5-24,53.5-53.5v-15C420,148.9,396.1,124.9,366.5,124.9z"/>
            <path fill="#FF453A" d="M106.6,193.3H78.9c-21.7,0-39.3,17.6-39.3,39.3v85.2c0,21.7,17.6,39.3,39.3,39.3h27.7V193.3z"/>
