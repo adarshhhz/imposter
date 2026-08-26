@@ -3,535 +3,531 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>THE ASSET — Imposter File Game</title>
+<title>Imposter Game</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --ink:#15130f;
-    --panel:#211d16;
-    --panel-raised:#2a2519;
-    --kraft:#c9a876;
-    --kraft-dim:#8f7752;
-    --redact:#0a0908;
-    --stamp:#9b2226;
-    --stamp-bright:#c1372f;
-    --paper:#eee6d3;
-    --paper-dim:#a89c85;
-    --line: rgba(201,168,118,0.18);
-    --shadow: 0 20px 50px rgba(0,0,0,0.55);
-    --radius: 6px;
+  :root {
+    --bg-main: #121216;
+    --bg-card: #1C1C24;
+    --bg-input: #252530;
+    --text-main: #FFFFFF;
+    --text-muted: #8E8E9E;
+    --accent: #FF9F0A;
+    --accent-dark: #CC7E00;
+    --danger: #FF453A;
+    --radius: 16px;
+    --radius-sm: 10px;
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;}
-  body{
-    margin:0;
-    min-height:100vh;
-    background:
-      radial-gradient(ellipse at 20% -10%, rgba(201,168,118,0.07), transparent 55%),
-      radial-gradient(ellipse at 100% 110%, rgba(155,34,38,0.08), transparent 50%),
-      var(--ink);
-    color:var(--paper);
-    font-family:'IBM Plex Mono', monospace;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    padding:32px 16px 60px;
-    position:relative;
-    overflow-x:hidden;
-  }
-  body::before{
-    content:"";
-    position:fixed; inset:0;
-    background-image:
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
-    pointer-events:none;
-    z-index:0;
-  }
-  .stage{ width:100%; max-width:520px; position:relative; z-index:1; }
-
-  /* ---------- Header / masthead ---------- */
-  .masthead{ text-align:center; margin-bottom:26px; }
-  .masthead .eyebrow{
-    font-family:'IBM Plex Mono', monospace;
-    font-size:11px; letter-spacing:0.35em; text-transform:uppercase;
-    color:var(--kraft-dim); margin-bottom:8px;
-  }
-  .masthead h1{
-    font-family:'Oswald', sans-serif;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.06em;
-    font-size:clamp(30px,7vw,42px);
-    margin:0;
-    color:var(--paper);
-    line-height:1;
-  }
-  .masthead h1 span{ color:var(--stamp-bright); }
-  .masthead .sub{
-    margin-top:10px; font-size:12.5px; color:var(--paper-dim);
-    letter-spacing:0.02em;
-  }
-
-  /* ---------- Card / dossier shell ---------- */
-  .file{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    padding:26px 22px;
-    position:relative;
-    animation:rise 0.45s ease;
-  }
-  @keyframes rise{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
-  .file::before{
-    content:"";
-    position:absolute; top:0; left:26px; right:26px; height:14px;
-    background:var(--panel-raised);
-    border-radius:0 0 4px 4px;
-    box-shadow: inset 0 -1px 0 var(--line);
-  }
-  .file-inner{ position:relative; }
-
-  .tag-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; }
-  .case-no{ font-size:11px; color:var(--kraft-dim); letter-spacing:0.12em; }
-  .stamp{
-    font-family:'Oswald', sans-serif;
-    font-size:11px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase;
-    color:var(--stamp-bright);
-    border:1.5px solid var(--stamp-bright);
-    padding:3px 8px; border-radius:2px;
-    transform:rotate(-3deg);
-    opacity:0.9;
-  }
-
-  h2.section-title{
-    font-family:'Oswald', sans-serif; text-transform:uppercase; letter-spacing:0.04em;
-    font-size:20px; font-weight:600; color:var(--paper); margin:0 0 4px;
-  }
-  p.section-desc{ color:var(--paper-dim); font-size:13px; margin:0 0 22px; line-height:1.55; }
-  p.text-center{ text-align:center; }
-
-  /* ---------- Form elements ---------- */
-  .field{ margin-bottom:20px; }
-  .field label{
-    display:block; font-size:11px; text-transform:uppercase; letter-spacing:0.14em;
-    color:var(--kraft-dim); margin-bottom:9px;
-  }
-  .stepper{ display:flex; align-items:center; gap:14px; }
-  .stepper button{
-    width:38px; height:38px; border-radius:2px; border:1px solid var(--line);
-    background:var(--panel-raised); color:var(--paper); font-size:18px; cursor:pointer;
-    font-family:'IBM Plex Mono', monospace;
-  }
-  .stepper button:active{ background:var(--kraft-dim); color:var(--ink); }
-  .stepper .count{
-    font-family:'Oswald', sans-serif; font-size:26px; min-width:40px; text-align:center;
-  }
-
-  .name-grid{ display:flex; flex-direction:column; gap:8px; }
-  .name-grid input{
-    width:100%; padding:10px 12px; background:var(--redact); border:1px solid var(--line);
-    color:var(--paper); font-family:'IBM Plex Mono', monospace; font-size:14px; border-radius:2px;
-  }
-  .name-grid input:focus{ outline:none; border-color:var(--kraft); }
-  .name-grid .row{ display:flex; align-items:center; gap:10px; }
-  .name-grid .idx{ width:20px; color:var(--kraft-dim); font-size:12px; flex-shrink:0; }
-
-  .chip-grid{ display:flex; flex-wrap:wrap; gap:8px; }
-  .chip{
-    padding:8px 13px; border:1px solid var(--line); border-radius:20px;
-    font-size:12.5px; color:var(--paper-dim); cursor:pointer; user-select:none;
-    background:var(--panel-raised); transition:all 0.15s ease;
-  }
-  .chip.active{ border-color:var(--kraft); color:var(--ink); background:var(--kraft); font-weight:600; }
-
-  .toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-top:1px solid var(--line); }
-  .toggle-row:first-of-type{ border-top:none; }
-  .toggle-row .label-main{ font-size:13.5px; color:var(--paper); }
-  .toggle-row .label-sub{ font-size:11px; color:var(--paper-dim); margin-top:2px; }
-  .switch{ width:42px; height:24px; border-radius:14px; background:var(--redact); border:1px solid var(--line); position:relative; cursor:pointer; flex-shrink:0; }
-  .switch.on{ background:var(--stamp); border-color:var(--stamp-bright); }
-  .switch::after{
-    content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%;
-    background:var(--paper); transition:left 0.15s ease;
-  }
-  .switch.on::after{ left:20px; }
-
-  /* ---------- Buttons ---------- */
-  .btn{
-    display:block; width:100%; text-align:center;
-    font-family:'Oswald', sans-serif; font-weight:600; letter-spacing:0.08em; text-transform:uppercase;
-    font-size:14.5px; padding:15px 18px; border-radius:2px; border:none; cursor:pointer;
-    background:var(--kraft); color:var(--ink); margin-top:6px;
-    transition:transform 0.1s ease, background 0.15s ease;
-  }
-  .btn:active{ transform:scale(0.98); }
-  .btn:disabled{ opacity:0.4; cursor:not-allowed; }
-  .btn.secondary{ background:transparent; border:1px solid var(--line); color:var(--paper-dim); }
-  .btn.danger{ background:var(--stamp); color:var(--paper); }
-  .btn-row{ display:flex; gap:10px; margin-top:6px; }
-  .btn-row .btn{ margin-top:0; }
-
-  .error-msg{ color:var(--stamp-bright); font-size:12px; margin-top:-10px; margin-bottom:16px; min-height:14px; }
-
-  /* ---------- 3D Pass / Reveal Mechanics ---------- */
-  .pass-wrap{ text-align:center; padding:10px 6px 10px; }
-  .pass-wrap p{ color:var(--paper-dim); font-size:13px; line-height:1.6; margin:0 auto 20px; max-width:320px; }
   
-  .progress-dots{ display:flex; justify-content:center; gap:6px; margin-bottom:26px; }
-  .progress-dots span{ width:7px; height:7px; border-radius:50%; background:var(--line); }
-  .progress-dots span.done{ background:var(--kraft-dim); }
-  .progress-dots span.current{ background:var(--kraft); }
-
-  /* 3D Card Stage */
-  .card-scene {
-    perspective: 1200px;
-    width: 100%;
-    height: 320px;
-    margin-bottom: 22px;
-    position: relative;
-  }
-  .card-3d {
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    transform-style: preserve-3d;
-    transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.4s ease, top 0.5s ease;
-    cursor: pointer;
-    top: 0;
-  }
-  /* Card States */
-  .card-3d.flipped {
-    transform: rotateY(180deg);
-  }
-  .card-3d.discarded {
-    top: 120%;
-    opacity: 0;
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
+  
+  /* Onam Flower Animation */
+  .flower {
+    position: fixed;
+    top: -10vh;
+    z-index: 9999;
     pointer-events: none;
-    transform: rotateY(180deg) scale(0.8);
+    user-select: none;
+    font-size: 14px;
+    animation: fall linear infinite;
   }
-  
-  /* Card Faces */
-  .card-face {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    border-radius: var(--radius);
-    border: 1px solid var(--line);
+  @keyframes fall {
+    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+  }
+
+  .app-container {
+    max-width: 500px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 20px 16px 100px; /* Padding for bottom bar */
     display: flex;
     flex-direction: column;
+    position: relative;
+  }
+
+  /* Typography */
+  h1 { font-size: 24px; font-weight: 700; text-align: center; margin: 10px 0 4px; }
+  .subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+  
+  /* Cards */
+  .card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    justify-content: center;
-    padding: 30px 22px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    font-size: 15px;
   }
+  .card-header .count { color: var(--text-muted); font-size: 13px; font-weight: 400; }
+
+  /* Player List */
+  .player-list { display: flex; flex-direction: column; gap: 10px; }
+  .player-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .player-idx {
+    width: 28px; height: 28px;
+    background: var(--accent-dark);
+    color: #FFF;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .player-input-wrap {
+    flex: 1;
+    background: var(--bg-input);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    display: flex; align-items: center;
+  }
+  .player-input-wrap input {
+    background: transparent; border: none; color: var(--text-main); font-size: 15px; width: 100%; outline: none; font-family: 'Inter', sans-serif;
+  }
+  .del-btn {
+    background: none; border: none; color: var(--text-muted); padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .del-btn:hover { color: var(--danger); }
   
-  .card-front {
-    background: repeating-linear-gradient(135deg, #0a0908, #0a0908 10px, #100e0a 10px, #100e0a 20px);
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+  .add-player-btn {
+    width: 100%; background: transparent; border: 1px dashed var(--text-muted); color: var(--text-muted); padding: 12px; border-radius: var(--radius-sm); margin-top: 10px; cursor: pointer; font-size: 15px; font-weight: 500;
   }
-  .card-front .agent-eyebrow { font-size:11px; letter-spacing:0.3em; text-transform:uppercase; color:var(--kraft-dim); }
-  .card-front h2 {
-    font-family:'Oswald', sans-serif; text-transform:uppercase; font-size:clamp(26px,8vw,36px);
-    margin:10px 0 6px; color:var(--paper); text-align: center;
-  }
-  .card-front .tap-hint { font-size:11px; color:var(--paper-dim); letter-spacing:0.05em; margin-top: 15px; border: 1px dashed var(--line); padding: 5px 10px;}
 
-  .card-back {
-    background: var(--redact);
-    transform: rotateY(180deg);
+  /* Settings Toggles */
+  .setting-row {
+    display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #30303C; cursor: pointer;
   }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-info { display: flex; gap: 12px; align-items: center; }
+  .setting-icon { color: var(--accent); font-size: 18px; }
+  .setting-text h3 { margin: 0; font-size: 15px; font-weight: 500; }
+  .setting-text p { margin: 4px 0 0; font-size: 12px; color: var(--text-muted); }
   
-  /* Card Content Styles */
-  .role-kicker{
-    font-size:11px; letter-spacing:0.25em; text-transform:uppercase; color:var(--kraft-dim); margin-bottom:14px; text-align: center;
+  /* Toggle Switch */
+  .switch {
+    width: 44px; height: 24px; background: var(--bg-input); border-radius: 12px; position: relative; transition: 0.3s;
   }
-  .role-word{
-    font-family:'Oswald', sans-serif; font-weight:700; text-transform:uppercase;
-    font-size:clamp(28px,8vw,40px); color:var(--paper); line-height:1.1;
-    letter-spacing:0.02em; text-align: center;
+  .switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #FFF; border-radius: 50%; transition: 0.3s;
   }
-  .role-word.imposter{ color:var(--stamp-bright); }
-  .role-category{ margin-top:14px; font-size:12px; color:var(--paper-dim); text-align: center;}
-  .role-category b{ color:var(--kraft); font-weight:600; }
-  .corner-stamp{
-    position:absolute; top:12px; right:14px; font-family:'Oswald', sans-serif; font-size:10px;
-    letter-spacing:0.15em; color:var(--stamp-bright); border:1px solid var(--stamp-bright);
-    padding:2px 6px; border-radius:2px; transform:rotate(6deg); opacity:0.85;
-  }
+  .switch.active { background: var(--accent); }
+  .switch.active::after { transform: translateX(20px); }
 
-  /* ---------- Results & Interrogation ---------- */
-  .interrogate-wrap { padding: 40px 10px; text-align: center; }
-  .interrogate-icon { font-size: 40px; margin-bottom: 20px; }
-  .results-list{ display:flex; flex-direction:column; gap:8px; margin:18px 0 22px; }
-  .result-row{
-    display:flex; justify-content:space-between; align-items:center;
-    padding:12px 14px; border:1px solid var(--line); border-radius:2px; background:var(--panel-raised);
+  /* Bottom Bar */
+  .bottom-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; padding: 16px; background: var(--bg-main); border-top: 1px solid #202028; display: flex; justify-content: center; z-index: 10;
   }
-  .result-row .name{ font-size:13.5px; color:var(--paper); }
-  .result-row .role{
-    font-family:'Oswald', sans-serif; font-size:11px; text-transform:uppercase; letter-spacing:0.1em;
-    padding:3px 8px; border-radius:2px;
+  .bottom-bar .inner { width: 100%; max-width: 500px; }
+  .start-btn {
+    width: 100%; background: var(--accent); color: #000; font-weight: 600; font-size: 16px; padding: 16px; border: none; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px;
   }
-  .role.crew{ color:var(--kraft); border:1px solid var(--kraft-dim); }
-  .role.imp{ color:var(--stamp-bright); border:1px solid var(--stamp-bright); }
-  .answer-banner{
-    text-align:center; padding:16px; border:1px dashed var(--kraft-dim); border-radius:2px; margin-bottom:18px;
-  }
-  .answer-banner .k{ font-size:11px; letter-spacing:0.2em; text-transform:uppercase; color:var(--kraft-dim); }
-  .answer-banner .w{ font-family:'Oswald', sans-serif; font-size:24px; color:var(--paper); margin-top:6px; text-transform:uppercase; }
+  .start-btn:active { opacity: 0.8; transform: scale(0.98); }
 
-  .footer-note{ text-align:center; color:var(--paper-dim); font-size:11px; margin-top:22px; letter-spacing:0.03em; }
+  /* Chips */
+  .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chip { background: var(--bg-input); color: var(--text-muted); padding: 8px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+  .chip.active { background: var(--accent-dark); color: #FFF; border: 1px solid var(--accent); }
 
-  @media (prefers-reduced-motion: reduce){
-    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
-  }
+  /* Admin Panel specific */
+  .admin-box { background: var(--bg-card); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;}
+  .admin-input { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid #30303C; color: #FFF; border-radius: 8px; margin-bottom: 10px; font-size: 16px;}
+  .admin-btn { background: var(--accent); color: #000; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+  .admin-btn-secondary { background: var(--bg-input); color: #FFF; border: 1px solid #30303C; padding: 10px 16px; border-radius: 8px; cursor: pointer; }
+  .word-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .word-chip { background: var(--bg-input); padding: 5px 10px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 5px; }
+  
+  /* In-game screens (adapted for dark theme) */
+  .game-screen { text-align: center; padding-top: 40px; }
+  .card-3d-wrap { perspective: 1000px; width: 100%; height: 300px; margin: 30px 0; position: relative; }
+  .card-3d { width: 100%; height: 100%; transition: transform 0.6s, top 0.5s, opacity 0.5s; transform-style: preserve-3d; cursor: pointer; position: absolute; top:0; }
+  .card-3d.flipped { transform: rotateY(180deg); }
+  .card-3d.discarded { top: 100%; opacity: 0; pointer-events: none; transform: rotateY(180deg) scale(0.8); }
+  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid #30303C; }
+  .card-front { background: var(--bg-card); }
+  .card-back { background: var(--bg-input); transform: rotateY(180deg); }
+  .tap-hint { border: 1px dashed var(--text-muted); color: var(--text-muted); padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-top: 20px; }
+  
 </style>
 </head>
 <body>
 
-<div class="stage">
-  <div class="masthead">
-    <div class="eyebrow">Classified Party Protocol</div>
-    <h1>THE <span>ASSET</span></h1>
-    <div class="sub">One of you doesn't have the file. Find them out.</div>
-  </div>
-
-  <div class="file"><div class="file-inner" id="app"></div></div>
-  <div class="footer-note" id="footerNote"></div>
-</div>
+<div class="app-container" id="app"></div>
 
 <script>
-/* ---------------- Word packs ---------------- */
-const PACKS = {
-  "Vacation Spots": ["Beach Resort","Mountain Cabin","Cruise Ship","Theme Park","Desert Oasis","Ski Lodge","Safari Camp","Island Villa","National Park","Lakeside Cottage","Rainforest Lodge","Countryside Inn","Casino Resort","Campground","Houseboat","Glacier Tour"],
-  "Occupations": ["Surgeon","Firefighter","Pastry Chef","Airline Pilot","Detective","Architect","Zookeeper","Electrician","Diplomat","Lifeguard","Librarian","Locksmith","Tailor","Astronaut","Farmer","Journalist"],
-  "Foods & Drinks": ["Sushi Platter","Espresso","Birthday Cake","Grilled Cheese","Ramen Bowl","Iced Tea","Barbecue Ribs","Pancakes","Milkshake","Tacos","Dumplings","Popcorn","Hot Chocolate","Fruit Salad","Pizza","Smoothie"],
-  "Everyday Objects": ["Umbrella","Wristwatch","Backpack","Flashlight","Sunglasses","Toothbrush","Stapler","Candle","Mirror","Wallet","Headphones","Keychain","Notebook","Thermos","Ladder","Scissors"],
-  "Animals": ["Octopus","Grizzly Bear","Peacock","Honeybee","Dolphin","Chameleon","Penguin","Wolf","Falcon","Tortoise","Otter","Elephant","Firefly","Kangaroo","Hedgehog","Owl"],
-  "Sports & Games": ["Chess Match","Rock Climbing","Bowling Night","Marathon","Poker Table","Fencing Duel","Surfing","Archery","Tug of War","Ice Hockey","Darts","Table Tennis","Scavenger Hunt","Rowing Crew","Gymnastics","Trivia Night"]
+/* ---------------- Initial Data & Storage ---------------- */
+const defaultPacks = {
+  "Vacation Spots": ["Beach Resort","Mountain Cabin","Cruise Ship","Theme Park","Desert Oasis","Ski Lodge","Safari Camp","Island Villa"],
+  "Occupations": ["Surgeon","Firefighter","Pastry Chef","Airline Pilot","Detective","Architect","Zookeeper","Electrician"],
+  "Foods & Drinks": ["Sushi Platter","Espresso","Birthday Cake","Grilled Cheese","Ramen Bowl","Iced Tea","Barbecue Ribs","Pancakes"]
 };
+
+// Load packs from localStorage, or use defaults
+let PACKS = JSON.parse(localStorage.getItem('imposterPacks')) || defaultPacks;
+
+function savePacks() {
+  localStorage.setItem('imposterPacks', JSON.stringify(PACKS));
+}
+
+/* ---------------- Onam Flowers Animation ---------------- */
+function startOnamFlowers() {
+  const emojis = ['🌸', '🌼', '🌺', '🍃'];
+  for (let i = 0; i < 25; i++) {
+    let flower = document.createElement('div');
+    flower.className = 'flower';
+    flower.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+    flower.style.left = Math.random() * 100 + 'vw';
+    flower.style.animationDuration = (Math.random() * 3 + 4) + 's'; // 4-7s
+    flower.style.animationDelay = Math.random() * 5 + 's';
+    flower.style.fontSize = (Math.random() * 10 + 10) + 'px';
+    document.body.appendChild(flower);
+  }
+}
+startOnamFlowers(); // Start immediately
 
 /* ---------------- State ---------------- */
 let state = {
-  screen: "setup",
-  playerCount: 5,
-  names: ["","","","",""],
+  names: ["Anu", "Anju", "Babu", "Ragesh", "Abhi", "Adarsh"],
   activeCategories: Object.keys(PACKS),
   imposterCount: 1,
-  categoryHint: true,
-  // round data
+  imposterSeesCategory: true,
+  showImposterHint: false, // New feature from screenshot
+  
+  // Game running state
   players: [],       
   secretWord: "",
   secretCategory: "",
-  currentIndex: 0,   
+  imposterHintWord: "", 
+  currentIndex: 0,
+  
+  // Admin State
+  adminAuthenticated: false,
+  adminSelectedCategory: null
 };
 
 const app = document.getElementById('app');
-const footerNote = document.getElementById('footerNote');
 
-function render(){
-  if(state.screen === 'setup') renderSetup();
-  else if(state.screen === 'pass') renderPass();
-  else if(state.screen === 'interrogate') renderInterrogate();
-  else if(state.screen === 'results') renderResults();
+/* ---------------- Router ---------------- */
+function render() {
+  const hash = window.location.hash;
+  if (hash === '#admin') {
+    if (!state.adminAuthenticated) renderAdminLogin();
+    else renderAdminPanel();
+  } else if (hash === '#play') {
+    renderPass();
+  } else if (hash === '#interrogate') {
+    renderInterrogate();
+  } else if (hash === '#results') {
+    renderResults();
+  } else {
+    renderSetup(); // Default
+  }
 }
+window.addEventListener('hashchange', render);
 
-/* ---------------- SETUP SCREEN ---------------- */
-function syncNamesArray(){
-  const n = state.playerCount;
-  while(state.names.length < n) state.names.push("");
-  state.names.length = n;
-}
+/* ---------------- SVG Icons ---------------- */
+const icons = {
+  trash: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`,
+  tag: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>`,
+  bulb: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`,
+  play: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`,
+  admin: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`
+};
 
-function renderSetup(){
-  syncNamesArray();
-  footerNote.textContent = "";
+/* ---------------- 1. Setup Screen ---------------- */
+function renderSetup() {
+  let categoriesHTML = Object.keys(PACKS).map(cat => {
+    const isActive = state.activeCategories.includes(cat);
+    return `<div class="chip ${isActive ? 'active' : ''}" onclick="toggleCategory('${cat}')">${cat}</div>`;
+  }).join('');
+
   app.innerHTML = `
-    <div class="tag-row">
-      <div class="case-no">FILE No. ${randomCaseNumber()}</div>
-      <div class="stamp">Eyes Only</div>
-    </div>
-    <h2 class="section-title">New Briefing</h2>
-    <p class="section-desc">Set up the roster, pick a category, and hand the device around. Everyone gets the secret word — except the imposter(s).</p>
+    <h1>Set up game</h1>
+    <div class="subtitle">Configure before starting</div>
 
-    <div class="field">
-      <label>Agents in play</label>
-      <div class="stepper">
-        <button id="dec">−</button>
-        <div class="count" id="countDisplay">${state.playerCount}</div>
-        <button id="inc">+</button>
+    <div class="card">
+      <div class="card-header">
+        <span>👥 Players</span>
+        <span class="count">${state.names.length} / 15</span>
+      </div>
+      <div class="player-list" id="playerList"></div>
+      ${state.names.length < 15 ? `<button class="add-player-btn" onclick="addPlayer()">+ Add Player</button>` : ''}
+    </div>
+
+    <div class="card">
+      <div class="setting-row" style="border-bottom:none;">
+        <div class="setting-info">
+          <div class="setting-icon">${icons.tag}</div>
+          <div class="setting-text">
+            <h3>Categories</h3>
+            <p>${state.activeCategories.length} of ${Object.keys(PACKS).length} selected</p>
+          </div>
+        </div>
+      </div>
+      <div class="chip-container">${categoriesHTML}</div>
+    </div>
+
+    <div class="card">
+      <div class="setting-row" onclick="toggleSetting('imposterSeesCategory')">
+        <div class="setting-info">
+          <div class="setting-icon">${icons.tag}</div>
+          <div class="setting-text">
+            <h3>Imposter sees category</h3>
+            <p>Imposter can see the category name</p>
+          </div>
+        </div>
+        <div class="switch ${state.imposterSeesCategory ? 'active' : ''}"></div>
+      </div>
+      
+      <div class="setting-row" onclick="toggleSetting('showImposterHint')">
+        <div class="setting-info">
+          <div class="setting-icon">${icons.bulb}</div>
+          <div class="setting-text">
+            <h3>Show imposter a hint</h3>
+            <p>Imposter sees a related but different word</p>
+          </div>
+        </div>
+        <div class="switch ${state.showImposterHint ? 'active' : ''}"></div>
+      </div>
+      
+      <div class="setting-row" onclick="window.location.hash='#admin'">
+        <div class="setting-info">
+          <div class="setting-icon">${icons.admin}</div>
+          <div class="setting-text">
+            <h3>Admin Panel</h3>
+            <p>Customize words and categories</p>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="field">
-      <label>Codenames</label>
-      <div class="name-grid" id="nameGrid"></div>
-    </div>
-
-    <div class="field">
-      <label>Categories in rotation</label>
-      <div class="chip-grid" id="chipGrid"></div>
-    </div>
-
-    <div class="field">
-      <div class="toggle-row">
-        <div>
-          <div class="label-main">Number of imposters</div>
-          <div class="label-sub">Recommended: 1 for up to 6 agents</div>
-        </div>
-        <div class="stepper">
-          <button id="impDec">−</button>
-          <div class="count" id="impCount" style="font-size:20px;">${state.imposterCount}</div>
-          <button id="impInc">+</button>
-        </div>
-      </div>
-      <div class="toggle-row">
-        <div>
-          <div class="label-main">Give imposter a category hint</div>
-          <div class="label-sub">They'll see the category, just not the word</div>
-        </div>
-        <div class="switch ${state.categoryHint?'on':''}" id="hintToggle"></div>
+    <div class="bottom-bar">
+      <div class="inner">
+        <button class="start-btn" onclick="startGame()">
+          ${icons.play} Start Game
+        </button>
       </div>
     </div>
-
-    <div class="error-msg" id="setupError"></div>
-    <button class="btn" id="beginBtn">Begin Briefing →</button>
   `;
 
-  const nameGrid = document.getElementById('nameGrid');
-  state.names.forEach((val, i) => {
-    const row = document.createElement('div');
-    row.className = 'row';
-    row.innerHTML = `<div class="idx">${String(i+1).padStart(2,'0')}</div>
-      <input type="text" maxlength="16" placeholder="Agent ${i+1}" value="${escapeHtml(val)}" data-idx="${i}">`;
-    nameGrid.appendChild(row);
+  // Render Player Inputs
+  const list = document.getElementById('playerList');
+  state.names.forEach((name, i) => {
+    list.innerHTML += `
+      <div class="player-row">
+        <div class="player-idx">${i + 1}</div>
+        <div class="player-input-wrap">
+          <input type="text" value="${escapeHtml(name)}" onchange="updatePlayerName(${i}, this.value)" placeholder="Player Name">
+          <button class="del-btn" onclick="removePlayer(${i})">${icons.trash}</button>
+        </div>
+      </div>
+    `;
   });
-  nameGrid.querySelectorAll('input').forEach(inp=>{
-    inp.addEventListener('input', e=>{
-      state.names[parseInt(e.target.dataset.idx)] = e.target.value;
-    });
-  });
-
-  const chipGrid = document.getElementById('chipGrid');
-  Object.keys(PACKS).forEach(cat=>{
-    const chip = document.createElement('div');
-    chip.className = 'chip' + (state.activeCategories.includes(cat) ? ' active' : '');
-    chip.textContent = cat;
-    chip.addEventListener('click', ()=>{
-      if(state.activeCategories.includes(cat)){
-        if(state.activeCategories.length > 1){
-          state.activeCategories = state.activeCategories.filter(c=>c!==cat);
-        }
-      } else {
-        state.activeCategories.push(cat);
-      }
-      renderSetup();
-    });
-    chipGrid.appendChild(chip);
-  });
-
-  document.getElementById('dec').addEventListener('click', ()=>{
-    if(state.playerCount > 3){ state.playerCount--; clampImposters(); renderSetup(); }
-  });
-  document.getElementById('inc').addEventListener('click', ()=>{
-    if(state.playerCount < 16){ state.playerCount++; renderSetup(); }
-  });
-  document.getElementById('impDec').addEventListener('click', ()=>{
-    if(state.imposterCount > 1){ state.imposterCount--; renderSetup(); }
-  });
-  document.getElementById('impInc').addEventListener('click', ()=>{
-    const maxImp = Math.max(1, Math.floor(state.playerCount/2) - 1) || 1;
-    if(state.imposterCount < maxImp){ state.imposterCount++; renderSetup(); }
-  });
-  document.getElementById('hintToggle').addEventListener('click', ()=>{
-    state.categoryHint = !state.categoryHint;
-    renderSetup();
-  });
-  document.getElementById('beginBtn').addEventListener('click', startRound);
 }
 
-function clampImposters(){
-  const maxImp = Math.max(1, Math.floor(state.playerCount/2) - 1) || 1;
-  if(state.imposterCount > maxImp) state.imposterCount = maxImp;
-}
+// Setup Helper Functions
+window.updatePlayerName = (idx, val) => { state.names[idx] = val; };
+window.addPlayer = () => { if (state.names.length < 15) { state.names.push(""); renderSetup(); } };
+window.removePlayer = (idx) => { if (state.names.length > 3) { state.names.splice(idx, 1); renderSetup(); } else { alert("Minimum 3 players required."); } };
+window.toggleCategory = (cat) => {
+  if (state.activeCategories.includes(cat)) {
+    if (state.activeCategories.length > 1) state.activeCategories = state.activeCategories.filter(c => c !== cat);
+  } else {
+    state.activeCategories.push(cat);
+  }
+  renderSetup();
+};
+window.toggleSetting = (key) => { state[key] = !state[key]; renderSetup(); };
 
-function startRound(){
-  const errBox = document.getElementById('setupError');
-  if(state.activeCategories.length === 0){
-    errBox.textContent = "Select at least one category.";
-    return;
+function startGame() {
+  if (state.activeCategories.length === 0) return alert("Select at least one category.");
+  
+  // Clean names
+  const finalNames = state.names.map((n, i) => n.trim() || `Player ${i + 1}`);
+  
+  // Pick word
+  const category = state.activeCategories[Math.floor(Math.random() * state.activeCategories.length)];
+  const wordList = PACKS[category];
+  
+  if (!wordList || wordList.length === 0) return alert("Selected category has no words! Add words in Admin.");
+  
+  const wordIdx = Math.floor(Math.random() * wordList.length);
+  const word = wordList[wordIdx];
+  
+  // Hint logic
+  let hintWord = "";
+  if (state.showImposterHint && wordList.length > 1) {
+    let hintIdx = wordIdx;
+    while(hintIdx === wordIdx) { hintIdx = Math.floor(Math.random() * wordList.length); }
+    hintWord = wordList[hintIdx];
+  }
+
+  // Assign roles
+  const indices = [...Array(finalNames.length).keys()];
+  for (let i = indices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [indices[i], indices[j]] = [indices[j], indices[i]];
   }
   
-  const finalNames = state.names.map((n,i)=> n.trim() || `Agent ${i+1}`);
-  const dupCheck = new Set(finalNames);
-  const usedNames = finalNames.map((n,i)=> dupCheck.size < finalNames.length ? `${n} #${i+1}` : n);
-
-  const category = state.activeCategories[Math.floor(Math.random()*state.activeCategories.length)];
-  const wordList = PACKS[category];
-  const word = wordList[Math.floor(Math.random()*wordList.length)];
-
-  const indices = [...Array(state.playerCount).keys()];
-  shuffle(indices);
   const imposterSet = new Set(indices.slice(0, state.imposterCount));
 
-  state.players = usedNames.map((name, i)=>({
+  state.players = finalNames.map((name, i) => ({
     name,
     role: imposterSet.has(i) ? 'imposter' : 'crew'
   }));
   state.secretWord = word;
   state.secretCategory = category;
+  state.imposterHintWord = hintWord;
   state.currentIndex = 0;
-  state.screen = 'pass';
-  render();
+  
+  window.location.hash = '#play';
 }
 
-/* ---------------- HOLD TO REVEAL SCREEN ---------------- */
-function renderPass(){
-  const p = state.players[state.currentIndex];
-  const total = state.players.length;
-  footerNote.textContent = `Agent ${state.currentIndex+1} of ${total} — keep the device flat between turns`;
-
-  let dots = '';
-  for(let i=0;i<total;i++){
-    let cls = i < state.currentIndex ? 'done' : (i===state.currentIndex ? 'current':'');
-    dots += `<span class="${cls}"></span>`;
-  }
-
+/* ---------------- 2. Admin Panel ---------------- */
+function renderAdminLogin() {
   app.innerHTML = `
-    <div class="pass-wrap">
-      <div class="progress-dots">${dots}</div>
-      <p>Pass the device to <b>${escapeHtml(p.name)}</b>. Ensure no one else is looking.</p>
+    <div class="game-screen">
+      <h1>Admin Access</h1>
+      <p class="subtitle">Enter password to manage words</p>
+      <div class="admin-box">
+        <input type="password" id="adminPwd" class="admin-input" placeholder="Password">
+        <button class="admin-btn" style="width:100%" onclick="checkAdmin()">Login</button>
+      </div>
+      <button class="admin-btn-secondary" onclick="window.location.hash=''">Back to Setup</button>
     </div>
+  `;
+}
+
+window.checkAdmin = () => {
+  if (document.getElementById('adminPwd').value === 'adarsh@12345') {
+    state.adminAuthenticated = true;
+    renderAdminPanel();
+  } else {
+    alert("Incorrect password");
+  }
+};
+
+function renderAdminPanel() {
+  if (state.adminSelectedCategory) {
+    // Show Words in Category
+    const cat = state.adminSelectedCategory;
+    const words = PACKS[cat];
     
-    <div class="card-scene">
-      <div class="card-3d" id="activeCard">
-        <!-- Front of Card -->
-        <div class="card-face card-front">
-          <div class="agent-eyebrow">Classified File</div>
-          <h2>${escapeHtml(p.name)}</h2>
-          <div class="tap-hint">PRESS & HOLD TO REVEAL</div>
+    app.innerHTML = `
+      <h1>Manage Words</h1>
+      <p class="subtitle">Category: ${cat}</p>
+      
+      <div class="admin-box">
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+          <input type="text" id="newWord" class="admin-input" style="margin:0;" placeholder="New word...">
+          <button class="admin-btn" onclick="addWord('${cat}')">Add</button>
         </div>
-        
-        <!-- Back of Card -->
-        <div class="card-face card-back">
-          <div class="corner-stamp">${p.role==='imposter' ? 'Unverified' : 'Verified'}</div>
-          ${p.role === 'imposter' ? `
-            <div class="role-kicker">Status</div>
-            <div class="role-word imposter">You Are<br>The Imposter</div>
-            ${state.categoryHint ? `<div class="role-category">Category on record: <br><b>${escapeHtml(state.secretCategory)}</b></div>` : `<div class="role-category">No further intel provided.</div>`}
-          ` : `
-            <div class="role-kicker">The Secret Word</div>
-            <div class="role-word">${escapeHtml(state.secretWord)}</div>
-            <div class="role-category">Category: <b>${escapeHtml(state.secretCategory)}</b></div>
-          `}
+        <div class="word-list">
+          ${words.map((w, i) => `
+            <div class="word-chip">
+              ${escapeHtml(w)}
+              <span style="color:var(--danger); cursor:pointer; margin-left:5px;" onclick="deleteWord('${cat}', ${i})">✖</span>
+            </div>
+          `).join('')}
         </div>
       </div>
+      <button class="admin-btn-secondary" onclick="state.adminSelectedCategory=null; renderAdminPanel();">Back to Categories</button>
+    `;
+  } else {
+    // Show Categories
+    app.innerHTML = `
+      <h1>Admin Panel</h1>
+      <p class="subtitle">Manage Categories & Words</p>
+      
+      <div class="admin-box">
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+          <input type="text" id="newCat" class="admin-input" style="margin:0;" placeholder="New category...">
+          <button class="admin-btn" onclick="addCategory()">Add</button>
+        </div>
+        <div class="player-list">
+          ${Object.keys(PACKS).map(cat => `
+            <div class="player-row" style="background:var(--bg-input); padding:10px; border-radius:8px;">
+              <div style="flex:1; cursor:pointer;" onclick="state.adminSelectedCategory='${cat}'; renderAdminPanel();">
+                ${cat} (${PACKS[cat].length} words)
+              </div>
+              <button class="del-btn" onclick="deleteCategory('${cat}')">${icons.trash}</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      
+      <button class="admin-btn" style="width:100%; margin-bottom:10px;" onclick="factoryReset()">Reset to Defaults</button>
+      <button class="admin-btn-secondary" style="width:100%;" onclick="window.location.hash=''">Save & Back to Game</button>
+    `;
+  }
+}
+
+window.addCategory = () => {
+  const val = document.getElementById('newCat').value.trim();
+  if (val && !PACKS[val]) { PACKS[val] = []; savePacks(); renderAdminPanel(); }
+};
+window.deleteCategory = (cat) => {
+  if (confirm(`Delete category "${cat}"?`)) { delete PACKS[cat]; savePacks(); renderAdminPanel(); }
+};
+window.addWord = (cat) => {
+  const val = document.getElementById('newWord').value.trim();
+  if (val) { PACKS[cat].push(val); savePacks(); renderAdminPanel(); }
+};
+window.deleteWord = (cat, idx) => {
+  PACKS[cat].splice(idx, 1); savePacks(); renderAdminPanel();
+};
+window.factoryReset = () => {
+  if (confirm("Reset all words to default? Custom words will be lost.")) {
+    PACKS = JSON.parse(JSON.stringify(defaultPacks)); savePacks(); renderAdminPanel();
+  }
+};
+
+/* ---------------- 3. Play / Hold-to-Reveal ---------------- */
+function renderPass() {
+  const p = state.players[state.currentIndex];
+  const total = state.players.length;
+  
+  app.innerHTML = `
+    <div class="game-screen">
+      <div class="subtitle">Agent ${state.currentIndex + 1} of ${total}</div>
+      <p style="color:var(--text-muted); font-size:14px;">Pass device to <b style="color:var(--text-main)">${escapeHtml(p.name)}</b></p>
+      
+      <div class="card-3d-wrap">
+        <div class="card-3d" id="activeCard">
+          <div class="card-face card-front">
+            <div style="color:var(--accent); font-weight:600; font-size:12px; letter-spacing:2px;">CLASSIFIED</div>
+            <h2 style="font-size:32px; margin:10px 0;">${escapeHtml(p.name)}</h2>
+            <div class="tap-hint">PRESS & HOLD TO REVEAL</div>
+          </div>
+          
+          <div class="card-face card-back">
+            ${p.role === 'imposter' ? `
+              <div style="color:var(--danger); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">STATUS</div>
+              <h2 style="color:var(--danger); font-size:32px; margin:0; line-height:1.2;">You Are<br>The Imposter</h2>
+              ${state.imposterSeesCategory ? `<div style="margin-top:20px; font-size:14px; color:var(--text-muted);">Category:<br><b style="color:var(--text-main)">${escapeHtml(state.secretCategory)}</b></div>` : ''}
+              ${state.showImposterHint ? `<div style="margin-top:10px; font-size:14px; color:var(--text-muted);">Fake Hint Word:<br><b style="color:var(--accent)">${escapeHtml(state.imposterHintWord)}</b></div>` : ''}
+            ` : `
+              <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">THE SECRET WORD</div>
+              <h2 style="font-size:32px; margin:0; color:var(--accent);">${escapeHtml(state.secretWord)}</h2>
+              <div style="margin-top:20px; font-size:14px; color:var(--text-muted);">Category: <b style="color:var(--text-main)">${escapeHtml(state.secretCategory)}</b></div>
+            `}
+          </div>
+        </div>
+      </div>
+      
+      <button class="admin-btn-secondary" onclick="if(confirm('Cancel round?')) window.location.hash=''">Cancel Round</button>
     </div>
-    
-    <button class="btn secondary" id="backBtn" style="margin-top:10px;">Cancel Round</button>
   `;
 
   const card = document.getElementById('activeCard');
@@ -545,133 +541,80 @@ function renderPass(){
 
   const endHold = (e) => {
     if(hasDiscarded || !card.classList.contains('flipped')) return;
-    hasDiscarded = true; // Prevent multiple fires
+    hasDiscarded = true; 
     card.classList.remove('flipped');
     card.classList.add('discarded');
 
-    // Cleanup events
     card.removeEventListener('mousedown', startHold);
     card.removeEventListener('touchstart', startHold);
     window.removeEventListener('mouseup', endHold);
     window.removeEventListener('touchend', endHold);
 
-    // Wait for the CSS discard animation to finish before moving on
     setTimeout(() => {
       if (state.currentIndex < total - 1) {
         state.currentIndex++;
         renderPass();
       } else {
-        state.screen = 'interrogate';
-        render();
+        window.location.hash = '#interrogate';
       }
     }, 500); 
   };
 
-  // Bind Interactions
   card.addEventListener('mousedown', startHold);
   card.addEventListener('touchstart', startHold, {passive: false});
   window.addEventListener('mouseup', endHold);
   window.addEventListener('touchend', endHold);
-
-  document.getElementById('backBtn').addEventListener('click', ()=>{
-    if(confirm('Cancel this round and return to setup?')){
-       // Cleanup window events just in case
-      window.removeEventListener('mouseup', endHold);
-      window.removeEventListener('touchend', endHold);
-      state.screen = 'setup';
-      render();
-    }
-  });
 }
 
-/* ---------------- INTERROGATION (REPLACES TIMER) ---------------- */
-function renderInterrogate(){
-  footerNote.textContent = "Discuss, question, and vote out whoever seems off.";
-  
+/* ---------------- 4. Interrogation ---------------- */
+function renderInterrogate() {
   app.innerHTML = `
-    <div class="tag-row">
-      <div class="case-no">FILE No. ${randomCaseNumber()}</div>
-      <div class="stamp">In Session</div>
-    </div>
-    
-    <div class="interrogate-wrap">
-      <div class="interrogate-icon">💬</div>
-      <h2 class="section-title">Interrogation Phase</h2>
-      <p class="section-desc">All agents have viewed their files. Determine who is lying about their intel.</p>
-    </div>
-    
-    <div class="btn-row">
-      <button class="btn danger" id="revealAllBtn">End Discussion & Reveal Roles</button>
+    <div class="game-screen" style="padding-top:20px;">
+      <div style="font-size:50px; margin-bottom:10px;">💬</div>
+      <h1>Interrogation Phase</h1>
+      <p class="subtitle" style="margin-bottom:40px;">Discuss and vote out the imposter.</p>
+      
+      <button class="start-btn" style="background:var(--danger); color:#FFF; margin-bottom:15px;" onclick="window.location.hash='#results'">
+        Reveal Roles
+      </button>
     </div>
   `;
-
-  document.getElementById('revealAllBtn').addEventListener('click', ()=>{
-    if(confirm("Are you sure you want to reveal everyone's roles?")) {
-      state.screen = 'results';
-      render();
-    }
-  });
 }
 
-/* ---------------- RESULTS SCREEN ---------------- */
-function renderResults(){
-  footerNote.textContent = "";
-  const imposters = state.players.filter(p=>p.role==='imposter').map(p=>p.name);
+/* ---------------- 5. Results ---------------- */
+function renderResults() {
+  const imposters = state.players.filter(p => p.role === 'imposter').map(p => p.name);
   app.innerHTML = `
-    <div class="tag-row">
-      <div class="case-no">FILE No. ${randomCaseNumber()}</div>
-      <div class="stamp">Declassified</div>
-    </div>
-    <h2 class="section-title">Case Closed</h2>
-    <p class="section-desc">${imposters.length>1?'The imposters were':'The imposter was'} <b style="color:var(--stamp-bright)">${imposters.map(escapeHtml).join(', ')}</b>.</p>
+    <div class="game-screen" style="padding-top:20px;">
+      <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">CASE CLOSED</div>
+      <h1>The Imposter was <span style="color:var(--danger)">${imposters.map(escapeHtml).join(', ')}</span></h1>
+      
+      <div style="border: 1px dashed #30303C; padding: 20px; border-radius: var(--radius); margin: 30px 0;">
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">THE WORD WAS</div>
+        <div style="font-size:24px; color:var(--accent); font-weight:700; text-transform:uppercase;">${escapeHtml(state.secretWord)}</div>
+      </div>
+      
+      <div class="player-list" style="text-align:left; margin-bottom:30px;">
+        ${state.players.map(p => `
+          <div class="player-row" style="background:var(--bg-card); padding:12px; border-radius:8px; justify-content:space-between;">
+            <div>${escapeHtml(p.name)}</div>
+            <div style="font-size:12px; font-weight:600; padding:4px 8px; border-radius:4px; ${p.role==='imposter' ? 'background:#FF453A22; color:var(--danger);' : 'background:#FF9F0A22; color:var(--accent);'}">${p.role === 'imposter' ? 'IMPOSTER' : 'CREW'}</div>
+          </div>
+        `).join('')}
+      </div>
 
-    <div class="answer-banner">
-      <div class="k">The Word Was</div>
-      <div class="w">${escapeHtml(state.secretWord)}</div>
-    </div>
-
-    <div class="results-list">
-      ${state.players.map(p=>`
-        <div class="result-row">
-          <div class="name">${escapeHtml(p.name)}</div>
-          <div class="role ${p.role==='imposter'?'imp':'crew'}">${p.role==='imposter'?'Imposter':'Crew'}</div>
-        </div>
-      `).join('')}
-    </div>
-
-    <div class="btn-row">
-      <button class="btn secondary" id="newRoundBtn">Same Roster, New Round</button>
-      <button class="btn" id="restartBtn">New Setup</button>
+      <button class="start-btn" style="margin-bottom:10px;" onclick="startGame()">Same Roster, New Word</button>
+      <button class="admin-btn-secondary" style="width:100%" onclick="window.location.hash=''">New Setup</button>
     </div>
   `;
-
-  document.getElementById('newRoundBtn').addEventListener('click', ()=>{
-    startRound();
-  });
-  document.getElementById('restartBtn').addEventListener('click', ()=>{
-    state.screen = 'setup';
-    render();
-  });
 }
 
 /* ---------------- Helpers ---------------- */
-function shuffle(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]] = [arr[j],arr[i]];
-  }
-  return arr;
-}
-function escapeHtml(str){
-  return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-function randomCaseNumber(){
-  if(!window.__caseNo){
-    window.__caseNo = Math.floor(1000+Math.random()*8999) + '-' + String.fromCharCode(65+Math.floor(Math.random()*26)) + String.fromCharCode(65+Math.floor(Math.random()*26));
-  }
-  return window.__caseNo;
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
 
+// Init
 render();
 </script>
 </body>
