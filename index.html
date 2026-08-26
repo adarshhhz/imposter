@@ -58,9 +58,8 @@
     100% { transform: translate(150vw, -50%); } /* Sprint off screen */
   }
   .run-away {
-    /* Slowed down to 2 seconds */
     animation: runRight 2s ease-in forwards !important;
-    pointer-events: none; /* Disables clicking while running */
+    pointer-events: none; 
   }
 
   /* Watermark */
@@ -80,7 +79,7 @@
     max-width: 500px;
     margin: 0 auto;
     min-height: 100vh;
-    padding: 20px 16px 100px; /* Padding for bottom bar */
+    padding: 20px 16px 100px; 
     display: flex;
     flex-direction: column;
     position: relative;
@@ -301,26 +300,16 @@
 
 <script>
 /* ---------------- Initial Data & Firebase Setup ---------------- */
-const defaultPacks = {
-  "Funny": [],
-  "Movies": [],
-  "Characters": [],
-  "Festivals": [],
-  "Places": [],
-  "Food": [],
-  "Bakery": [],
-  "Household Items": [],
-  "People": [],
-  "Kerala Life": [],
-  "Vehicles": [],
-  "College / School": [],
-  "Gulf / NRI": [],
-  "FIFA": [],
-  "Bigg Boss": [],
-  "Onam": []
-};
 
-let PACKS = defaultPacks; // Fallback until Firebase loads
+// Define Categories explicitly so they never disappear even if Firebase strips empty lists
+const DEFAULT_CATEGORIES = [
+  "Funny", "Movies", "Characters", "Festivals", "Places", "Food", 
+  "Bakery", "Household Items", "People", "Kerala Life", "Vehicles", 
+  "College / School", "Gulf / NRI", "FIFA", "Bigg Boss", "Onam"
+];
+
+let PACKS = {};
+DEFAULT_CATEGORIES.forEach(cat => PACKS[cat] = []);
 
 // Initialize Firebase
 const firebaseConfig = {
@@ -338,24 +327,30 @@ const db = firebase.database();
 
 // Listen for live updates from Firebase Database
 db.ref('packs').on('value', (snapshot) => {
-  const data = snapshot.val();
-  if (data) {
-    PACKS = data;
-    // Keep active categories in sync if categories get deleted
-    state.activeCategories = state.activeCategories.filter(c => PACKS[c]);
-    
-    // Only re-render if not in active gameplay to avoid interrupting
-    if (state.screen === 'setup' || state.screen === 'admin' || !window.location.hash) {
-      render();
+  const data = snapshot.val() || {};
+  
+  // Safely map Firebase data back into our local PACKS object
+  DEFAULT_CATEGORIES.forEach(cat => {
+    if (data[cat]) {
+      // Firebase occasionally turns arrays into objects if items are deleted. This safeguards against that.
+      PACKS[cat] = Array.isArray(data[cat]) ? data[cat] : Object.values(data[cat]);
+    } else {
+      PACKS[cat] = []; // If Firebase deleted it for being empty, put it back
     }
-  } else {
-    // If database is completely empty (first ever run), set defaults
-    db.ref('packs').set(defaultPacks);
+  });
+
+  // Ensure active categories don't contain deleted ones
+  state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
+  
+  // Re-render UI to show synced words (only if not actively playing a round)
+  if (state.screen === 'setup' || state.screen === 'admin' || state.screen === 'welcome' || !window.location.hash) {
+    render();
   }
 });
 
 function savePacks() {
-  // Save directly to live Firebase database instead of local storage
+  // Save directly to live Firebase database. 
+  // Note: Firebase will silently strip empty arrays during transit, but our on('value') listener will rebuild them.
   db.ref('packs').set(PACKS);
 }
 
@@ -379,24 +374,21 @@ startOnamFlowers();
 let state = {
   screen: 'setup',
   names: ["Player 1", "Player 2", "Player 3"],
-  photos: [null, null, null], // Store base64 compressed images
-  activeCategories: Object.keys(PACKS),
+  photos: [null, null, null], 
+  activeCategories: [...DEFAULT_CATEGORIES], // Select all by default
   imposterCount: 1,
   imposterSeesCategory: true,
   showImposterHint: false, 
   
-  // Game running state
-  players: [], // Will hold {name, photo, role}     
+  players: [],      
   secretWord: "",
   secretCategory: "",
   imposterHintWord: "", 
   currentIndex: 0,
   
-  // Voting State
   votes: {},
   selectedVoteIndex: null, 
   
-  // Admin State
   adminAuthenticated: false,
   adminSelectedCategory: null
 };
@@ -452,7 +444,7 @@ function renderWelcome() {
       <!-- Background Glow Effect just for Welcome Screen -->
       <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; background: var(--danger); filter: blur(120px); opacity: 0.35; pointer-events: none; z-index: 0;"></div>
       
-      <!-- Main Title with Among Us SVG -->
+      <!-- Main Title with Among Us SVG - Nudged slightly to the right -->
       <div style="text-align: center; margin-bottom: 30px; position: relative; z-index: 2; padding-left: 20px;">
         <h1 style="font-family: 'Inter', sans-serif; font-size: clamp(34px, 8vw, 44px); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 4px 20px rgba(255,69,58,0.6); display: inline-block; position: relative; margin: 0;">
           IMPOSTER
@@ -487,7 +479,7 @@ window.closePopupAndStart = () => {
 
 /* ---------------- 1. Setup Screen ---------------- */
 function renderSetup() {
-  let categoriesHTML = Object.keys(PACKS).map(cat => {
+  let categoriesHTML = DEFAULT_CATEGORIES.map(cat => {
     const isActive = state.activeCategories.includes(cat);
     const count = PACKS[cat] ? PACKS[cat].length : 0;
     return `<div class="chip ${isActive ? 'active' : ''}" onclick="toggleCategory('${cat}')">${cat} (${count})</div>`;
@@ -514,7 +506,7 @@ function renderSetup() {
           <div class="setting-icon">${icons.tag}</div>
           <div class="setting-text">
             <h3>Categories</h3>
-            <p>${state.activeCategories.length} of ${Object.keys(PACKS).length} selected</p>
+            <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
           </div>
         </div>
       </div>
@@ -636,11 +628,16 @@ window.toggleSetting = (key) => { state[key] = !state[key]; renderSetup(); };
 function startGame() {
   if (state.activeCategories.length === 0) return alert("Select at least one category.");
   
-  const finalNames = state.names.map((n, i) => n.trim() || `Player ${i + 1}`);
-  const category = state.activeCategories[Math.floor(Math.random() * state.activeCategories.length)];
-  const wordList = PACKS[category];
+  // Only allow categories that actually have words
+  const categoriesWithWords = state.activeCategories.filter(cat => PACKS[cat] && PACKS[cat].length > 0);
   
-  if (!wordList || wordList.length === 0) return alert(`The selected category "${category}" has no words! Add words in Admin panel.`);
+  if (categoriesWithWords.length === 0) {
+    return alert("All selected categories are empty! Add some words in the Admin panel (/#admin) first.");
+  }
+  
+  const finalNames = state.names.map((n, i) => n.trim() || `Player ${i + 1}`);
+  const category = categoriesWithWords[Math.floor(Math.random() * categoriesWithWords.length)];
+  const wordList = PACKS[category];
   
   const wordIdx = Math.floor(Math.random() * wordList.length);
   const word = wordList[wordIdx];
@@ -728,45 +725,35 @@ function renderAdminPanel() {
       <h1>Admin Panel</h1>
       <p class="subtitle">Manage Categories & Words (Live Sync)</p>
       <div class="admin-box">
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-          <input type="text" id="newCat" class="admin-input" style="margin:0;" placeholder="New category...">
-          <button class="admin-btn" onclick="addCategory()">Add</button>
-        </div>
         <div class="player-list">
-          ${Object.keys(PACKS).map(cat => `
+          ${DEFAULT_CATEGORIES.map(cat => `
             <div class="player-row" style="background:var(--bg-input); padding:10px; border-radius:8px;">
               <div style="flex:1; cursor:pointer;" onclick="state.adminSelectedCategory='${cat}'; renderAdminPanel();">
                 ${cat} (${PACKS[cat] ? PACKS[cat].length : 0} words)
               </div>
-              <button class="del-btn" onclick="deleteCategory('${cat}')">${icons.trash}</button>
             </div>
           `).join('')}
         </div>
       </div>
-      <button class="admin-btn" style="width:100%; margin-bottom:10px;" onclick="factoryReset()">Clear All To Defaults</button>
       <button class="admin-btn-secondary" style="width:100%;" onclick="window.location.hash='#setup'">Save & Back to Game</button>
     `;
   }
 }
 
-window.addCategory = () => {
-  const val = document.getElementById('newCat').value.trim();
-  if (val && !PACKS[val]) { PACKS[val] = []; savePacks(); renderAdminPanel(); }
-};
-window.deleteCategory = (cat) => {
-  if (confirm(`Delete category "${cat}"?`)) { delete PACKS[cat]; savePacks(); renderAdminPanel(); }
-};
 window.addWord = (cat) => {
   const val = document.getElementById('newWord').value.trim();
-  if (val) { PACKS[cat].push(val); savePacks(); renderAdminPanel(); }
+  if (val) { 
+    if(!PACKS[cat]) PACKS[cat] = [];
+    PACKS[cat].push(val); 
+    savePacks(); 
+    renderAdminPanel(); 
+    document.getElementById('newWord').value = '';
+  }
 };
 window.deleteWord = (cat, idx) => {
-  PACKS[cat].splice(idx, 1); savePacks(); renderAdminPanel();
-};
-window.factoryReset = () => {
-  if (confirm("Reset all words to default? Custom words will be lost.")) {
-    PACKS = JSON.parse(JSON.stringify(defaultPacks)); savePacks(); renderAdminPanel();
-  }
+  PACKS[cat].splice(idx, 1); 
+  savePacks(); 
+  renderAdminPanel();
 };
 
 /* ---------------- 3. Play / Reveal Phase ---------------- */
