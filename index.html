@@ -46,6 +46,19 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
+  /* Watermark */
+  .watermark {
+    position: fixed;
+    bottom: 8px;
+    right: 12px;
+    font-size: 10px;
+    color: var(--text-muted);
+    opacity: 0.5;
+    z-index: 9999;
+    pointer-events: none;
+    letter-spacing: 0.5px;
+  }
+
   .app-container {
     max-width: 500px;
     margin: 0 auto;
@@ -192,8 +205,8 @@
     height: 220px;
     margin: 0 auto 40px;
     
-    /* 👇 REPLACE "YOUR_CLOUDINARY_LINK_HERE" WITH YOUR ACTUAL CLOUDINARY LINK 👇 */
-    background: url('YOUR_CLOUDINARY_LINK_HERE') center/cover no-repeat;
+    /* Using your provided Cloudinary link */
+    background: url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787770407/1461419466-3995.webp') center/cover no-repeat;
     
     border-radius: 20px;
     transform: rotateY(15deg) rotateX(10deg);
@@ -220,6 +233,7 @@
 </head>
 <body>
 
+<div class="watermark">powered by adruzz</div>
 <div class="app-container" id="app"></div>
 
 <!-- Happy Onam Modal -->
