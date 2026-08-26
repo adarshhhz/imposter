@@ -7,6 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<!-- Add Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
 <style>
   :root {
     --bg-main: #121216;
@@ -295,8 +300,7 @@
 </div>
 
 <script>
-/* ---------------- Initial Data & Storage ---------------- */
-// New categories added based on user screenshot (all empty, words to be added by admin)
+/* ---------------- Initial Data & Firebase Setup ---------------- */
 const defaultPacks = {
   "Funny": [],
   "Movies": [],
@@ -316,11 +320,43 @@ const defaultPacks = {
   "Onam": []
 };
 
-// Load packs from localStorage, or use defaults
-let PACKS = JSON.parse(localStorage.getItem('imposterPacks')) || defaultPacks;
+let PACKS = defaultPacks; // Fallback until Firebase loads
+
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyAtvDrGOe_qR-5_tBPwIn0NYX7E_Z5s_v8",
+  authDomain: "imposter-game-f8b23.firebaseapp.com",
+  databaseURL: "https://imposter-game-f8b23-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "imposter-game-f8b23",
+  storageBucket: "imposter-game-f8b23.firebasestorage.app",
+  messagingSenderId: "1030539812185",
+  appId: "1:1030539812185:web:fe4f8c322d222f70ac0048"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// Listen for live updates from Firebase Database
+db.ref('packs').on('value', (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    PACKS = data;
+    // Keep active categories in sync if categories get deleted
+    state.activeCategories = state.activeCategories.filter(c => PACKS[c]);
+    
+    // Only re-render if not in active gameplay to avoid interrupting
+    if (state.screen === 'setup' || state.screen === 'admin' || !window.location.hash) {
+      render();
+    }
+  } else {
+    // If database is completely empty (first ever run), set defaults
+    db.ref('packs').set(defaultPacks);
+  }
+});
 
 function savePacks() {
-  localStorage.setItem('imposterPacks', JSON.stringify(PACKS));
+  // Save directly to live Firebase database instead of local storage
+  db.ref('packs').set(PACKS);
 }
 
 /* ---------------- Onam Flowers Animation ---------------- */
@@ -341,6 +377,7 @@ startOnamFlowers();
 
 /* ---------------- State ---------------- */
 let state = {
+  screen: 'setup',
   names: ["Player 1", "Player 2", "Player 3"],
   photos: [null, null, null], // Store base64 compressed images
   activeCategories: Object.keys(PACKS),
@@ -370,21 +407,29 @@ const app = document.getElementById('app');
 function render() {
   const hash = window.location.hash;
   if (hash === '' || hash === '#welcome') {
+    state.screen = 'welcome';
     renderWelcome();
   } else if (hash === '#setup') {
+    state.screen = 'setup';
     renderSetup(); 
   } else if (hash === '#admin') {
+    state.screen = 'admin';
     if (!state.adminAuthenticated) renderAdminLogin();
     else renderAdminPanel();
   } else if (hash === '#play') {
+    state.screen = 'play';
     renderPass();
   } else if (hash === '#interrogate') {
+    state.screen = 'interrogate';
     renderInterrogate();
   } else if (hash === '#vote-pass') {
+    state.screen = 'vote-pass';
     renderVotePass();
   } else if (hash === '#vote-cast') {
+    state.screen = 'vote-cast';
     renderVoteCast();
   } else if (hash === '#results') {
+    state.screen = 'results';
     renderResults();
   }
 }
@@ -407,7 +452,7 @@ function renderWelcome() {
       <!-- Background Glow Effect just for Welcome Screen -->
       <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; background: var(--danger); filter: blur(120px); opacity: 0.35; pointer-events: none; z-index: 0;"></div>
       
-      <!-- Main Title with Among Us SVG - Nudged slightly to the right -->
+      <!-- Main Title with Among Us SVG -->
       <div style="text-align: center; margin-bottom: 30px; position: relative; z-index: 2; padding-left: 20px;">
         <h1 style="font-family: 'Inter', sans-serif; font-size: clamp(34px, 8vw, 44px); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 4px 20px rgba(255,69,58,0.6); display: inline-block; position: relative; margin: 0;">
           IMPOSTER
@@ -444,7 +489,8 @@ window.closePopupAndStart = () => {
 function renderSetup() {
   let categoriesHTML = Object.keys(PACKS).map(cat => {
     const isActive = state.activeCategories.includes(cat);
-    return `<div class="chip ${isActive ? 'active' : ''}" onclick="toggleCategory('${cat}')">${cat}</div>`;
+    const count = PACKS[cat] ? PACKS[cat].length : 0;
+    return `<div class="chip ${isActive ? 'active' : ''}" onclick="toggleCategory('${cat}')">${cat} (${count})</div>`;
   }).join('');
 
   app.innerHTML = `
@@ -594,7 +640,7 @@ function startGame() {
   const category = state.activeCategories[Math.floor(Math.random() * state.activeCategories.length)];
   const wordList = PACKS[category];
   
-  if (!wordList || wordList.length === 0) return alert("Selected category has no words! Add words in Admin.");
+  if (!wordList || wordList.length === 0) return alert(`The selected category "${category}" has no words! Add words in Admin panel.`);
   
   const wordIdx = Math.floor(Math.random() * wordList.length);
   const word = wordList[wordIdx];
@@ -657,7 +703,7 @@ window.checkAdmin = () => {
 function renderAdminPanel() {
   if (state.adminSelectedCategory) {
     const cat = state.adminSelectedCategory;
-    const words = PACKS[cat];
+    const words = PACKS[cat] || [];
     app.innerHTML = `
       <h1>Manage Words</h1>
       <p class="subtitle">Category: ${cat}</p>
@@ -680,7 +726,7 @@ function renderAdminPanel() {
   } else {
     app.innerHTML = `
       <h1>Admin Panel</h1>
-      <p class="subtitle">Manage Categories & Words</p>
+      <p class="subtitle">Manage Categories & Words (Live Sync)</p>
       <div class="admin-box">
         <div style="display:flex; gap:10px; margin-bottom:15px;">
           <input type="text" id="newCat" class="admin-input" style="margin:0;" placeholder="New category...">
@@ -690,14 +736,14 @@ function renderAdminPanel() {
           ${Object.keys(PACKS).map(cat => `
             <div class="player-row" style="background:var(--bg-input); padding:10px; border-radius:8px;">
               <div style="flex:1; cursor:pointer;" onclick="state.adminSelectedCategory='${cat}'; renderAdminPanel();">
-                ${cat} (${PACKS[cat].length} words)
+                ${cat} (${PACKS[cat] ? PACKS[cat].length : 0} words)
               </div>
               <button class="del-btn" onclick="deleteCategory('${cat}')">${icons.trash}</button>
             </div>
           `).join('')}
         </div>
       </div>
-      <button class="admin-btn" style="width:100%; margin-bottom:10px;" onclick="factoryReset()">Reset to Defaults</button>
+      <button class="admin-btn" style="width:100%; margin-bottom:10px;" onclick="factoryReset()">Clear All To Defaults</button>
       <button class="admin-btn-secondary" style="width:100%;" onclick="window.location.hash='#setup'">Save & Back to Game</button>
     `;
   }
@@ -1012,4 +1058,3 @@ render();
 </script>
 </body>
 </html>
-
