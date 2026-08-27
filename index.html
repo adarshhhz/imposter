@@ -34,11 +34,6 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
   
-  /* Connection Status */
-  #connection-status {
-    position: fixed; top: 12px; left: 16px; z-index: 9999; font-size: 12px; font-weight: 600; color: var(--accent); background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 20px; border: 1px solid #30303C; transition: 0.3s;
-  }
-
   /* Onam Flower Animation */
   .flower {
     position: fixed;
@@ -294,7 +289,6 @@
 </head>
 <body>
 
-<div id="connection-status">🟡 Connecting...</div>
 <div class="watermark">powered by adruzz</div>
 <div class="app-container" id="app"></div>
 
@@ -334,18 +328,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
-// Track Connection Status visibly
-db.ref('.info/connected').on('value', function(snap) {
-  const el = document.getElementById('connection-status');
-  if (snap.val() === true) {
-    el.innerHTML = '🟢 Live';
-    el.style.color = 'var(--success)';
-  } else {
-    el.innerHTML = '🔴 Offline';
-    el.style.color = 'var(--danger)';
-  }
-});
 
 // Tracks the last sync problem so we can show it in the Admin panel instead of it failing silently
 let syncError = null;
@@ -407,12 +389,6 @@ function savePack(cat) {
     if (state.screen === 'admin') render();
     throw error;
   });
-}
-
-function forceRefresh() {
-  // Try to bypass all browser and webview caches
-  window.location.href = window.location.href.split('?')[0] + '?v=' + new Date().getTime() + window.location.hash;
-  window.location.reload(true);
 }
 
 /* ---------------- Onam Flowers Animation ---------------- */
@@ -556,15 +532,12 @@ function renderSetup() {
 
     <div class="card">
       <div class="setting-row" style="border-bottom:none;">
-        <div class="setting-info" style="justify-content:space-between;">
-          <div style="display:flex; gap:12px; align-items:center;">
-            <div class="setting-icon">${icons.tag}</div>
-            <div class="setting-text">
-              <h3>Categories</h3>
-              <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
-            </div>
+        <div class="setting-info">
+          <div class="setting-icon">${icons.tag}</div>
+          <div class="setting-text">
+            <h3>Categories</h3>
+            <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
           </div>
-          <button onclick="forceRefresh()" style="background:var(--bg-input); border:1px solid #444; color:#FFF; padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer;">🔄 Sync Info</button>
         </div>
       </div>
       <div class="chip-container">${categoriesHTML}</div>
