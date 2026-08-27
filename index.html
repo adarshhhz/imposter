@@ -34,6 +34,17 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
   
+  /* Toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+    background: #22222c; border: 1px solid #383848; color: #FFF; padding: 12px 16px;
+    border-radius: 12px; font-size: 14px; display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 10001; opacity: 0; pointer-events: none;
+    transition: all 0.25s ease; max-width: 90vw;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .toast button { background: none; border: none; color: var(--accent); font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'Inter', sans-serif; }
+
   /* Onam Flower Animation */
   .flower {
     position: fixed;
@@ -262,15 +273,15 @@
     margin: 0 auto 40px;
     background: url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787771294/FyvT48GaIAAx4l4.jpg') center/cover no-repeat;
     border-radius: 20px;
-    border: 3px solid var(--danger);
-    box-shadow: 0 10px 40px rgba(255, 69, 58, 0.4); 
+    border: 3px solid var(--accent);
+    box-shadow: 0 10px 40px rgba(255, 159, 10, 0.4); 
     position: relative;
     z-index: 2;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
   .hero-image:hover {
     transform: scale(1.05);
-    box-shadow: 0 15px 50px rgba(255, 69, 58, 0.6); 
+    box-shadow: 0 15px 50px rgba(255, 159, 10, 0.6); 
   }
 
   /* Overlay Modal */
@@ -478,7 +489,7 @@ function renderWelcome() {
   app.innerHTML = `
     <div class="game-screen" style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 0; margin-top: -20px; position: relative;">
       
-      <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; background: var(--danger); filter: blur(120px); opacity: 0.35; pointer-events: none; z-index: 0;"></div>
+      <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; background: var(--accent); filter: blur(120px); opacity: 0.3; pointer-events: none; z-index: 0;"></div>
       
       <div style="text-align: center; margin-bottom: 30px; position: relative; z-index: 2; padding-left: 20px;">
         <h1 style="font-family: 'Inter', sans-serif; font-size: clamp(34px, 8vw, 44px); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 4px 20px rgba(255,69,58,0.6); display: inline-block; position: relative; margin: 0;">
@@ -512,7 +523,8 @@ function renderSetup() {
   let categoriesHTML = DEFAULT_CATEGORIES.map(cat => {
     const isActive = state.activeCategories.includes(cat);
     const count = PACKS[cat] ? PACKS[cat].length : 0;
-    return `<div class="chip ${isActive ? 'active' : ''}" onclick="toggleCategory('${cat}')">${cat} (${count})</div>`;
+    const isEmpty = count === 0;
+    return `<div class="chip ${isActive ? 'active' : ''}" style="${isEmpty ? 'opacity:0.5; border:1px dashed var(--text-muted);' : ''}" onclick="toggleCategory('${cat}')">${cat} (${count})${isEmpty ? ' ⚠️' : ''}</div>`;
   }).join('');
 
   app.innerHTML = `
@@ -538,6 +550,10 @@ function renderSetup() {
             <h3>Categories</h3>
             <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
           </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <span style="font-size:12px; color:var(--accent); cursor:pointer; text-decoration:underline;" onclick="selectAllCategories()">All</span>
+          <span style="font-size:12px; color:var(--text-muted); cursor:pointer; text-decoration:underline;" onclick="clearAllCategories()">None</span>
         </div>
       </div>
       <div class="chip-container">${categoriesHTML}</div>
@@ -646,6 +662,15 @@ window.toggleCategory = (cat) => {
   }
   renderSetup();
 };
+window.selectAllCategories = () => {
+  state.activeCategories = [...DEFAULT_CATEGORIES];
+  renderSetup();
+};
+window.clearAllCategories = () => {
+  // Keep at least one category active so the game always has something to pull from
+  state.activeCategories = [DEFAULT_CATEGORIES[0]];
+  renderSetup();
+};
 window.toggleSetting = (key) => { state[key] = !state[key]; renderSetup(); };
 
 function startGame() {
@@ -727,11 +752,19 @@ function renderAdminPanel() {
       <h1 style="margin-top: 30px;">Manage Words</h1>
       <p class="subtitle">Category: ${cat}</p>
       <div class="admin-box">
-        <div style="display:flex; gap:10px; margin-bottom:15px;">
-          <input type="text" id="newWord" class="admin-input" style="margin:0;" placeholder="New word...">
-          <button class="admin-btn" onclick="addWord('${cat}')">Add</button>
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+          <input type="text" id="newWord" class="admin-input" style="margin:0;" placeholder="New word..." onkeydown="if(event.key==='Enter'){addWord('${cat}')}">
+          <button class="admin-btn" id="addWordBtn" onclick="addWord('${cat}')">Add</button>
+        </div>
+        <div style="margin-bottom:15px;">
+          <span id="bulkToggle" style="font-size:12px; color:var(--text-muted); cursor:pointer; text-decoration:underline;" onclick="toggleBulkAdd('${cat}')">+ Add multiple words at once</span>
+          <div id="bulkAddBox" style="display:none; margin-top:10px;">
+            <textarea id="bulkWords" class="admin-input" rows="4" style="resize:vertical; font-family:'Inter',sans-serif;" placeholder="One word per line, or comma-separated"></textarea>
+            <button class="admin-btn" id="bulkAddBtn" style="width:100%;" onclick="addBulkWords('${cat}')">Add All</button>
+          </div>
         </div>
         <div class="word-list">
+          ${words.length === 0 ? `<span style="color:var(--text-muted); font-size:13px;">No words yet — add some above.</span>` : ''}
           ${words.map((w, i) => `
             <div class="word-chip">
               ${escapeHtml(w)}
@@ -755,13 +788,16 @@ function renderAdminPanel() {
       ` : `<p class="subtitle" style="color: var(--success); font-weight: bold;">Cloud Sync Active ✅</p>`}
       <div class="admin-box">
         <div class="player-list">
-          ${DEFAULT_CATEGORIES.map(cat => `
-            <div class="player-row" style="background:var(--bg-input); padding:10px; border-radius:8px;">
-              <div style="flex:1; cursor:pointer;" onclick="state.adminSelectedCategory='${cat}'; renderAdminPanel();">
-                ${cat} (${PACKS[cat] ? PACKS[cat].length : 0} words)
+          ${DEFAULT_CATEGORIES.map(cat => {
+            const count = PACKS[cat] ? PACKS[cat].length : 0;
+            return `
+            <div class="player-row" style="background:var(--bg-input); padding:10px; border-radius:8px; ${count === 0 ? 'border:1px dashed #4a4a58;' : ''}">
+              <div style="flex:1; cursor:pointer; ${count === 0 ? 'color:var(--text-muted);' : ''}" onclick="state.adminSelectedCategory='${cat}'; renderAdminPanel();">
+                ${cat} (${count} word${count !== 1 ? 's' : ''}) ${count === 0 ? '<span style="color:var(--danger); font-size:11px;">· empty</span>' : ''}
               </div>
             </div>
-          `).join('')}
+          `;
+          }).join('')}
         </div>
       </div>
       <button class="admin-btn" style="width:100%; margin-bottom:10px;" onclick="factoryReset()">Clear All To Defaults</button>
@@ -770,12 +806,30 @@ function renderAdminPanel() {
   }
 }
 
+window.toggleBulkAdd = (cat) => {
+  const box = document.getElementById('bulkAddBox');
+  const toggle = document.getElementById('bulkToggle');
+  const show = box.style.display === 'none';
+  box.style.display = show ? 'block' : 'none';
+  toggle.textContent = show ? '− Hide bulk add' : '+ Add multiple words at once';
+  if (show) document.getElementById('bulkWords').focus();
+};
+
 window.addWord = (cat) => {
   const input = document.getElementById('newWord');
+  const btn = document.getElementById('addWordBtn');
   const val = input.value.trim();
   if (!val) return;
 
+  const existingLower = (PACKS[cat] || []).map(w => w.toLowerCase());
+  if (existingLower.includes(val.toLowerCase())) {
+    showToast(`"${val}" is already in this category`);
+    return;
+  }
+
   input.value = '';
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
 
   // Pull the latest server copy of this category first, so a stale in-memory
   // PACKS (e.g. this tab sat idle while another tab added words) can't wipe
@@ -783,27 +837,84 @@ window.addWord = (cat) => {
   db.ref('packs/' + cat).once('value').then((snap) => {
     const serverData = snap.val();
     const fresh = serverData ? (Array.isArray(serverData) ? serverData : Object.values(serverData)) : [];
+    if (fresh.some(w => w.toLowerCase() === val.toLowerCase())) {
+      throw new Error('duplicate');
+    }
     fresh.push(val);
     PACKS[cat] = fresh;
-    if (state.adminSelectedCategory === cat) renderAdminPanel();
     return savePack(cat);
+  }).then(() => {
+    if (state.adminSelectedCategory === cat) renderAdminPanel();
   }).catch((error) => {
+    if (error.message === 'duplicate') {
+      showToast(`"${val}" was just added by someone else`);
+      if (state.adminSelectedCategory === cat) renderAdminPanel();
+      return;
+    }
     syncError = error.message;
     alert("⚠️ Could not add word: " + error.message);
     if (state.screen === 'admin') render();
   });
 };
+
+window.addBulkWords = (cat) => {
+  const textarea = document.getElementById('bulkWords');
+  const btn = document.getElementById('bulkAddBtn');
+  const raw = textarea.value;
+  const candidates = raw.split(/[\n,]/).map(w => w.trim()).filter(Boolean);
+  if (candidates.length === 0) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  db.ref('packs/' + cat).once('value').then((snap) => {
+    const serverData = snap.val();
+    const fresh = serverData ? (Array.isArray(serverData) ? serverData : Object.values(serverData)) : [];
+    const existingLower = fresh.map(w => w.toLowerCase());
+    let added = 0, skipped = 0;
+    candidates.forEach(w => {
+      if (existingLower.includes(w.toLowerCase())) { skipped++; return; }
+      fresh.push(w);
+      existingLower.push(w.toLowerCase());
+      added++;
+    });
+    PACKS[cat] = fresh;
+    return savePack(cat).then(() => ({ added, skipped }));
+  }).then(({ added, skipped }) => {
+    textarea.value = '';
+    if (state.adminSelectedCategory === cat) renderAdminPanel();
+    showToast(`Added ${added} word${added !== 1 ? 's' : ''}${skipped ? `, skipped ${skipped} duplicate${skipped !== 1 ? 's' : ''}` : ''}`);
+  }).catch((error) => {
+    syncError = error.message;
+    alert("⚠️ Could not add words: " + error.message);
+    btn.disabled = false;
+    btn.textContent = 'Add All';
+  });
+};
+
 window.deleteWord = (cat, idx) => {
   const removed = PACKS[cat][idx];
   PACKS[cat].splice(idx, 1);
   renderAdminPanel();
 
-  savePack(cat).catch(() => {
+  savePack(cat).then(() => {
+    showToast(`Removed "${removed}"`, 'Undo', () => {
+      db.ref('packs/' + cat).once('value').then((snap) => {
+        const serverData = snap.val();
+        const fresh = serverData ? (Array.isArray(serverData) ? serverData : Object.values(serverData)) : [];
+        fresh.splice(Math.min(idx, fresh.length), 0, removed);
+        PACKS[cat] = fresh;
+        if (state.adminSelectedCategory === cat) renderAdminPanel();
+        return savePack(cat);
+      });
+    });
+  }).catch(() => {
     // Put it back since the delete didn't actually persist
     PACKS[cat].splice(idx, 0, removed);
     renderAdminPanel();
   });
 };
+
 window.factoryReset = () => {
   if (confirm("Reset all words to default (empty)? Custom words will be lost.")) {
     const backup = PACKS;
@@ -914,13 +1025,33 @@ function renderPass() {
 }
 
 /* ---------------- 4. Interrogation ---------------- */
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = false;
+
 function renderInterrogate() {
   app.innerHTML = `
     <div class="game-screen" style="padding-top:20px;">
       <div style="font-size:50px; margin-bottom:10px;">💬</div>
       <h1>Interrogation Phase</h1>
-      <p class="subtitle" style="margin-bottom:40px;">Discuss and figure out who is lying.</p>
-      
+      <p class="subtitle" style="margin-bottom:30px;">Discuss and figure out who is lying.</p>
+
+      <div style="padding: 20px; background: var(--bg-card); border-radius: var(--radius); margin-bottom: 20px;">
+        <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px; margin-bottom:10px;">DISCUSSION TIMER</div>
+        <div id="timerDisplay" style="font-size:48px; font-weight:800; font-variant-numeric:tabular-nums; color:${timerSeconds === 0 && !timerRunning ? 'var(--text-main)' : 'var(--accent)'};">${formatTimer(timerSeconds)}</div>
+        <div style="display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;">
+          ${!timerRunning ? `
+            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(60)">1 min</button>
+            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(180)">3 min</button>
+            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(300)">5 min</button>
+          ` : ''}
+        </div>
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button class="admin-btn" style="flex:1;" onclick="toggleTimer()">${timerRunning ? 'Pause' : (timerSeconds > 0 ? 'Resume' : 'Start')}</button>
+          <button class="admin-btn-secondary" style="flex:1;" onclick="resetTimer()">Reset</button>
+        </div>
+      </div>
+
       <div style="padding: 20px; background: var(--bg-card); border-radius: var(--radius); margin-bottom: 20px; text-align: left;">
         <h3 style="margin-top:0; font-size: 16px;">Next Step: Secret Voting</h3>
         <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 0;">Once the discussion is over, pass the device around again so everyone can secretly cast their vote for the suspected Imposter.</p>
@@ -933,7 +1064,53 @@ function renderInterrogate() {
   `;
 }
 
+function formatTimer(sec) {
+  const m = Math.floor(sec / 60).toString().padStart(2, '0');
+  const s = (sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+window.setTimerPreset = (sec) => {
+  timerSeconds = sec;
+  const el = document.getElementById('timerDisplay');
+  if (el) { el.textContent = formatTimer(timerSeconds); el.style.color = 'var(--accent)'; }
+  renderInterrogate();
+};
+
+window.toggleTimer = () => {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    renderInterrogate();
+    return;
+  }
+  if (timerSeconds <= 0) timerSeconds = 180; // default 3 min if nothing picked
+  timerRunning = true;
+  renderInterrogate();
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    const el = document.getElementById('timerDisplay');
+    if (el) el.textContent = formatTimer(Math.max(timerSeconds, 0));
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+      renderInterrogate();
+    }
+  }, 1000);
+};
+
+window.resetTimer = () => {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 0;
+  renderInterrogate();
+};
+
 function startVotingPhase() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 0;
   state.currentIndex = 0;
   state.votes = {};
   window.location.hash = '#vote-pass';
@@ -1052,7 +1229,7 @@ function renderResults() {
     <div class="game-screen" style="padding-top:20px; padding-bottom:40px;">
       <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">CASE CLOSED</div>
       
-      ${outcomeHTML}
+      <div style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">${outcomeHTML}</div>
       
       <div style="border: 1px dashed #30303C; padding: 20px; border-radius: var(--radius); margin: 30px 0;">
         <div style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">THE WORD WAS</div>
@@ -1090,11 +1267,50 @@ function renderResults() {
       <button class="admin-btn-secondary" style="width:100%" onclick="window.location.hash='#setup'">New Setup</button>
     </div>
   `;
+
+  startResultsBurst(imposterCaught && eliminatedIndices.length === 1);
+}
+
+function startResultsBurst(crewWon) {
+  const emojis = crewWon ? ['🎉', '✨', '🎊', '👏'] : ['😈', '🕵️', '💀', '🔥'];
+  for (let i = 0; i < 20; i++) {
+    let el = document.createElement('div');
+    el.className = 'flower';
+    el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
+    el.style.animationDelay = (Math.random() * 0.6) + 's';
+    el.style.fontSize = (Math.random() * 12 + 14) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  }
 }
 
 /* ---------------- Helpers ---------------- */
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+let toastTimer = null;
+function showToast(message, undoLabel, undoFn) {
+  let el = document.getElementById('appToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'appToast';
+    el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<span>${escapeHtml(message)}</span>${undoFn ? `<button id="toastUndoBtn">${escapeHtml(undoLabel || 'Undo')}</button>` : ''}`;
+  if (undoFn) {
+    document.getElementById('toastUndoBtn').onclick = () => {
+      undoFn();
+      el.classList.remove('show');
+      clearTimeout(toastTimer);
+    };
+  }
+  requestAnimationFrame(() => el.classList.add('show'));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
 }
 
 // Init
