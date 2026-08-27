@@ -583,7 +583,156 @@ const mp = {
   roomRef: null,
   listenerFn: null,
   votedThisRound: false,
-  cardRevealed: false
+  cardRevealed: false,
+  micEnabled: false,
+  micRequesting: false,
+  localStream: null,
+  voicePeers: {}       // peerId -> { pc, listeners: [{ref, event, fn}], candQueue: [] }
+};
+
+/* ---------------- Voice Chat (WebRTC mesh, signaled via Firebase) ---------------- */
+const ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }];
+
+function voicePairKey(a, b) { return [a, b].sort().join('_'); }
+
+function getVoiceAudioEl(peerId) {
+  let el = document.getElementById('voice-audio-' + peerId);
+  if (!el) {
+    el = document.createElement('audio');
+    el.id = 'voice-audio-' + peerId;
+    el.autoplay = true;
+    el.style.display = 'none';
+    document.body.appendChild(el);
+  }
+  return el;
+}
+
+function teardownVoicePeer(peerId) {
+  const entry = mp.voicePeers[peerId];
+  if (!entry) return;
+  entry.listeners.forEach(({ ref, event, fn }) => ref.off(event, fn));
+  try { entry.pc.close(); } catch (e) {}
+  const el = document.getElementById('voice-audio-' + peerId);
+  if (el) el.remove();
+  delete mp.voicePeers[peerId];
+}
+
+function teardownVoiceChat() {
+  Object.keys(mp.voicePeers).forEach(teardownVoicePeer);
+  if (mp.localStream) {
+    mp.localStream.getTracks().forEach(t => t.stop());
+    mp.localStream = null;
+  }
+  if (mp.micEnabled && mp.code) {
+    db.ref(`imposterRooms/${mp.code}/voiceActive/${mp.myId}`).remove();
+  }
+  mp.micEnabled = false;
+  mp.micRequesting = false;
+}
+
+function connectVoicePeer(peerId) {
+  if (peerId === mp.myId || mp.voicePeers[peerId] || !mp.localStream) return;
+  const code = mp.code;
+  const pairKey = voicePairKey(mp.myId, peerId);
+  const amOfferer = mp.myId < peerId;
+  const myTag = amOfferer ? 'a' : 'b';
+  const theirTag = amOfferer ? 'b' : 'a';
+
+  const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+  const entry = { pc, listeners: [], candQueue: [] };
+  mp.voicePeers[peerId] = entry;
+
+  mp.localStream.getTracks().forEach(t => pc.addTrack(t, mp.localStream));
+
+  pc.ontrack = (e) => {
+    const el = getVoiceAudioEl(peerId);
+    el.srcObject = e.streams[0];
+    el.play().catch(() => {});
+  };
+
+  pc.onicecandidate = (e) => {
+    if (e.candidate) {
+      db.ref(`imposterRooms/${code}/voice/${pairKey}/cand_${myTag}`).push(e.candidate.toJSON());
+    }
+  };
+
+  const remoteCandRef = db.ref(`imposterRooms/${code}/voice/${pairKey}/cand_${theirTag}`);
+  const remoteCandFn = remoteCandRef.on('child_added', (snap) => {
+    const cand = snap.val();
+    if (pc.remoteDescription) {
+      pc.addIceCandidate(new RTCIceCandidate(cand)).catch(() => {});
+    } else {
+      entry.candQueue.push(cand);
+    }
+  });
+  entry.listeners.push({ ref: remoteCandRef, event: 'child_added', fn: remoteCandFn });
+
+  function flushCandQueue() {
+    entry.candQueue.forEach(c => pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {}));
+    entry.candQueue = [];
+  }
+
+  if (amOfferer) {
+    pc.createOffer().then(offer => pc.setLocalDescription(offer)).then(() => {
+      db.ref(`imposterRooms/${code}/voice/${pairKey}/offer`).set(pc.localDescription.toJSON());
+    });
+    const answerRef = db.ref(`imposterRooms/${code}/voice/${pairKey}/answer`);
+    const answerFn = answerRef.on('value', (snap) => {
+      const answer = snap.val();
+      if (answer && !pc.currentRemoteDescription) {
+        pc.setRemoteDescription(new RTCSessionDescription(answer)).then(flushCandQueue);
+      }
+    });
+    entry.listeners.push({ ref: answerRef, event: 'value', fn: answerFn });
+  } else {
+    const offerRef = db.ref(`imposterRooms/${code}/voice/${pairKey}/offer`);
+    const offerFn = offerRef.on('value', (snap) => {
+      const offer = snap.val();
+      if (offer && !pc.currentRemoteDescription) {
+        pc.setRemoteDescription(new RTCSessionDescription(offer))
+          .then(flushCandQueue)
+          .then(() => pc.createAnswer())
+          .then(answer => pc.setLocalDescription(answer))
+          .then(() => db.ref(`imposterRooms/${code}/voice/${pairKey}/answer`).set(pc.localDescription.toJSON()));
+      }
+    });
+    entry.listeners.push({ ref: offerRef, event: 'value', fn: offerFn });
+  }
+}
+
+function syncVoiceConnections(room) {
+  if (!mp.micEnabled) return;
+  const active = (room && room.voiceActive) || {};
+  Object.keys(active).forEach(id => { if (active[id] && id !== mp.myId) connectVoicePeer(id); });
+  Object.keys(mp.voicePeers).forEach(id => { if (!active[id]) teardownVoicePeer(id); });
+}
+
+window.toggleMic = () => {
+  if (mp.micEnabled) {
+    teardownVoiceChat();
+    render();
+    return;
+  }
+  if (mp.micRequesting) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    return alert('Your browser doesn\'t support in-app voice chat.');
+  }
+  mp.micRequesting = true;
+  render();
+  navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then((stream) => {
+    mp.localStream = stream;
+    mp.micEnabled = true;
+    mp.micRequesting = false;
+    const myVoiceRef = db.ref(`imposterRooms/${mp.code}/voiceActive/${mp.myId}`);
+    myVoiceRef.set(true);
+    myVoiceRef.onDisconnect().remove();
+    syncVoiceConnections(mp.room);
+    render();
+  }).catch(() => {
+    mp.micRequesting = false;
+    alert('Microphone access was denied or unavailable.');
+    render();
+  });
 };
 
 function detachRoomListener() {
@@ -656,6 +805,11 @@ function render() {
   // Tear down room listeners whenever we navigate away from all online-* screens
   if (!ONLINE_HASHES.slice(3).includes(hash)) {
     detachRoomListener();
+  }
+  // Voice chat is only for the discussion phase -- end it the moment we
+  // leave that screen (e.g. moving into the silent voting phase).
+  if (hash !== '#online-interrogate' && (mp.micEnabled || mp.micRequesting)) {
+    teardownVoiceChat();
   }
 
   if (hash === '' || hash === '#welcome') {
@@ -1153,6 +1307,7 @@ window.setMpImposterCount = (n) => {
 };
 
 window.leaveRoom = () => {
+  teardownVoiceChat();
   if (mp.code && mp.myId) {
     db.ref(`imposterRooms/${mp.code}/players/${mp.myId}`).remove();
   }
@@ -2035,11 +2190,16 @@ function renderOnlineInterrogate() {
 }
 
 function drawOnlineInterrogate(room) {
+  syncVoiceConnections(room);
   const timer = room.timer || { seconds: 0, running: false, endTime: null };
   let remaining = timer.seconds || 0;
   if (timer.running && timer.endTime) {
     remaining = Math.max(0, Math.round((timer.endTime - Date.now()) / 1000));
   }
+
+  const players = mpPlayerList(room);
+  const voiceActive = room.voiceActive || {};
+  const inVoiceCount = players.filter(p => voiceActive[p.id]).length;
 
   app.innerHTML = `
     <div class="game-screen" style="padding-top:20px;">
@@ -2063,6 +2223,29 @@ function drawOnlineInterrogate(room) {
             <button class="admin-btn-secondary" style="flex:1;" onclick="resetMpTimer()">Reset</button>
           </div>
         ` : `<p style="color:var(--text-muted); font-size:12px; margin-top:10px;">Only the host controls the timer.</p>`}
+      </div>
+
+      <div class="card" style="padding: 20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px;">VOICE CHAT</div>
+            <p style="margin:4px 0 0; font-size:13px; color:var(--text-muted);">${inVoiceCount > 0 ? `${inVoiceCount} player${inVoiceCount !== 1 ? 's' : ''} live` : 'Nobody\'s joined yet'}</p>
+          </div>
+          <button class="admin-btn" style="${mp.micEnabled ? 'background:var(--danger); color:#FFF;' : ''}" ${mp.micRequesting ? 'disabled' : ''} onclick="toggleMic()">
+            ${mp.micRequesting ? 'Requesting...' : (mp.micEnabled ? '🎤 On — Tap to Mute' : '🎤 Turn Mic On')}
+          </button>
+        </div>
+        ${players.length ? `
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
+            ${players.map(p => `
+              <div style="display:flex; align-items:center; gap:6px; background:var(--bg-input); padding:6px 10px; border-radius:20px; font-size:12px; ${voiceActive[p.id] ? '' : 'opacity:0.45;'}">
+                <span style="width:7px; height:7px; border-radius:50%; background:${voiceActive[p.id] ? 'var(--success)' : 'var(--text-muted)'};"></span>
+                ${escapeHtml(p.name)}${p.id === mp.myId ? ' (You)' : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        <p style="font-size:11px; color:var(--text-muted); margin:12px 0 0;">Voice chat is only for this discussion step — it turns off automatically once voting starts.</p>
       </div>
 
       ${mp.isHost ? `
@@ -2228,97 +2411,4 @@ function drawOnlineResults(room) {
   Object.values(votes).forEach(votedId => { voteCounts[votedId] = (voteCounts[votedId] || 0) + 1; });
 
   let maxVotes = 0;
-  for (let id in voteCounts) if (voteCounts[id] > maxVotes) maxVotes = voteCounts[id];
-
-  const eliminatedIds = Object.keys(voteCounts).filter(id => voteCounts[id] === maxVotes);
-  const imposterIds = players.filter(p => game.roles[p.id] === 'imposter').map(p => p.id);
-  const imposterCaught = eliminatedIds.some(id => imposterIds.includes(id));
-  const nameOf = (id) => { const p = players.find(pl => pl.id === id); return p ? p.name : '?'; };
-
-  let outcomeHTML = "";
-  if (maxVotes === 0) {
-    outcomeHTML = `<h1 style="color:var(--accent)">No Votes Cast</h1><p style="color:var(--text-muted); margin-top:5px;">The imposter survived!</p>`;
-  } else if (eliminatedIds.length > 1) {
-    outcomeHTML = `<h1 style="color:var(--accent)">Voting Tied!</h1><p style="color:var(--text-muted); margin-top:5px;">${eliminatedIds.map(nameOf).map(escapeHtml).join(' and ')} tied with ${maxVotes} votes. The imposter survived!</p>`;
-  } else if (imposterCaught) {
-    outcomeHTML = `<h1 style="color:var(--success)">Imposter Caught!</h1><p style="color:var(--text-muted); margin-top:5px;">Crew wins! ${escapeHtml(nameOf(eliminatedIds[0]))} was voted out.</p>`;
-  } else {
-    outcomeHTML = `<h1 style="color:var(--danger)">Crew Failed!</h1><p style="color:var(--text-muted); margin-top:5px;">${escapeHtml(nameOf(eliminatedIds[0]))} was innocent! The imposter survives.</p>`;
-  }
-
-  app.innerHTML = `
-    <div class="game-screen" style="padding-top:20px; padding-bottom:40px;">
-      <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">CASE CLOSED</div>
-      <div style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">${outcomeHTML}</div>
-
-      <div class="card" style="padding: 20px; margin: 30px 0;">
-        <div style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">THE WORD WAS</div>
-        <div style="font-size:24px; color:var(--accent); font-weight:700; text-transform:uppercase;">${escapeHtml(game.secretWord)}</div>
-        <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">ACTUAL IMPOSTER: <b style="color:var(--danger)">${imposterIds.map(nameOf).map(escapeHtml).join(', ')}</b></div>
-      </div>
-
-      <div style="text-align:left; margin-bottom:10px; font-weight:600; font-size: 15px;">Voting Breakdown</div>
-      <div class="player-list" style="text-align:left; margin-bottom:40px;">
-        ${players.map((p) => {
-          const votesReceived = voteCounts[p.id] || 0;
-          const isEliminated = eliminatedIds.includes(p.id);
-          return `
-            <div class="player-row" style="background:${isEliminated ? 'rgba(255, 69, 58, 0.2)' : 'var(--bg-card)'}; border: 1px solid ${isEliminated ? 'var(--danger)' : 'rgba(255,255,255,0.05)'}; padding:12px; border-radius:8px; justify-content:space-between; backdrop-filter: blur(8px);">
-              <div style="display:flex; align-items:center; gap:12px;">
-                <div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${escapeHtml(p.name[0] || '?')}</div>
-                <div style="display:flex; flex-direction:column;">
-                  <span style="font-weight:${isEliminated ? '700' : '400'}">${escapeHtml(p.name)}</span>
-                  ${game.roles[p.id] === 'imposter' ? `<span style="font-size:11px; color:var(--danger); margin-top:2px;">(Imposter)</span>` : ''}
-                </div>
-              </div>
-              <div style="font-size:13px; color:var(--text-muted);">${votesReceived} vote${votesReceived !== 1 ? 's' : ''}</div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-
-      ${mp.isHost ? `
-        <button class="start-btn" style="margin-bottom:10px;" onclick="startOnlineGame()">Same Room, New Word</button>
-        <button class="admin-btn-secondary" style="width:100%" onclick="db.ref('imposterRooms/'+mp.code+'/status').set('lobby')">Back to Lobby</button>
-      ` : `
-        <div class="card" style="text-align:center; color:var(--text-muted);">Waiting for host...</div>
-      `}
-      <button class="admin-btn-secondary" style="width:100%; margin-top:10px;" onclick="leaveRoom()">Leave Room</button>
-    </div>
-  `;
-
-  startResultsBurst(imposterCaught && eliminatedIds.length === 1 && maxVotes > 0);
-}
-
-/* ---------------- Helpers ---------------- */
-function escapeHtml(str) {
-  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
-
-let toastTimer = null;
-function showToast(message, undoLabel, undoFn) {
-  let el = document.getElementById('appToast');
-  if (!el) {
-    el = document.createElement('div');
-    el.id = 'appToast';
-    el.className = 'toast';
-    document.body.appendChild(el);
-  }
-  el.innerHTML = `<span>${escapeHtml(message)}</span>${undoFn ? `<button id="toastUndoBtn">${escapeHtml(undoLabel || 'Undo')}</button>` : ''}`;
-  if (undoFn) {
-    document.getElementById('toastUndoBtn').onclick = () => {
-      undoFn();
-      el.classList.remove('show');
-      clearTimeout(toastTimer);
-    };
-  }
-  requestAnimationFrame(() => el.classList.add('show'));
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
-}
-
-// Init
-render();
-</script>
-</body>
-</html>
+  for (let id in voteCounts) if (voteCounts[i
