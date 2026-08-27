@@ -501,9 +501,11 @@ db.ref('gameDataV2').on('value', (snapshot) => {
       if (!PACKS[cat]) PACKS[cat] = [];
     });
 
-    state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
+    if(state && state.activeCategories) {
+      state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
+    }
     
-    if (['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
+    if (state && ['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
       render();
     }
   }
@@ -511,21 +513,19 @@ db.ref('gameDataV2').on('value', (snapshot) => {
 
 function syncToCloud(onSuccess) {
   const payload = JSON.stringify(PACKS);
-  
   db.ref('gameDataV2').set(payload, (error) => {
     if (error) {
       alert("❌ SAVE FAILED!\n\nFirebase blocked the save. Make sure you clicked the blue 'Publish' button in your Firebase Rules.\n\nError details: " + error.message);
     } else {
       if (onSuccess) onSuccess();
     }
-    renderAdminPanel(); 
+    if(typeof renderAdminPanel === 'function') renderAdminPanel(); 
   });
 }
 
 /* ---------------- Subtle Pixel Petals Falling Animation ---------------- */
 function startPixelPetals() {
   const colors = ['#FF6EC7', '#FFD84D', '#FF9F0A', '#FFFFFF', '#FF453A'];
-  // Very minimal falling pixels (just 5)
   for (let i = 0; i < 5; i++) {
     const petal = document.createElement('div');
     petal.className = 'pixel-petal';
@@ -768,19 +768,11 @@ function mpPlayerList(room) {
     .sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
 }
 
-// Once the game has actually started, a dropped connection (phone screen
-// lock, tab backgrounding, brief signal loss) should NOT remove the player
-// from the room -- only the lobby "leave" cleanup should do that. Call this
-// as soon as a client sees status move past 'lobby'.
 function cancelMyDisconnectHook() {
   if (!mp.code) return;
   db.ref(`imposterRooms/${mp.code}/players/${mp.myId}`).onDisconnect().cancel();
 }
 
-// If this device briefly dropped and its player node got removed before we
-// managed to cancel the disconnect hook (e.g. very first update after a
-// reconnect), rejoin using our cached name so ready/vote counts stay correct
-// for everyone, including the host.
 function healMyPlayerEntry(room) {
   if (!mp.code || !room || room.status === 'lobby') return;
   const iAmInGame = room.game && room.game.roles && room.game.roles[mp.myId] !== undefined;
@@ -802,12 +794,9 @@ function render() {
   document.body.classList.toggle('setup-bg', hash === '#setup' || ONLINE_HASHES.includes(hash));
   document.body.classList.toggle('welcome-bg', hash === '' || hash === '#welcome');
 
-  // Tear down room listeners whenever we navigate away from all online-* screens
   if (!ONLINE_HASHES.slice(3).includes(hash)) {
     detachRoomListener();
   }
-  // Voice chat is only for the discussion phase -- end it the moment we
-  // leave that screen (e.g. moving into the silent voting phase).
   if (hash !== '#online-interrogate' && (mp.micEnabled || mp.micRequesting)) {
     teardownVoiceChat();
   }
@@ -1124,8 +1113,6 @@ window.runAwayZigzag = (el) => {
   const distance = Math.hypot(deltaX, deltaY);
   const duration = Math.min(2200, Math.max(1100, distance * 2.4));
 
-  // Build a jittery zigzag path: linear travel toward the button,
-  // plus a perpendicular wiggle that shrinks as it gets close, plus a rocking tilt.
   const perpX = -deltaY / (distance || 1);
   const perpY = deltaX / (distance || 1);
   const zigzags = 6;
@@ -1134,7 +1121,7 @@ window.runAwayZigzag = (el) => {
   const steps = 24;
   for (let i = 0; i <= steps; i++) {
     const t = i / steps;
-    const eased = t * t * (3 - 2 * t); // smoothstep for overall travel
+    const eased = t * t * (3 - 2 * t); 
     const wiggleDecay = Math.pow(1 - t, 1.4);
     const wiggle = Math.sin(t * Math.PI * zigzags) * 34 * wiggleDecay;
     const x = deltaX * eased + perpX * wiggle;
@@ -1516,6 +1503,14 @@ window.toggleCategory = (cat) => {
   }
   renderSetup();
 };
+window.selectAllCategories = () => {
+  state.activeCategories = [...DEFAULT_CATEGORIES];
+  renderSetup();
+};
+window.clearAllCategories = () => {
+  state.activeCategories = [DEFAULT_CATEGORIES[0]];
+  renderSetup();
+};
 window.toggleSetting = (key) => { state[key] = !state[key]; renderSetup(); };
 
 function startGame() {
@@ -1820,10 +1815,96 @@ function renderPass() {
   });
 }
 
+/* ---------------- Online Play (each device shows only its own role) ---------------- */
+function renderOnlinePlay() {
+  if (!mp.code) { window.location.hash = '#online'; return; }
+  mp.cardRevealed = false;
+
+  attachRoomListener(mp.code, (room) => {
+    mp.isHost = (room.hostId === mp.myId);
+    cancelMyDisconnectHook();
+    healMyPlayerEntry(room);
+    if (room.status === 'interrogate') { window.location.hash = '#online-interrogate'; return; }
+    if (room.status === 'voting') { window.location.hash = '#online-vote'; return; }
+    if (room.status === 'results') { window.location.hash = '#online-results'; return; }
+    if (room.status === 'lobby') { window.location.hash = '#online-lobby'; return; }
+    drawOnlinePlay(room);
+  });
+}
+
+function drawOnlinePlay(room) {
+  const game = room.game;
+  if (!game) return;
+  const players = mpPlayerList(room);
+  const myRole = game.roles[mp.myId];
+  const readyCount = players.filter(p => p.ready).length;
+  const iAmReady = !!(room.players[mp.myId] && room.players[mp.myId].ready);
+
+  app.innerHTML = `
+    <div class="game-screen">
+      <div class="subtitle">Your secret briefing</div>
+
+      <div class="card-3d-wrap" style="height:280px;">
+        <div class="card-3d ${mp.cardRevealed ? 'flipped' : ''}" id="activeCard">
+          <div class="card-face card-front">
+            <div style="color:var(--accent); font-weight:600; font-size:12px; letter-spacing:2px;">CLASSIFIED</div>
+            <h2 style="font-size:26px; margin:10px 0;">${escapeHtml(mp.myName)}</h2>
+            <div class="tap-hint">TAP TO REVEAL</div>
+          </div>
+          <div class="card-face card-back">
+            ${myRole === 'imposter' ? `
+              <div style="color:var(--danger); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">STATUS</div>
+              <h2 style="color:var(--danger); font-size:28px; margin:0; line-height:1.2;">You Are<br>The Imposter</h2>
+              ${room.settings.imposterSeesCategory ? `<div style="margin-top:10px; font-size:14px; color:var(--text-muted);">Category:<br><b style="color:var(--text-main)">${escapeHtml(game.secretCategory)}</b></div>` : ''}
+              ${room.settings.showImposterHint && game.imposterHintWord ? `<div style="margin-top:5px; font-size:14px; color:var(--text-muted);">Fake Hint Word:<br><b style="color:var(--accent)">${escapeHtml(game.imposterHintWord)}</b></div>` : ''}
+            ` : `
+              <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">THE SECRET WORD</div>
+              <h2 style="font-size:28px; margin:0; color:var(--accent);">${escapeHtml(game.secretWord)}</h2>
+              <div style="margin-top:20px; font-size:14px; color:var(--text-muted);">Category: <b style="color:var(--text-main)">${escapeHtml(game.secretCategory)}</b></div>
+            `}
+            <div class="tap-hint" style="margin-top:15px; border-color:var(--text-muted); color:var(--text-muted);">TAP TO HIDE</div>
+          </div>
+        </div>
+      </div>
+
+      <p style="color:var(--text-muted); font-size:12px; margin-top:10px;">Only you can see this on your own device.</p>
+
+      <button class="start-btn" style="margin-top:20px;" ${iAmReady ? 'disabled' : ''} onclick="markMpReady()">
+        ${iAmReady ? `Waiting for others (${readyCount}/${players.length})` : "I've Seen My Card — Ready"}
+      </button>
+
+      ${mp.isHost ? `<button class="admin-btn-secondary" style="margin-top:10px;" onclick="forceStartInterrogation()">Skip Waiting — Start Discussion</button>` : ''}
+    </div>
+  `;
+
+  const card = document.getElementById('activeCard');
+  card.addEventListener('click', () => {
+    mp.cardRevealed = !mp.cardRevealed;
+    card.classList.toggle('flipped');
+  });
+}
+
+window.markMpReady = () => {
+  db.ref(`imposterRooms/${mp.code}/players/${mp.myId}/ready`).set(true).then(() => {
+    db.ref(`imposterRooms/${mp.code}/players`).once('value', (snap) => {
+      const players = snap.val() || {};
+      const ids = Object.keys(players);
+      const allReady = ids.length > 0 && ids.every(id => players[id].ready);
+      if (allReady) {
+        db.ref(`imposterRooms/${mp.code}/status`).set('interrogate');
+      }
+    });
+  });
+};
+
+window.forceStartInterrogation = () => {
+  if (!mp.isHost) return;
+  if (!confirm('Some players may not have seen their card yet. Start discussion anyway?')) return;
+  db.ref(`imposterRooms/${mp.code}/status`).set('interrogate');
+};
+
 /* ---------------- 4. Interrogation ---------------- */
-let timerInterval = null;
-let timerSeconds = 0;
-let timerRunning = false;
+let mpTimerRAF = null;
 
 function renderInterrogate() {
   app.innerHTML = `
@@ -1858,6 +1939,100 @@ function renderInterrogate() {
       </button>
     </div>
   `;
+}
+
+function renderOnlineInterrogate() {
+  if (!mp.code) { window.location.hash = '#online'; return; }
+
+  attachRoomListener(mp.code, (room) => {
+    mp.isHost = (room.hostId === mp.myId);
+    cancelMyDisconnectHook();
+    healMyPlayerEntry(room);
+    if (room.status === 'voting') { window.location.hash = '#online-vote'; return; }
+    if (room.status === 'results') { window.location.hash = '#online-results'; return; }
+    drawOnlineInterrogate(room);
+  });
+}
+
+function drawOnlineInterrogate(room) {
+  syncVoiceConnections(room);
+  const timer = room.timer || { seconds: 0, running: false, endTime: null };
+  let remaining = timer.seconds || 0;
+  if (timer.running && timer.endTime) {
+    remaining = Math.max(0, Math.round((timer.endTime - Date.now()) / 1000));
+  }
+
+  const players = mpPlayerList(room);
+  const voiceActive = room.voiceActive || {};
+  const inVoiceCount = players.filter(p => voiceActive[p.id]).length;
+
+  app.innerHTML = `
+    <div class="game-screen" style="padding-top:20px;">
+      <div style="font-size:50px; margin-bottom:10px;">💬</div>
+      <h1>Interrogation Phase</h1>
+      <p class="subtitle" style="margin-bottom:30px;">Discuss out loud and figure out who's lying.</p>
+
+      <div class="card" style="padding: 20px; text-align:center;">
+        <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px; margin-bottom:10px;">DISCUSSION TIMER</div>
+        <div id="mpTimerDisplay" style="font-size:48px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--accent); text-shadow: 0 2px 5px rgba(0,0,0,0.5);">${formatTimer(remaining)}</div>
+        ${mp.isHost ? `
+          <div style="display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;">
+            ${!timer.running ? `
+              <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setMpTimerPreset(60)">1 min</button>
+              <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setMpTimerPreset(180)">3 min</button>
+              <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setMpTimerPreset(300)">5 min</button>
+            ` : ''}
+          </div>
+          <div style="display:flex; gap:10px; margin-top:14px;">
+            <button class="admin-btn" style="flex:1;" onclick="toggleMpTimer()">${timer.running ? 'Pause' : (remaining > 0 ? 'Resume' : 'Start')}</button>
+            <button class="admin-btn-secondary" style="flex:1;" onclick="resetMpTimer()">Reset</button>
+          </div>
+        ` : `<p style="color:var(--text-muted); font-size:12px; margin-top:10px;">Only the host controls the timer.</p>`}
+      </div>
+
+      <div class="card" style="padding: 20px;">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px;">VOICE CHAT</div>
+            <p style="margin:4px 0 0; font-size:13px; color:var(--text-muted);">${inVoiceCount > 0 ? `${inVoiceCount} player${inVoiceCount !== 1 ? 's' : ''} live` : 'Nobody\'s joined yet'}</p>
+          </div>
+          <button class="admin-btn" style="${mp.micEnabled ? 'background:var(--danger); color:#FFF;' : ''}" ${mp.micRequesting ? 'disabled' : ''} onclick="toggleMic()">
+            ${mp.micRequesting ? 'Requesting...' : (mp.micEnabled ? '🎤 On — Tap to Mute' : '🎤 Turn Mic On')}
+          </button>
+        </div>
+        ${players.length ? `
+          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
+            ${players.map(p => `
+              <div style="display:flex; align-items:center; gap:6px; background:var(--bg-input); padding:6px 10px; border-radius:20px; font-size:12px; ${voiceActive[p.id] ? '' : 'opacity:0.45;'}; border: 1px solid rgba(255,255,255,0.05);">
+                <span style="width:7px; height:7px; border-radius:50%; background:${voiceActive[p.id] ? 'var(--success)' : 'var(--text-muted)'};"></span>
+                ${escapeHtml(p.name)}${p.id === mp.myId ? ' (You)' : ''}
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+        <p style="font-size:11px; color:var(--text-muted); margin:12px 0 0;">Voice chat is only for this discussion step — it turns off automatically once voting starts.</p>
+      </div>
+
+      ${mp.isHost ? `
+        <button class="start-btn" onclick="startMpVoting()">Start Voting Phase</button>
+      ` : `
+        <div class="card" style="text-align:center; color:var(--text-muted);">Waiting for host to start voting...</div>
+      `}
+    </div>
+  `;
+
+  cancelAnimationFrame(mpTimerRAF);
+  if (timer.running) {
+    const tick = () => {
+      const el = document.getElementById('mpTimerDisplay');
+      if (!el) return;
+      const rem = Math.max(0, Math.round((timer.endTime - Date.now()) / 1000));
+      el.textContent = formatTimer(rem);
+      if (rem > 0) mpTimerRAF = requestAnimationFrame(tick);
+      else if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    };
+    mpTimerRAF = requestAnimationFrame(tick);
+  }
 }
 
 function formatTimer(sec) {
@@ -1911,6 +2086,34 @@ function startVotingPhase() {
   state.votes = {};
   window.location.hash = '#vote-pass';
 }
+
+window.setMpTimerPreset = (sec) => {
+  if (!mp.isHost) return;
+  db.ref(`imposterRooms/${mp.code}/timer`).set({ seconds: sec, running: false, endTime: null });
+};
+
+window.toggleMpTimer = () => {
+  if (!mp.isHost || !mp.room) return;
+  const timer = mp.room.timer || { seconds: 180, running: false };
+  if (timer.running) {
+    const remaining = Math.max(0, Math.round((timer.endTime - Date.now()) / 1000));
+    db.ref(`imposterRooms/${mp.code}/timer`).set({ seconds: remaining, running: false, endTime: null });
+  } else {
+    const secs = timer.seconds > 0 ? timer.seconds : 180;
+    db.ref(`imposterRooms/${mp.code}/timer`).set({ seconds: secs, running: true, endTime: Date.now() + secs * 1000 });
+  }
+};
+
+window.resetMpTimer = () => {
+  if (!mp.isHost) return;
+  db.ref(`imposterRooms/${mp.code}/timer`).set({ seconds: 0, running: false, endTime: null });
+};
+
+window.startMpVoting = () => {
+  if (!mp.isHost) return;
+  db.ref(`imposterRooms/${mp.code}`).update({ status: 'voting', votes: null });
+};
+
 
 /* ---------------- 5. Voting Phase ---------------- */
 function renderVotePass() {
@@ -1986,6 +2189,95 @@ window.submitVote = () => {
   } else {
     window.location.hash = '#results';
   }
+};
+
+/* ---------------- Online Voting ---------------- */
+function renderOnlineVote() {
+  if (!mp.code) { window.location.hash = '#online'; return; }
+  mp.votedThisRound = false;
+
+  attachRoomListener(mp.code, (room) => {
+    mp.isHost = (room.hostId === mp.myId);
+    cancelMyDisconnectHook();
+    healMyPlayerEntry(room);
+    if (room.status === 'results') { window.location.hash = '#online-results'; return; }
+    drawOnlineVote(room);
+  });
+}
+
+function drawOnlineVote(room) {
+  const players = mpPlayerList(room);
+  const votes = room.votes || {};
+  const myVote = votes[mp.myId];
+  const votesIn = Object.keys(votes).length;
+
+  if (myVote !== undefined) {
+    app.innerHTML = `
+      <div class="game-screen" style="padding-top:60px;">
+        <h1>Vote Cast</h1>
+        <p class="subtitle">Waiting for other players... (${votesIn}/${players.length})</p>
+        ${mp.isHost ? `<button class="start-btn" style="margin-top:30px;" onclick="finishMpVoting()">Finish Voting Now</button>` : ''}
+      </div>
+    `;
+    return;
+  }
+
+  let optionsHTML = players.map((p) => {
+    if (p.id === mp.myId) return '';
+    return `
+      <div class="vote-option" id="vote-opt-${p.id}" onclick="selectMpVote('${p.id}')">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${escapeHtml(p.name[0] || '?')}</div>
+          <span>${escapeHtml(p.name)}</span>
+        </div>
+        <div class="vote-radio"></div>
+      </div>
+    `;
+  }).join('');
+
+  app.innerHTML = `
+    <div style="padding-top:20px;">
+      <h2 style="margin-bottom:5px;">Who is the Imposter?</h2>
+      <p class="subtitle" style="text-align:left; margin-bottom:20px;">Select a player to eliminate.</p>
+      <div style="margin-bottom: 80px;">${optionsHTML}</div>
+      <div class="bottom-bar">
+        <div class="inner">
+          <button class="start-btn" id="confirmMpVoteBtn" disabled onclick="submitMpVote()">Confirm Vote</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+let mpSelectedVote = null;
+window.selectMpVote = (id) => {
+  mpSelectedVote = id;
+  document.querySelectorAll('.vote-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById(`vote-opt-${id}`).classList.add('selected');
+  document.getElementById('confirmMpVoteBtn').disabled = false;
+};
+
+window.submitMpVote = () => {
+  if (!mpSelectedVote) return;
+  db.ref(`imposterRooms/${mp.code}/votes/${mp.myId}`).set(mpSelectedVote).then(() => {
+    Promise.all([
+      db.ref(`imposterRooms/${mp.code}/votes`).once('value'),
+      db.ref(`imposterRooms/${mp.code}/players`).once('value')
+    ]).then(([votesSnap, playersSnap]) => {
+      const votes = votesSnap.val() || {};
+      const players = playersSnap.val() || {};
+      const totalPlayers = Object.keys(players).length;
+      if (totalPlayers > 0 && Object.keys(votes).length >= totalPlayers) {
+        db.ref(`imposterRooms/${mp.code}/status`).set('results');
+      }
+    });
+  });
+};
+
+window.finishMpVoting = () => {
+  if (!mp.isHost) return;
+  if (!confirm('Some players may not have voted yet. Reveal results anyway?')) return;
+  db.ref(`imposterRooms/${mp.code}/status`).set('results');
 };
 
 /* ---------------- 6. Results ---------------- */
@@ -2067,329 +2359,6 @@ function renderResults() {
   startResultsBurst(imposterCaught && eliminatedIndices.length === 1);
 }
 
-function startResultsBurst(crewWon) {
-  const emojis = crewWon ? ['🎉', '✨', '🎊', '👏'] : ['😈', '🕵️', '💀', '🔥'];
-  for (let i = 0; i < 20; i++) {
-    let el = document.createElement('div');
-    el.className = 'pixel-petal';
-    el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-    el.style.left = Math.random() * 100 + 'vw';
-    el.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
-    el.style.animationDelay = (Math.random() * 0.6) + 's';
-    el.style.fontSize = (Math.random() * 12 + 14) + 'px';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 5000);
-  }
-}
-
-/* ---------------- Online Play (each device shows only its own role) ---------------- */
-function renderOnlinePlay() {
-  if (!mp.code) { window.location.hash = '#online'; return; }
-  mp.cardRevealed = false;
-
-  attachRoomListener(mp.code, (room) => {
-    mp.isHost = (room.hostId === mp.myId);
-    cancelMyDisconnectHook();
-    healMyPlayerEntry(room);
-    if (room.status === 'interrogate') { window.location.hash = '#online-interrogate'; return; }
-    if (room.status === 'voting') { window.location.hash = '#online-vote'; return; }
-    if (room.status === 'results') { window.location.hash = '#online-results'; return; }
-    if (room.status === 'lobby') { window.location.hash = '#online-lobby'; return; }
-    drawOnlinePlay(room);
-  });
-}
-
-function drawOnlinePlay(room) {
-  const game = room.game;
-  if (!game) return;
-  const players = mpPlayerList(room);
-  const myRole = game.roles[mp.myId];
-  const readyCount = players.filter(p => p.ready).length;
-  const iAmReady = !!(room.players[mp.myId] && room.players[mp.myId].ready);
-
-  app.innerHTML = `
-    <div class="game-screen">
-      <div class="subtitle">Your secret briefing</div>
-
-      <div class="card-3d-wrap" style="height:280px;">
-        <div class="card-3d ${mp.cardRevealed ? 'flipped' : ''}" id="activeCard">
-          <div class="card-face card-front">
-            <div style="color:var(--accent); font-weight:600; font-size:12px; letter-spacing:2px;">CLASSIFIED</div>
-            <h2 style="font-size:26px; margin:10px 0;">${escapeHtml(mp.myName)}</h2>
-            <div class="tap-hint">TAP TO REVEAL</div>
-          </div>
-          <div class="card-face card-back">
-            ${myRole === 'imposter' ? `
-              <div style="color:var(--danger); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">STATUS</div>
-              <h2 style="color:var(--danger); font-size:28px; margin:0; line-height:1.2;">You Are<br>The Imposter</h2>
-              ${room.settings.imposterSeesCategory ? `<div style="margin-top:10px; font-size:14px; color:var(--text-muted);">Category:<br><b style="color:var(--text-main)">${escapeHtml(game.secretCategory)}</b></div>` : ''}
-              ${room.settings.showImposterHint && game.imposterHintWord ? `<div style="margin-top:5px; font-size:14px; color:var(--text-muted);">Fake Hint Word:<br><b style="color:var(--accent)">${escapeHtml(game.imposterHintWord)}</b></div>` : ''}
-            ` : `
-              <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">THE SECRET WORD</div>
-              <h2 style="font-size:28px; margin:0; color:var(--accent);">${escapeHtml(game.secretWord)}</h2>
-              <div style="margin-top:20px; font-size:14px; color:var(--text-muted);">Category: <b style="color:var(--text-main)">${escapeHtml(game.secretCategory)}</b></div>
-            `}
-            <div class="tap-hint" style="margin-top:15px; border-color:var(--text-muted); color:var(--text-muted);">TAP TO HIDE</div>
-          </div>
-        </div>
-      </div>
-
-      <p style="color:var(--text-muted); font-size:12px; margin-top:10px;">Only you can see this on your own device.</p>
-
-      <button class="start-btn" style="margin-top:20px;" ${iAmReady ? 'disabled' : ''} onclick="markMpReady()">
-        ${iAmReady ? `Waiting for others (${readyCount}/${players.length})` : "I've Seen My Card — Ready"}
-      </button>
-
-      ${mp.isHost ? `<button class="admin-btn-secondary" style="margin-top:10px;" onclick="forceStartInterrogation()">Skip Waiting — Start Discussion</button>` : ''}
-    </div>
-  `;
-
-  const card = document.getElementById('activeCard');
-  card.addEventListener('click', () => {
-    mp.cardRevealed = !mp.cardRevealed;
-    card.classList.toggle('flipped');
-  });
-}
-
-window.markMpReady = () => {
-  db.ref(`imposterRooms/${mp.code}/players/${mp.myId}/ready`).set(true).then(() => {
-    // Whoever ends up being the last to ready re-reads fresh from the
-    // server (not the local cache) before advancing the phase, so a stale
-    // snapshot can't trigger an early jump -- and it isn't limited to only
-    // the host's own click triggering the check.
-    db.ref(`imposterRooms/${mp.code}/players`).once('value', (snap) => {
-      const players = snap.val() || {};
-      const ids = Object.keys(players);
-      const allReady = ids.length > 0 && ids.every(id => players[id].ready);
-      if (allReady) {
-        db.ref(`imposterRooms/${mp.code}/status`).set('interrogate');
-      }
-    });
-  });
-};
-
-window.forceStartInterrogation = () => {
-  if (!mp.isHost) return;
-  if (!confirm('Some players may not have seen their card yet. Start discussion anyway?')) return;
-  db.ref(`imposterRooms/${mp.code}/status`).set('interrogate');
-};
-
-/* ---------------- Online Interrogation (synced timer) ---------------- */
-let mpTimerRAF = null;
-function renderOnlineInterrogate() {
-  if (!mp.code) { window.location.hash = '#online'; return; }
-
-  attachRoomListener(mp.code, (room) => {
-    mp.isHost = (room.hostId === mp.myId);
-    cancelMyDisconnectHook();
-    healMyPlayerEntry(room);
-    if (room.status === 'voting') { window.location.hash = '#online-vote'; return; }
-    if (room.status === 'results') { window.location.hash = '#online-results'; return; }
-    drawOnlineInterrogate(room);
-  });
-}
-
-function drawOnlineInterrogate(room) {
-  syncVoiceConnections(room);
-  const timer = room.timer || { seconds: 0, running: false, endTime: null };
-  let remaining = timer.seconds || 0;
-  if (timer.running && timer.endTime) {
-    remaining = Math.max(0, Math.round((timer.endTime - Date.now()) / 1000));
-  }
-
-  const players = mpPlayerList(room);
-  const voiceActive = room.voiceActive || {};
-  const inVoiceCount = players.filter(p => voiceActive[p.id]).length;
-
-  app.innerHTML = `
-    <div class="game-screen" style="padding-top:20px;">
-      <div style="font-size:50px; margin-bottom:10px;">💬</div>
-      <h1>Interrogation Phase</h1>
-      <p class="subtitle" style="margin-bottom:30px;">Discuss out loud and figure out who's lying.</p>
-
-      <div class="card" style="padding: 20px; text-align:center;">
-        <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px; margin-bottom:10px;">DISCUSSION TIMER</div>
-        <div id="mpTimerDisplay" style="font-size:48px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--accent); text-shadow: 0 2px 5px rgba(0,0,0,0.5);">${formatTimer(remaining)}</div>
-        ${mp.isHost ? `
-          <div style="display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;">
-            ${!timer.running ? `
-              <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setMpTimerPreset(60)">1 min</button>
-              <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setMpTimerPreset(180)">3 min</button>
-              <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setMpTimerPreset(300)">5 min</button>
-            ` : ''}
-          </div>
-          <div style="display:flex; gap:10px; margin-top:14px;">
-            <button class="admin-btn" style="flex:1;" onclick="toggleMpTimer()">${timer.running ? 'Pause' : (remaining > 0 ? 'Resume' : 'Start')}</button>
-            <button class="admin-btn-secondary" style="flex:1;" onclick="resetMpTimer()">Reset</button>
-          </div>
-        ` : `<p style="color:var(--text-muted); font-size:12px; margin-top:10px;">Only the host controls the timer.</p>`}
-      </div>
-
-      <div class="card" style="padding: 20px;">
-        <div style="display:flex; align-items:center; justify-content:space-between;">
-          <div>
-            <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px;">VOICE CHAT</div>
-            <p style="margin:4px 0 0; font-size:13px; color:var(--text-muted);">${inVoiceCount > 0 ? `${inVoiceCount} player${inVoiceCount !== 1 ? 's' : ''} live` : 'Nobody\'s joined yet'}</p>
-          </div>
-          <button class="admin-btn" style="${mp.micEnabled ? 'background:var(--danger); color:#FFF;' : ''}" ${mp.micRequesting ? 'disabled' : ''} onclick="toggleMic()">
-            ${mp.micRequesting ? 'Requesting...' : (mp.micEnabled ? '🎤 On — Tap to Mute' : '🎤 Turn Mic On')}
-          </button>
-        </div>
-        ${players.length ? `
-          <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
-            ${players.map(p => `
-              <div style="display:flex; align-items:center; gap:6px; background:var(--bg-input); padding:6px 10px; border-radius:20px; font-size:12px; ${voiceActive[p.id] ? '' : 'opacity:0.45;'}">
-                <span style="width:7px; height:7px; border-radius:50%; background:${voiceActive[p.id] ? 'var(--success)' : 'var(--text-muted)'};"></span>
-                ${escapeHtml(p.name)}${p.id === mp.myId ? ' (You)' : ''}
-              </div>
-            `).join('')}
-          </div>
-        ` : ''}
-        <p style="font-size:11px; color:var(--text-muted); margin:12px 0 0;">Voice chat is only for this discussion step — it turns off automatically once voting starts.</p>
-      </div>
-
-      ${mp.isHost ? `
-        <button class="start-btn" onclick="startMpVoting()">Start Voting Phase</button>
-      ` : `
-        <div class="card" style="text-align:center; color:var(--text-muted);">Waiting for host to start voting...</div>
-      `}
-    </div>
-  `;
-
-  cancelAnimationFrame(mpTimerRAF);
-  if (timer.running) {
-    const tick = () => {
-      const el = document.getElementById('mpTimerDisplay');
-      if (!el) return;
-      const rem = Math.max(0, Math.round((timer.endTime - Date.now()) / 1000));
-      el.textContent = formatTimer(rem);
-      if (rem > 0) mpTimerRAF = requestAnimationFrame(tick);
-      else if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-    };
-    mpTimerRAF = requestAnimationFrame(tick);
-  }
-}
-
-window.setMpTimerPreset = (sec) => {
-  if (!mp.isHost) return;
-  db.ref(`imposterRooms/${mp.code}/timer`).set({ seconds: sec, running: false, endTime: null });
-};
-
-window.toggleMpTimer = () => {
-  if (!mp.isHost || !mp.room) return;
-  const timer = mp.room.timer || { seconds: 180, running: false };
-  if (timer.running) {
-    const remaining = Math.max(0, Math.round((timer.endTime - Date.now()) / 1000));
-    db.ref(`imposterRooms/${mp.code}/timer`).set({ seconds: remaining, running: false, endTime: null });
-  } else {
-    const secs = timer.seconds > 0 ? timer.seconds : 180;
-    db.ref(`imposterRooms/${mp.code}/timer`).set({ seconds: secs, running: true, endTime: Date.now() + secs * 1000 });
-  }
-};
-
-window.resetMpTimer = () => {
-  if (!mp.isHost) return;
-  db.ref(`imposterRooms/${mp.code}/timer`).set({ seconds: 0, running: false, endTime: null });
-};
-
-window.startMpVoting = () => {
-  if (!mp.isHost) return;
-  db.ref(`imposterRooms/${mp.code}`).update({ status: 'voting', votes: null });
-};
-
-/* ---------------- Online Voting ---------------- */
-function renderOnlineVote() {
-  if (!mp.code) { window.location.hash = '#online'; return; }
-  mp.votedThisRound = false;
-
-  attachRoomListener(mp.code, (room) => {
-    mp.isHost = (room.hostId === mp.myId);
-    cancelMyDisconnectHook();
-    healMyPlayerEntry(room);
-    if (room.status === 'results') { window.location.hash = '#online-results'; return; }
-    drawOnlineVote(room);
-  });
-}
-
-function drawOnlineVote(room) {
-  const players = mpPlayerList(room);
-  const votes = room.votes || {};
-  const myVote = votes[mp.myId];
-  const votesIn = Object.keys(votes).length;
-
-  if (myVote !== undefined) {
-    app.innerHTML = `
-      <div class="game-screen" style="padding-top:60px;">
-        <h1>Vote Cast</h1>
-        <p class="subtitle">Waiting for other players... (${votesIn}/${players.length})</p>
-        ${mp.isHost ? `<button class="start-btn" style="margin-top:30px;" onclick="finishMpVoting()">Finish Voting Now</button>` : ''}
-      </div>
-    `;
-    return;
-  }
-
-  let optionsHTML = players.map((p) => {
-    if (p.id === mp.myId) return '';
-    return `
-      <div class="vote-option" id="vote-opt-${p.id}" onclick="selectMpVote('${p.id}')">
-        <div style="display:flex; align-items:center; gap:12px;">
-          <div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${escapeHtml(p.name[0] || '?')}</div>
-          <span>${escapeHtml(p.name)}</span>
-        </div>
-        <div class="vote-radio"></div>
-      </div>
-    `;
-  }).join('');
-
-  app.innerHTML = `
-    <div style="padding-top:20px;">
-      <h2 style="margin-bottom:5px;">Who is the Imposter?</h2>
-      <p class="subtitle" style="text-align:left; margin-bottom:20px;">Select a player to eliminate.</p>
-      <div style="margin-bottom: 80px;">${optionsHTML}</div>
-      <div class="bottom-bar">
-        <div class="inner">
-          <button class="start-btn" id="confirmMpVoteBtn" disabled onclick="submitMpVote()">Confirm Vote</button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-let mpSelectedVote = null;
-window.selectMpVote = (id) => {
-  mpSelectedVote = id;
-  document.querySelectorAll('.vote-option').forEach(el => el.classList.remove('selected'));
-  document.getElementById(`vote-opt-${id}`).classList.add('selected');
-  document.getElementById('confirmMpVoteBtn').disabled = false;
-};
-
-window.submitMpVote = () => {
-  if (!mpSelectedVote) return;
-  db.ref(`imposterRooms/${mp.code}/votes/${mp.myId}`).set(mpSelectedVote).then(() => {
-    // Re-read both votes and the current player roster fresh from the
-    // server -- whoever happens to be last to vote triggers the advance,
-    // using live counts instead of a possibly-stale local snapshot.
-    Promise.all([
-      db.ref(`imposterRooms/${mp.code}/votes`).once('value'),
-      db.ref(`imposterRooms/${mp.code}/players`).once('value')
-    ]).then(([votesSnap, playersSnap]) => {
-      const votes = votesSnap.val() || {};
-      const players = playersSnap.val() || {};
-      const totalPlayers = Object.keys(players).length;
-      if (totalPlayers > 0 && Object.keys(votes).length >= totalPlayers) {
-        db.ref(`imposterRooms/${mp.code}/status`).set('results');
-      }
-    });
-  });
-};
-
-window.finishMpVoting = () => {
-  if (!mp.isHost) return;
-  if (!confirm('Some players may not have voted yet. Reveal results anyway?')) return;
-  db.ref(`imposterRooms/${mp.code}/status`).set('results');
-};
-
-/* ---------------- Online Results ---------------- */
 function renderOnlineResults() {
   if (!mp.code) { window.location.hash = '#online'; return; }
 
@@ -2411,4 +2380,112 @@ function drawOnlineResults(room) {
   Object.values(votes).forEach(votedId => { voteCounts[votedId] = (voteCounts[votedId] || 0) + 1; });
 
   let maxVotes = 0;
-  for (let id in voteCounts) if (voteCounts[i
+  for (let id in voteCounts) if (voteCounts[id] > maxVotes) maxVotes = voteCounts[id];
+
+  const eliminatedIds = Object.keys(voteCounts).filter(id => voteCounts[id] === maxVotes);
+  const imposterIds = players.filter(p => game.roles[p.id] === 'imposter').map(p => p.id);
+  const imposterCaught = eliminatedIds.some(id => imposterIds.includes(id));
+  const nameOf = (id) => { const p = players.find(pl => pl.id === id); return p ? p.name : '?'; };
+
+  let outcomeHTML = "";
+  if (maxVotes === 0) {
+    outcomeHTML = `<h1 style="color:var(--accent)">No Votes Cast</h1><p style="color:var(--text-muted); margin-top:5px;">The imposter survived!</p>`;
+  } else if (eliminatedIds.length > 1) {
+    outcomeHTML = `<h1 style="color:var(--accent)">Voting Tied!</h1><p style="color:var(--text-muted); margin-top:5px;">${eliminatedIds.map(nameOf).map(escapeHtml).join(' and ')} tied with ${maxVotes} votes. The imposter survived!</p>`;
+  } else if (imposterCaught) {
+    outcomeHTML = `<h1 style="color:var(--success)">Imposter Caught!</h1><p style="color:var(--text-muted); margin-top:5px;">Crew wins! ${escapeHtml(nameOf(eliminatedIds[0]))} was voted out.</p>`;
+  } else {
+    outcomeHTML = `<h1 style="color:var(--danger)">Crew Failed!</h1><p style="color:var(--text-muted); margin-top:5px;">${escapeHtml(nameOf(eliminatedIds[0]))} was innocent! The imposter survives.</p>`;
+  }
+
+  app.innerHTML = `
+    <div class="game-screen" style="padding-top:20px; padding-bottom:40px;">
+      <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">CASE CLOSED</div>
+      <div style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">${outcomeHTML}</div>
+
+      <div class="card" style="padding: 20px; margin: 30px 0;">
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">THE WORD WAS</div>
+        <div style="font-size:24px; color:var(--accent); font-weight:700; text-transform:uppercase;">${escapeHtml(game.secretWord)}</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">ACTUAL IMPOSTER: <b style="color:var(--danger)">${imposterIds.map(nameOf).map(escapeHtml).join(', ')}</b></div>
+      </div>
+
+      <div style="text-align:left; margin-bottom:10px; font-weight:600; font-size: 15px;">Voting Breakdown</div>
+      <div class="player-list" style="text-align:left; margin-bottom:40px;">
+        ${players.map((p) => {
+          const votesReceived = voteCounts[p.id] || 0;
+          const isEliminated = eliminatedIds.includes(p.id);
+          return `
+            <div class="player-row" style="background:${isEliminated ? 'rgba(255, 69, 58, 0.2)' : 'var(--bg-card)'}; border: 1px solid ${isEliminated ? 'var(--danger)' : 'rgba(255,255,255,0.05)'}; padding:12px; border-radius:8px; justify-content:space-between; backdrop-filter: blur(8px);">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${escapeHtml(p.name[0] || '?')}</div>
+                <div style="display:flex; flex-direction:column;">
+                  <span style="font-weight:${isEliminated ? '700' : '400'}">${escapeHtml(p.name)}</span>
+                  ${game.roles[p.id] === 'imposter' ? `<span style="font-size:11px; color:var(--danger); margin-top:2px;">(Imposter)</span>` : ''}
+                </div>
+              </div>
+              <div style="font-size:13px; color:var(--text-muted);">${votesReceived} vote${votesReceived !== 1 ? 's' : ''}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      ${mp.isHost ? `
+        <button class="start-btn" style="margin-bottom:10px;" onclick="startOnlineGame()">Same Room, New Word</button>
+        <button class="admin-btn-secondary" style="width:100%" onclick="db.ref('imposterRooms/'+mp.code+'/status').set('lobby')">Back to Lobby</button>
+      ` : `
+        <div class="card" style="text-align:center; color:var(--text-muted);">Waiting for host...</div>
+      `}
+      <button class="admin-btn-secondary" style="width:100%; margin-top:10px;" onclick="leaveRoom()">Leave Room</button>
+    </div>
+  `;
+
+  startResultsBurst(imposterCaught && eliminatedIds.length === 1 && maxVotes > 0);
+}
+
+function startResultsBurst(crewWon) {
+  const emojis = crewWon ? ['🎉', '✨', '🎊', '👏'] : ['😈', '🕵️', '💀', '🔥'];
+  for (let i = 0; i < 20; i++) {
+    let el = document.createElement('div');
+    el.className = 'pixel-petal';
+    el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
+    el.style.animationDelay = (Math.random() * 0.6) + 's';
+    el.style.fontSize = (Math.random() * 12 + 14) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  }
+}
+
+/* ---------------- Helpers ---------------- */
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+let toastTimer = null;
+function showToast(message, undoLabel, undoFn) {
+  let el = document.getElementById('appToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'appToast';
+    el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<span>${escapeHtml(message)}</span>${undoFn ? `<button id="toastUndoBtn">${escapeHtml(undoLabel || 'Undo')}</button>` : ''}`;
+  if (undoFn) {
+    document.getElementById('toastUndoBtn').onclick = () => {
+      undoFn();
+      el.classList.remove('show');
+      clearTimeout(toastTimer);
+    };
+  }
+  requestAnimationFrame(() => el.classList.add('show'));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
