@@ -389,6 +389,7 @@
 </head>
 <body>
 
+<div id="connection-status">🟡 Connecting...</div>
 <div class="watermark">powered by adruzz</div>
 <div class="app-container" id="app"></div>
 
@@ -430,59 +431,63 @@ const db = firebase.database();
 
 let syncError = null;
 
-// Sync completely from Cloud
-db.ref('packs').on('value', (snapshot) => {
-  syncError = null;
-  const data = snapshot.val();
-  if (data) {
+// Track Connection Status
+db.ref('.info/connected').on('value', function(snap) {
+  const el = document.getElementById('connection-status');
+  if (snap.val() === true) {
+    el.innerHTML = '🟢 Live';
+    el.style.color = 'var(--success)';
+  } else {
+    el.innerHTML = '🔴 Offline';
+    el.style.color = 'var(--danger)';
+  }
+});
+
+// Sync data securely via JSON String
+db.ref('gameDataV2').on('value', (snapshot) => {
+  const dataString = snapshot.val();
+  if (dataString) {
+    try {
+      PACKS = JSON.parse(dataString);
+    } catch (e) {
+      console.error("Data Parse Error", e);
+    }
+    
+    // Ensure standard categories exist
     DEFAULT_CATEGORIES.forEach(cat => {
-      if (data[cat]) {
-        PACKS[cat] = Array.isArray(data[cat]) ? data[cat] : Object.values(data[cat]);
-      } else {
-        PACKS[cat] = [];
-      }
+      if (!PACKS[cat]) PACKS[cat] = [];
     });
 
     state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
+    
+    if (['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
+      render();
+    }
   }
-  if (['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
-    render();
-  }
-}, (error) => {
-  syncError = error.message;
-  console.error('Firebase READ error:', error);
-  if (state.screen === 'admin') render();
 });
 
-function savePacks() {
-  return db.ref('packs').set(PACKS).then(() => {
-    syncError = null;
-  }).catch((error) => {
-    syncError = error.message;
-    console.error('Firebase WRITE error:', error);
-    alert("⚠️ Firebase save failed: " + error.message);
-    if (state.screen === 'admin') render();
-    throw error;
+function syncToCloud(onSuccess) {
+  const payload = JSON.stringify(PACKS);
+  
+  db.ref('gameDataV2').set(payload, (error) => {
+    if (error) {
+      alert("❌ SAVE FAILED!\n\nFirebase blocked the save. Make sure you clicked the blue 'Publish' button in your Firebase Rules.\n\nError details: " + error.message);
+    } else {
+      if (onSuccess) onSuccess();
+    }
+    renderAdminPanel(); // Refresh UI to reset buttons
   });
 }
 
-function savePack(cat) {
-  return db.ref('packs/' + cat).set(PACKS[cat]).then(() => {
-    syncError = null;
-  }).catch((error) => {
-    syncError = error.message;
-    console.error('Firebase WRITE error:', error);
-    alert("⚠️ Firebase save failed: " + error.message);
-    if (state.screen === 'admin') render();
-    throw error;
-  });
+function forceRefresh() {
+  window.location.href = window.location.href.split('?')[0] + '?v=' + new Date().getTime() + window.location.hash;
 }
 
 /* ---------------- Subtle Pixel Petals Falling Animation ---------------- */
 function startPixelPetals() {
   const colors = ['#FF6EC7', '#FFD84D', '#FF9F0A', '#FFFFFF', '#FF453A'];
-  // Moderate, gentle amount of falling pixel petals
-  for (let i = 0; i < 14; i++) {
+  // Reduced amount of falling pixel petals from 14 to 5
+  for (let i = 0; i < 5; i++) {
     const petal = document.createElement('div');
     petal.className = 'pixel-petal';
     const c = colors[Math.floor(Math.random() * colors.length)];
@@ -502,7 +507,7 @@ let state = {
   screen: 'setup',
   names: ["Player 1", "Player 2", "Player 3"],
   photos: [null, null, null], 
-  activeCategories: [...DEFAULT_CATEGORIES],
+  activeCategories: [...DEFAULT_CATEGORIES], // Select all by default
   imposterCount: 1,
   imposterSeesCategory: true,
   showImposterHint: false, 
@@ -618,7 +623,7 @@ function initPixelScene() {
   sun.style.filter = 'drop-shadow(0 0 20px rgba(255, 216, 77, 0.6))';
   scene.appendChild(sun);
 
-  // Clouds
+  // Clouds (Reduced from 3 to 2)
   const cloudShape = pixelArt([
     '  CCCC  ',
     ' CCCCCCC',
@@ -628,8 +633,7 @@ function initPixelScene() {
 
   [
     { top: '14%', size: 1, dur: 55, delay: 0, opacity: 0.95 },
-    { top: '28%', size: 0.7, dur: 70, delay: -20, opacity: 0.8 },
-    { top: '6%', size: 0.55, dur: 85, delay: -50, opacity: 0.7 }
+    { top: '28%', size: 0.7, dur: 70, delay: -20, opacity: 0.8 }
   ].forEach(cfg => {
     const cloud = document.createElement('div');
     cloud.className = 'pixel-sprite pixel-cloud';
@@ -668,12 +672,12 @@ function initPixelScene() {
     scene.appendChild(tree);
   });
 
-  // Sparkles
+  // Sparkles (Reduced from 16 to 5)
   const sparkColors = ['#FF9F0A', '#FF6EC7', '#FFD84D', '#B983FF', '#6EE7E7'];
   const sparkContainer = document.getElementById('pixelSparkles');
   if (sparkContainer) {
     sparkContainer.innerHTML = '';
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 5; i++) {
       const spark = document.createElement('div');
       spark.className = 'pixel-spark';
       spark.style.left = Math.random() * 100 + '%';
@@ -724,27 +728,69 @@ function renderSetup() {
 
     <div class="card">
       <div class="card-header">
-        <span>👥 Players</span>
+        <span style="display:flex; align-items:center; gap:8px;">
+          👥 Players
+          <svg width="20" height="20" viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg" style="border-radius:2px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
+            <rect width="8" height="8" fill="#55FF55"/>
+            <rect x="1" y="2" width="2" height="2" fill="#000"/>
+            <rect x="5" y="2" width="2" height="2" fill="#000"/>
+            <rect x="3" y="4" width="2" height="1" fill="#000"/>
+            <rect x="2" y="5" width="4" height="2" fill="#000"/>
+            <rect x="2" y="7" width="1" height="1" fill="#000"/>
+            <rect x="5" y="7" width="1" height="1" fill="#000"/>
+            <rect x="3" y="7" width="2" height="1" fill="#55FF55"/>
+          </svg>
+        </span>
         <span class="count">${state.names.length} / 15</span>
       </div>
       <p style="font-size:12px; color:var(--text-muted); margin-top:-10px; margin-bottom:15px;">Tap the circle to add a player photo</p>
       
       <div class="player-list" id="playerList"></div>
-      ${state.names.length < 15 ? `<button class="add-player-btn" onclick="addPlayer()">+ Add Player</button>` : ''}
+      ${state.names.length < 15 ? `
+        <button class="add-player-btn" onclick="addPlayer()">
+          <span style="display:flex; align-items:center; justify-content:center; gap:8px;">
+            + Add Player
+            <svg width="14" height="14" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
+              <rect x="1" y="8" width="1" height="1" fill="#8B4513"/>
+              <rect x="2" y="7" width="1" height="1" fill="#8B4513"/>
+              <rect x="2" y="8" width="1" height="1" fill="#555"/>
+              <rect x="1" y="7" width="1" height="1" fill="#555"/>
+              <rect x="0" y="9" width="1" height="1" fill="#444"/>
+              <rect x="3" y="6" width="1" height="1" fill="#444"/>
+              <rect x="4" y="5" width="1" height="1" fill="#444"/>
+              <rect x="2" y="5" width="1" height="1" fill="#444"/>
+              <rect x="3" y="4" width="1" height="1" fill="#444"/>
+              <rect x="4" y="4" width="1" height="1" fill="#00FFFF"/>
+              <rect x="5" y="3" width="1" height="1" fill="#00FFFF"/>
+              <rect x="6" y="2" width="1" height="1" fill="#00FFFF"/>
+              <rect x="7" y="1" width="1" height="1" fill="#00FFFF"/>
+              <rect x="8" y="0" width="1" height="1" fill="#00FFFF"/>
+              <rect x="3" y="5" width="1" height="1" fill="#008888"/>
+              <rect x="4" y="3" width="1" height="1" fill="#008888"/>
+              <rect x="5" y="2" width="1" height="1" fill="#008888"/>
+              <rect x="6" y="1" width="1" height="1" fill="#008888"/>
+              <rect x="7" y="0" width="1" height="1" fill="#008888"/>
+              <rect x="5" y="4" width="1" height="1" fill="#008888"/>
+              <rect x="6" y="3" width="1" height="1" fill="#008888"/>
+              <rect x="7" y="2" width="1" height="1" fill="#008888"/>
+              <rect x="8" y="1" width="1" height="1" fill="#008888"/>
+            </svg>
+          </span>
+        </button>
+      ` : ''}
     </div>
 
     <div class="card">
       <div class="setting-row" style="border-bottom:none;">
-        <div class="setting-info">
-          <div class="setting-icon">${icons.tag}</div>
-          <div class="setting-text">
-            <h3>Categories</h3>
-            <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
+        <div class="setting-info" style="justify-content:space-between;">
+          <div style="display:flex; gap:12px; align-items:center;">
+            <div class="setting-icon">${icons.tag}</div>
+            <div class="setting-text">
+              <h3>Categories</h3>
+              <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
+            </div>
           </div>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <span style="font-size:12px; color:var(--accent); cursor:pointer; text-decoration:underline;" onclick="selectAllCategories()">All</span>
-          <span style="font-size:12px; color:var(--text-muted); cursor:pointer; text-decoration:underline;" onclick="clearAllCategories()">None</span>
+          <button onclick="forceRefresh()" style="background:var(--bg-input); border:1px solid #444; color:#FFF; padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer;">🔄 Sync Info</button>
         </div>
       </div>
       <div class="chip-container">${categoriesHTML}</div>
@@ -1019,26 +1065,11 @@ window.addWord = (cat) => {
   btn.disabled = true;
   btn.textContent = 'Saving...';
 
-  db.ref('packs/' + cat).once('value').then((snap) => {
-    const serverData = snap.val();
-    const fresh = serverData ? (Array.isArray(serverData) ? serverData : Object.values(serverData)) : [];
-    if (fresh.some(w => w.toLowerCase() === val.toLowerCase())) {
-      throw new Error('duplicate');
-    }
-    fresh.push(val);
-    PACKS[cat] = fresh;
-    return savePack(cat);
-  }).then(() => {
-    if (state.adminSelectedCategory === cat) renderAdminPanel();
-  }).catch((error) => {
-    if (error.message === 'duplicate') {
-      showToast(`"${val}" was just added`);
-      if (state.adminSelectedCategory === cat) renderAdminPanel();
-      return;
-    }
-    syncError = error.message;
-    alert("⚠️ Could not add word: " + error.message);
-    if (state.screen === 'admin') render();
+  if(!PACKS[cat]) PACKS[cat] = [];
+  PACKS[cat].push(val); 
+  
+  syncToCloud(() => {
+     document.getElementById('newWord').value = '';
   });
 };
 
@@ -1052,64 +1083,36 @@ window.addBulkWords = (cat) => {
   btn.disabled = true;
   btn.textContent = 'Saving...';
 
-  db.ref('packs/' + cat).once('value').then((snap) => {
-    const serverData = snap.val();
-    const fresh = serverData ? (Array.isArray(serverData) ? serverData : Object.values(serverData)) : [];
-    const existingLower = fresh.map(w => w.toLowerCase());
-    let added = 0, skipped = 0;
-    candidates.forEach(w => {
-      if (existingLower.includes(w.toLowerCase())) { skipped++; return; }
-      fresh.push(w);
-      existingLower.push(w.toLowerCase());
-      added++;
-    });
-    PACKS[cat] = fresh;
-    return savePack(cat).then(() => ({ added, skipped }));
-  }).then(({ added, skipped }) => {
+  const existingLower = (PACKS[cat] || []).map(w => w.toLowerCase());
+  let added = 0, skipped = 0;
+  candidates.forEach(w => {
+    if (existingLower.includes(w.toLowerCase())) { skipped++; return; }
+    PACKS[cat].push(w);
+    existingLower.push(w.toLowerCase());
+    added++;
+  });
+  
+  syncToCloud(() => {
     textarea.value = '';
-    if (state.adminSelectedCategory === cat) renderAdminPanel();
     showToast(`Added ${added} word${added !== 1 ? 's' : ''}${skipped ? `, skipped ${skipped} duplicate${skipped !== 1 ? 's' : ''}` : ''}`);
-  }).catch((error) => {
-    syncError = error.message;
-    alert("⚠️ Could not add words: " + error.message);
     btn.disabled = false;
     btn.textContent = 'Add All';
   });
 };
 
 window.deleteWord = (cat, idx) => {
-  const removed = PACKS[cat][idx];
-  PACKS[cat].splice(idx, 1);
-  renderAdminPanel();
-
-  savePack(cat).then(() => {
-    showToast(`Removed "${removed}"`, 'Undo', () => {
-      db.ref('packs/' + cat).once('value').then((snap) => {
-        const serverData = snap.val();
-        const fresh = serverData ? (Array.isArray(serverData) ? serverData : Object.values(serverData)) : [];
-        fresh.splice(Math.min(idx, fresh.length), 0, removed);
-        PACKS[cat] = fresh;
-        if (state.adminSelectedCategory === cat) renderAdminPanel();
-        return savePack(cat);
-      });
-    });
-  }).catch(() => {
-    PACKS[cat].splice(idx, 0, removed);
-    renderAdminPanel();
-  });
+  const confirmDelete = confirm("Delete this word?");
+  if (confirmDelete) {
+    PACKS[cat].splice(idx, 1); 
+    syncToCloud();
+  }
 };
 
 window.factoryReset = () => {
   if (confirm("Reset all words to default (empty)? Custom words will be lost.")) {
-    const backup = PACKS;
     PACKS = {};
     DEFAULT_CATEGORIES.forEach(cat => PACKS[cat] = []);
-    renderAdminPanel();
-
-    savePacks().catch(() => {
-      PACKS = backup;
-      renderAdminPanel();
-    });
+    syncToCloud();
   }
 };
 
