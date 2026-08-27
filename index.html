@@ -94,15 +94,36 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
-  /* Among Us Run Animation */
-  @keyframes runRight {
-    0% { transform: translate(0, -50%); }
-    15% { transform: translate(-20px, -50%); } 
-    100% { transform: translate(150vw, -50%); } 
+  /* Among Us Zigzag Chase Animation */
+  .imposter-icon {
+    cursor: pointer;
+    transition: filter 0.2s ease;
   }
-  .run-away {
-    animation: runRight 2s ease-in forwards !important;
-    pointer-events: none; 
+  .imposter-icon:hover {
+    filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8)) brightness(1.15);
+  }
+  .imposter-icon.fleeing {
+    pointer-events: none;
+  }
+
+  /* Button reacts when the imposter reaches it */
+  @keyframes impactSquish {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.12, 0.86) rotate(-1.5deg); }
+    55% { transform: scale(0.92, 1.08) rotate(1.5deg); }
+    80% { transform: scale(1.04, 0.98); }
+    100% { transform: scale(1); }
+  }
+  .start-btn.imposter-hit {
+    animation: impactSquish 0.45s ease;
+  }
+
+  .poof-particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    will-change: transform, opacity;
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1), opacity 0.6s ease-out;
   }
 
   /* Watermark */
@@ -600,7 +621,7 @@ function renderWelcome() {
       <div style="text-align: center; margin-bottom: 25px; position: relative; padding-left: 20px;">
         <h1 style="font-family: 'Inter', sans-serif; font-size: clamp(34px, 8vw, 44px); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 4px 20px rgba(0,0,0,0.5); display: inline-block; position: relative; margin: 0;">
           IMPOSTER
-          <svg onclick="this.classList.add('run-away')" width="40" height="40" viewBox="0 0 512 512" style="position: absolute; top: 50%; right: -50px; transform: translate(0, -50%); cursor: pointer; filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8));">
+          <svg class="imposter-icon" onclick="runAwayZigzag(this)" width="40" height="40" viewBox="0 0 512 512" style="position: absolute; top: 50%; right: -50px; transform: translate(0, -50%); filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8));">
              <path fill="#FF453A" d="M379.7,85.2c-29.4-36.2-74-56.1-120.4-56.1c-84.3,0-152.7,68.4-152.7,152.7v174c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64v-38.3h43v38.3c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64V188.7C405.2,148.9,396.6,112.5,379.7,85.2z"/>
              <path fill="#71C7D5" d="M366.5,124.9H228.3c-29.6,0-53.5,24-53.5,53.5v15c0,29.6,24,53.5,53.5,53.5h138.2c29.6,0,53.5-24,53.5-53.5v-15C420,148.9,396.1,124.9,366.5,124.9z"/>
              <path fill="#FF453A" d="M106.6,193.3H78.9c-21.7,0-39.3,17.6-39.3,39.3v85.2c0,21.7,17.6,39.3,39.3,39.3h27.7V193.3z"/>
@@ -621,6 +642,97 @@ window.showOnamPopup = () => {
 window.closePopupAndStart = () => {
   document.getElementById('onamModal').style.display = 'none';
   window.location.hash = '#setup';
+};
+
+/* ---------------- Fun: Imposter zigzag chase into the Enter button ---------------- */
+function spawnPoof(x, y) {
+  const bits = ['💨', '✨', '💥', '⭐'];
+  for (let i = 0; i < 8; i++) {
+    const p = document.createElement('div');
+    p.className = 'poof-particle';
+    p.textContent = bits[Math.floor(Math.random() * bits.length)];
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    p.style.fontSize = (10 + Math.random() * 12) + 'px';
+    p.style.opacity = '1';
+    p.style.transform = 'translate(-50%, -50%) scale(1)';
+    document.body.appendChild(p);
+    requestAnimationFrame(() => {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 26 + Math.random() * 38;
+      p.style.transform = `translate(calc(-50% + ${Math.cos(angle) * dist}px), calc(-50% + ${Math.sin(angle) * dist}px)) scale(0.3) rotate(${(Math.random() * 160 - 80)}deg)`;
+      p.style.opacity = '0';
+    });
+    setTimeout(() => p.remove(), 700);
+  }
+}
+
+window.runAwayZigzag = (el) => {
+  if (el.classList.contains('fleeing')) return;
+
+  const target = document.querySelector('.start-btn');
+  if (!target) return;
+
+  el.classList.add('fleeing');
+
+  const startRect = el.getBoundingClientRect();
+  const startCx = startRect.left + startRect.width / 2;
+  const startCy = startRect.top + startRect.height / 2;
+  const targetRect = target.getBoundingClientRect();
+  const targetCx = targetRect.left + targetRect.width / 2;
+  const targetCy = targetRect.top + targetRect.height / 2;
+
+  const deltaX = targetCx - startCx;
+  const deltaY = targetCy - startCy;
+  const distance = Math.hypot(deltaX, deltaY);
+  const duration = Math.min(2200, Math.max(1100, distance * 2.4));
+
+  // Build a jittery zigzag path: linear travel toward the button,
+  // plus a perpendicular wiggle that shrinks as it gets close, plus a rocking tilt.
+  const perpX = -deltaY / (distance || 1);
+  const perpY = deltaX / (distance || 1);
+  const zigzags = 6;
+
+  const transformFrames = [];
+  const steps = 24;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    const eased = t * t * (3 - 2 * t); // smoothstep for overall travel
+    const wiggleDecay = Math.pow(1 - t, 1.4);
+    const wiggle = Math.sin(t * Math.PI * zigzags) * 34 * wiggleDecay;
+    const x = deltaX * eased + perpX * wiggle;
+    const y = deltaY * eased + perpY * wiggle;
+    const rotate = Math.sin(t * Math.PI * zigzags) * 22 * wiggleDecay;
+    const scale = 1 - eased * 0.72;
+    const bob = Math.abs(Math.sin(t * Math.PI * zigzags * 1.5)) * 4 * wiggleDecay;
+    transformFrames.push({
+      transform: `translate(${x}px, ${y - bob}px) rotate(${rotate}deg) scale(${Math.max(scale, 0.22)})`
+    });
+  }
+
+  const transformAnim = el.animate(transformFrames, {
+    duration,
+    easing: 'linear',
+    fill: 'forwards',
+    composite: 'add'
+  });
+
+  el.animate(
+    [
+      { opacity: 1, offset: 0 },
+      { opacity: 1, offset: 0.82 },
+      { opacity: 0, offset: 1 }
+    ],
+    { duration, fill: 'forwards' }
+  );
+
+  transformAnim.onfinish = () => {
+    el.style.visibility = 'hidden';
+    target.classList.add('imposter-hit');
+    spawnPoof(targetCx, targetCy);
+    if (navigator.vibrate) navigator.vibrate([30, 40, 30]);
+    setTimeout(() => target.classList.remove('imposter-hit'), 450);
+  };
 };
 
 /* ---------------- 1. Setup Screen ---------------- */
