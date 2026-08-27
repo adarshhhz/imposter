@@ -41,6 +41,7 @@
     font-family: 'Inter', sans-serif;
     /* Uses the exact filename provided, with a slight dark overlay to keep text readable */
     background: linear-gradient(rgba(18, 18, 22, 0.65), rgba(18, 18, 22, 0.85)), url('1000107918.jpg') center/cover fixed no-repeat;
+    background-color: var(--bg-main); /* Fallback */
     color: var(--text-main);
     overflow-x: hidden;
   }
@@ -296,8 +297,8 @@
   .admin-btn { background: var(--accent); color: #000; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
   .admin-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
   .admin-btn:active { transform: scale(0.96); }
-  .admin-btn-secondary { background: var(--bg-input); color: #FFF; border: 1px solid rgba(255,255,255,0.1); padding: 10px 16px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 15px; font-weight: 500; transition: all 0.2s ease; }
-  .admin-btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--text-muted); }
+  .admin-btn-secondary { background: var(--bg-input); color: #FFF; border: 1px solid #30303C; padding: 10px 16px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 15px; font-weight: 500; transition: all 0.2s ease; }
+  .admin-btn-secondary:hover { background: #2a2a36; border-color: var(--text-muted); }
   .admin-btn-secondary:active { transform: scale(0.98); }
   .word-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
   .word-chip { background: var(--bg-input); padding: 5px 10px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 5px; transition: background 0.2s; border: 1px solid rgba(255,255,255,0.05); }
@@ -359,7 +360,6 @@
 </head>
 <body>
 
-<div id="connection-status">🟡 Connecting...</div>
 <div class="watermark">powered by adruzz</div>
 <div class="app-container" id="app"></div>
 
@@ -401,18 +401,6 @@ const db = firebase.database();
 
 let syncError = null;
 
-// Track Connection Status
-db.ref('.info/connected').on('value', function(snap) {
-  const el = document.getElementById('connection-status');
-  if (snap.val() === true) {
-    el.innerHTML = '🟢 Live';
-    el.style.color = 'var(--success)';
-  } else {
-    el.innerHTML = '🔴 Offline';
-    el.style.color = 'var(--danger)';
-  }
-});
-
 // Sync data securely via JSON String
 db.ref('gameDataV2').on('value', (snapshot) => {
   const dataString = snapshot.val();
@@ -447,10 +435,6 @@ function syncToCloud(onSuccess) {
     }
     renderAdminPanel(); 
   });
-}
-
-function forceRefresh() {
-  window.location.href = window.location.href.split('?')[0] + '?v=' + new Date().getTime() + window.location.hash;
 }
 
 /* ---------------- Subtle Pixel Petals Falling Animation ---------------- */
@@ -608,15 +592,16 @@ function renderSetup() {
 
     <div class="card">
       <div class="setting-row" style="border-bottom:none;">
-        <div class="setting-info" style="justify-content:space-between;">
-          <div style="display:flex; gap:12px; align-items:center;">
-            <div class="setting-icon">${icons.tag}</div>
-            <div class="setting-text">
-              <h3>Categories</h3>
-              <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
-            </div>
+        <div class="setting-info">
+          <div class="setting-icon">${icons.tag}</div>
+          <div class="setting-text">
+            <h3>Categories</h3>
+            <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
           </div>
-          <button onclick="forceRefresh()" style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:#FFF; padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; backdrop-filter:blur(5px);">🔄 Sync Info</button>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <span style="font-size:12px; color:var(--accent); cursor:pointer; text-decoration:underline;" onclick="selectAllCategories()">All</span>
+          <span style="font-size:12px; color:var(--text-muted); cursor:pointer; text-decoration:underline;" onclick="clearAllCategories()">None</span>
         </div>
       </div>
       <div class="chip-container">${categoriesHTML}</div>
