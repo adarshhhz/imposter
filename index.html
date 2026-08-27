@@ -267,6 +267,41 @@
   .vote-option.selected .vote-radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 4px #3c2a12; }
   
   /* Welcome Screen Image Style */
+  /* Pixel Art Welcome Scene */
+  .pixel-scene {
+    position: absolute; inset: 0; overflow: hidden; z-index: 0;
+    background: linear-gradient(180deg, #2E7FE0 0%, #4FA3F0 35%, #7DC4F5 60%, #A8DFFF 100%);
+  }
+  .pixel-sprite { position: absolute; width: 1px; height: 1px; background: transparent; }
+  .pixel-cloud { animation: driftCloud linear infinite; }
+  @keyframes driftCloud {
+    0% { transform: translateX(-20vw); }
+    100% { transform: translateX(120vw); }
+  }
+  .pixel-hill-back, .pixel-hill-front {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 45%;
+  }
+  .pixel-hill-back {
+    background: #3E9B4F;
+    clip-path: polygon(0% 100%, 0% 55%, 12% 55%, 12% 40%, 28% 40%, 28% 58%, 45% 58%, 45% 35%, 62% 35%, 62% 50%, 78% 50%, 78% 30%, 100% 30%, 100% 100%);
+    height: 50%;
+    opacity: 0.85;
+  }
+  .pixel-hill-front {
+    background: #2F7A3E;
+    clip-path: polygon(0% 100%, 0% 70%, 15% 70%, 15% 55%, 32% 55%, 32% 72%, 50% 72%, 50% 50%, 68% 50%, 68% 65%, 85% 65%, 85% 45%, 100% 45%, 100% 100%);
+    height: 40%;
+  }
+  .pixel-spark {
+    position: absolute; width: 8px; height: 8px; transform: rotate(45deg);
+    animation: twinkleFloat ease-in-out infinite;
+    z-index: 1;
+  }
+  @keyframes twinkleFloat {
+    0%, 100% { opacity: 0; transform: rotate(45deg) translateY(0) scale(0.5); }
+    50% { opacity: 1; transform: rotate(45deg) translateY(-16px) scale(1); }
+  }
+
   .hero-image {
     width: 220px;
     height: 220px;
@@ -487,9 +522,13 @@ const icons = {
 /* ---------------- 0. Welcome Screen ---------------- */
 function renderWelcome() {
   app.innerHTML = `
-    <div class="game-screen" style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 0; margin-top: -20px; position: relative;">
-      
-      <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; background: var(--accent); filter: blur(120px); opacity: 0.3; pointer-events: none; z-index: 0;"></div>
+    <div class="game-screen" style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 0; margin-top: -20px; position: relative; overflow: hidden;">
+
+      <div class="pixel-scene" id="pixelScene">
+        <div class="pixel-hill-back"></div>
+        <div id="pixelSparkles"></div>
+        <div class="pixel-hill-front"></div>
+      </div>
       
       <div style="text-align: center; margin-bottom: 30px; position: relative; z-index: 2; padding-left: 20px;">
         <h1 style="font-family: 'Inter', sans-serif; font-size: clamp(34px, 8vw, 44px); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 4px 20px rgba(255,69,58,0.6); display: inline-block; position: relative; margin: 0;">
@@ -502,11 +541,116 @@ function renderWelcome() {
         </h1>
       </div>
       
-      <div class="hero-image"></div>
+      <div class="hero-image" style="position:relative; z-index:2;"></div>
       <h2 style="font-size: 28px; color: var(--accent); font-weight: 600; margin: 0 0 20px 0; letter-spacing: 1.5px; text-shadow: 0 2px 10px rgba(255,159,10,0.3); position: relative; z-index: 2;">സ്വാഗതം</h2>
       <button class="start-btn" style="width: 80%; max-width: 300px; background: linear-gradient(135deg, #FF453A 0%, #FF9F0A 100%); color: #FFF; box-shadow: 0 4px 15px rgba(255,69,58,0.4); border: none; position: relative; z-index: 2;" onclick="showOnamPopup()">Enter Game</button>
     </div>
   `;
+  initPixelScene();
+}
+
+function initPixelScene() {
+  const scene = document.getElementById('pixelScene');
+  if (!scene) return;
+
+  // --- Sun (blocky pixel circle via box-shadow squares) ---
+  const sun = document.createElement('div');
+  sun.className = 'pixel-sprite';
+  sun.style.top = '8%';
+  sun.style.right = '12%';
+  sun.style.boxShadow = pixelArt([
+    '  SSS  ',
+    ' SSSSS ',
+    'SSSSSSS',
+    'SSSSSSS',
+    'SSSSSSS',
+    ' SSSSS ',
+    '  SSS  '
+  ], 9, { S: '#FFD84D' });
+  sun.style.filter = 'drop-shadow(0 0 20px rgba(255, 216, 77, 0.6))';
+  scene.appendChild(sun);
+
+  // --- Clouds (drifting) ---
+  const cloudShape = pixelArt([
+    '  CCCC  ',
+    ' CCCCCCC',
+    'CCCCCCCC',
+    ' CCCCCC '
+  ], 8, { C: '#FFFFFF' });
+
+  [
+    { top: '14%', size: 1, dur: 55, delay: 0, opacity: 0.95 },
+    { top: '28%', size: 0.7, dur: 70, delay: -20, opacity: 0.8 },
+    { top: '6%', size: 0.55, dur: 85, delay: -50, opacity: 0.7 }
+  ].forEach(cfg => {
+    const cloud = document.createElement('div');
+    cloud.className = 'pixel-sprite pixel-cloud';
+    cloud.style.top = cfg.top;
+    cloud.style.left = '0';
+    cloud.style.boxShadow = cloudShape;
+    cloud.style.transform = `scale(${cfg.size})`;
+    cloud.style.transformOrigin = 'left top';
+    cloud.style.opacity = cfg.opacity;
+    cloud.style.animationDuration = cfg.dur + 's';
+    cloud.style.animationDelay = cfg.delay + 's';
+    scene.appendChild(cloud);
+  });
+
+  // --- Trees along the hill line ---
+  const treeShape = pixelArt([
+    ' LLL ',
+    'LLLLL',
+    'LLLLL',
+    '  T  ',
+    '  T  '
+  ], 7, { L: '#2E6B3E', T: '#5C3A21' });
+
+  [
+    { left: '6%', bottom: '30%', scale: 0.9 },
+    { left: '80%', bottom: '34%', scale: 1.1 },
+    { left: '88%', bottom: '22%', scale: 0.7 }
+  ].forEach(cfg => {
+    const tree = document.createElement('div');
+    tree.className = 'pixel-sprite';
+    tree.style.left = cfg.left;
+    tree.style.bottom = cfg.bottom;
+    tree.style.boxShadow = treeShape;
+    tree.style.transform = `scale(${cfg.scale})`;
+    tree.style.transformOrigin = 'left bottom';
+    scene.appendChild(tree);
+  });
+
+  // --- Twinkling sparkles ---
+  const sparkColors = ['#FF9F0A', '#FF6EC7', '#FFD84D', '#B983FF', '#6EE7E7'];
+  const sparkContainer = document.getElementById('pixelSparkles');
+  if (sparkContainer) {
+    sparkContainer.innerHTML = '';
+    for (let i = 0; i < 16; i++) {
+      const spark = document.createElement('div');
+      spark.className = 'pixel-spark';
+      spark.style.left = Math.random() * 100 + '%';
+      spark.style.top = Math.random() * 90 + '%';
+      spark.style.background = sparkColors[Math.floor(Math.random() * sparkColors.length)];
+      spark.style.animationDuration = (Math.random() * 2 + 2) + 's';
+      spark.style.animationDelay = (Math.random() * 3) + 's';
+      const size = Math.floor(Math.random() * 5) + 5;
+      spark.style.width = size + 'px';
+      spark.style.height = size + 'px';
+      sparkContainer.appendChild(spark);
+    }
+  }
+}
+
+// Builds a box-shadow string from a small bitmap of characters, e.g. pixelArt(['  S  ','SSSSS'], 8, {S:'#fff'})
+function pixelArt(rows, size, palette) {
+  const shadows = [];
+  rows.forEach((row, y) => {
+    [...row].forEach((ch, x) => {
+      const color = palette[ch];
+      if (color) shadows.push(`${x * size}px ${y * size}px 0 0 ${color}`);
+    });
+  });
+  return shadows.join(',');
 }
 
 window.showOnamPopup = () => {
