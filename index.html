@@ -33,17 +33,23 @@
   
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   
-  /* Global Background using the user's pixel art image */
+  /* Global Background using your Cloudinary image */
   html, body {
     height: 100%;
     margin: 0;
     padding: 0;
     font-family: 'Inter', sans-serif;
-    /* Uses the exact filename provided, with a slight dark overlay to keep text readable */
-    background: linear-gradient(rgba(18, 18, 22, 0.65), rgba(18, 18, 22, 0.85)), url('1000107918.jpg') center/cover fixed no-repeat;
+    background: linear-gradient(rgba(18, 18, 22, 0.65), rgba(18, 18, 22, 0.85)), url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787806687/pixel-art-style-floral-garden-illustration_23-2151503920_1.jpg') center/cover fixed no-repeat;
     background-color: var(--bg-main); /* Fallback */
     color: var(--text-main);
     overflow-x: hidden;
+  }
+
+  /* Setup-screen-only background override (Apple-glass look) */
+  body.setup-bg {
+    background:
+      linear-gradient(rgba(10, 10, 14, 0.55), rgba(10, 10, 14, 0.78)),
+      url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787807028/file_00000000e9448211b6d1eeef8edc2c67.png') center/cover fixed no-repeat;
   }
   
   /* Toast */
@@ -57,7 +63,7 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
   .toast button { background: none; border: none; color: var(--accent); font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'Inter', sans-serif; }
 
-  /* Pixel Flower Petal Animation (Reduced amount) */
+  /* Pixel Flower Petal Animation */
   .pixel-petal {
     position: fixed;
     top: -15px;
@@ -157,7 +163,7 @@
   h1 { font-size: 24px; font-weight: 700; text-align: center; margin: 10px 0 4px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
   .subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 24px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
   
-  /* Cards with Glassmorphism for the background image */
+  /* Cards with Glassmorphism */
   .card {
     background: var(--bg-card);
     backdrop-filter: blur(12px);
@@ -177,6 +183,75 @@
     font-size: 15px;
   }
   .card-header .count { color: var(--text-muted); font-size: 13px; font-weight: 400; }
+
+  /* --- Apple-style Liquid Glass upgrade, scoped to the setup screen --- */
+  .setup-screen .card {
+    position: relative;
+    background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%), rgba(30, 30, 38, 0.42);
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.16);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.25) inset,
+      0 8px 30px rgba(0,0,0,0.35),
+      0 0 0 1px rgba(0,0,0,0.08);
+    overflow: hidden;
+  }
+  /* faint top sheen sweep, purely decorative */
+  .setup-screen .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+  }
+  .setup-screen h1,
+  .setup-screen .subtitle {
+    text-shadow: 0 2px 12px rgba(0,0,0,0.65);
+  }
+  .setup-screen .player-input-wrap {
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+  .setup-screen .player-input-wrap:focus-within {
+    background: rgba(255,255,255,0.11);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 16px rgba(255,159,10,0.25);
+  }
+  .setup-screen .chip {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.10);
+  }
+  .setup-screen .chip.active {
+    background: linear-gradient(180deg, rgba(255,159,10,0.55), rgba(204,126,0,0.55));
+    border: 1px solid rgba(255,200,120,0.55);
+    box-shadow: 0 2px 10px rgba(255,159,10,0.25);
+  }
+  .setup-screen .add-player-btn {
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .setup-screen .switch {
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(4px);
+  }
+  .setup-screen .bottom-bar {
+    background: rgba(18,18,22,0.55);
+    backdrop-filter: blur(24px) saturate(160%);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    border-top: 1px solid rgba(255,255,255,0.10);
+  }
+  .setup-screen .start-btn {
+    background: linear-gradient(180deg, #FFB020, var(--accent));
+    box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 6px 18px rgba(255,159,10,0.35);
+  }
+  .setup-screen .player-idx {
+    box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset, 0 2px 8px rgba(0,0,0,0.3);
+  }
 
   /* Player List */
   .player-list { display: flex; flex-direction: column; gap: 10px; }
@@ -484,6 +559,7 @@ const app = document.getElementById('app');
 /* ---------------- Router ---------------- */
 function render() {
   const hash = window.location.hash;
+  document.body.classList.toggle('setup-bg', hash === '#setup');
   if (hash === '' || hash === '#welcome') {
     state.screen = 'welcome';
     app.className = 'app-container welcome-container';
@@ -568,6 +644,7 @@ function renderSetup() {
   }).join('');
 
   app.innerHTML = `
+    <div class="setup-screen">
     <h1 style="margin-top: 10px;">Set up game</h1>
     <div class="subtitle">Configure before starting</div>
 
@@ -592,16 +669,14 @@ function renderSetup() {
 
     <div class="card">
       <div class="setting-row" style="border-bottom:none;">
-        <div class="setting-info">
-          <div class="setting-icon">${icons.tag}</div>
-          <div class="setting-text">
-            <h3>Categories</h3>
-            <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
+        <div class="setting-info" style="justify-content:space-between;">
+          <div style="display:flex; gap:12px; align-items:center;">
+            <div class="setting-icon">${icons.tag}</div>
+            <div class="setting-text">
+              <h3>Categories</h3>
+              <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
+            </div>
           </div>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <span style="font-size:12px; color:var(--accent); cursor:pointer; text-decoration:underline;" onclick="selectAllCategories()">All</span>
-          <span style="font-size:12px; color:var(--text-muted); cursor:pointer; text-decoration:underline;" onclick="clearAllCategories()">None</span>
         </div>
       </div>
       <div class="chip-container">${categoriesHTML}</div>
@@ -637,6 +712,7 @@ function renderSetup() {
           ${icons.play} Start Game
         </button>
       </div>
+    </div>
     </div>
   `;
 
@@ -708,14 +784,6 @@ window.toggleCategory = (cat) => {
   } else {
     state.activeCategories.push(cat);
   }
-  renderSetup();
-};
-window.selectAllCategories = () => {
-  state.activeCategories = [...DEFAULT_CATEGORIES];
-  renderSetup();
-};
-window.clearAllCategories = () => {
-  state.activeCategories = [DEFAULT_CATEGORIES[0]];
   renderSetup();
 };
 window.toggleSetting = (key) => { state[key] = !state[key]; renderSetup(); };
