@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<!-- Added meta tags to prevent aggressive caching -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
@@ -29,10 +28,19 @@
     --success: #32D74B;
     --radius: 16px;
     --radius-sm: 10px;
+    --max-w: 540px;
   }
   
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { height: 100%; margin: 0; font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden; }
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    overflow-x: hidden;
+  }
   
   /* Toast */
   .toast {
@@ -45,19 +53,22 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
   .toast button { background: none; border: none; color: var(--accent); font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'Inter', sans-serif; }
 
-  /* Onam Flower Animation */
-  .flower {
+  /* Pixel Flower Petal Animation */
+  .pixel-petal {
     position: fixed;
-    top: -10vh;
+    top: -15px;
     z-index: 9998;
     pointer-events: none;
     user-select: none;
-    font-size: 14px;
-    animation: fall linear infinite;
+    width: 6px;
+    height: 6px;
+    image-rendering: pixelated;
+    animation: pixelFall linear infinite;
   }
-  @keyframes fall {
-    0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+  @keyframes pixelFall {
+    0% { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0.85; }
+    50% { transform: translateY(50vh) rotate(180deg) translateX(12px); opacity: 0.7; }
+    100% { transform: translateY(105vh) rotate(360deg) translateX(-12px); opacity: 0; }
   }
 
   /* Pop-up Animation */
@@ -91,13 +102,50 @@
   }
 
   .app-container {
-    max-width: 500px;
+    width: 100%;
+    max-width: var(--max-w);
     margin: 0 auto;
     min-height: 100vh;
     padding: 20px 16px 100px; 
     display: flex;
     flex-direction: column;
     position: relative;
+  }
+
+  /* Fullscreen Welcome Container */
+  .welcome-container {
+    padding: 0 !important;
+    max-width: 100% !important;
+    width: 100vw !important;
+  }
+
+  /* Responsive Scaling for Tablets and Desktops */
+  @media (min-width: 768px) {
+    :root {
+      --max-w: 620px;
+    }
+    .app-container {
+      padding: 36px 24px 120px;
+    }
+    .card {
+      padding: 20px;
+    }
+    h1 {
+      font-size: 28px !important;
+    }
+    .subtitle {
+      font-size: 15px !important;
+    }
+    .hero-image {
+      width: 260px !important;
+      height: 260px !important;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    :root {
+      --max-w: 680px;
+    }
   }
 
   /* Typography */
@@ -110,6 +158,7 @@
     border-radius: var(--radius);
     padding: 16px;
     margin-bottom: 16px;
+    border: 1px solid #282834;
   }
   .card-header {
     display: flex;
@@ -211,7 +260,7 @@
   .bottom-bar {
     position: fixed; bottom: 0; left: 0; right: 0; padding: 16px; background: var(--bg-main); border-top: 1px solid #202028; display: flex; justify-content: center; z-index: 10;
   }
-  .bottom-bar .inner { width: 100%; max-width: 500px; }
+  .bottom-bar .inner { width: 100%; max-width: var(--max-w); }
   .start-btn {
     width: 100%; background: var(--accent); color: #000; font-weight: 600; font-size: 16px; padding: 16px; border: none; border-radius: var(--radius-sm); cursor: pointer; font-family: 'Inter', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px;
     transition: all 0.2s ease;
@@ -231,7 +280,7 @@
   .chip.active { background: var(--accent-dark); color: #FFF; border: 1px solid var(--accent); }
 
   /* Admin Panel specific */
-  .admin-box { background: var(--bg-card); padding: 20px; border-radius: var(--radius); margin-bottom: 20px;}
+  .admin-box { background: var(--bg-card); padding: 20px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid #282834;}
   .admin-input { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid #30303C; color: #FFF; border-radius: 8px; margin-bottom: 10px; font-size: 16px; transition: border-color 0.2s;}
   .admin-input:focus { outline: none; border-color: var(--accent); }
   .admin-btn { background: var(--accent); color: #000; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
@@ -266,10 +315,15 @@
   .vote-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-muted); transition: all 0.2s ease; }
   .vote-option.selected .vote-radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 4px #3c2a12; }
   
-  /* Welcome Screen Image Style */
-  /* Pixel Art Welcome Scene */
+  /* Pixel Art Welcome Scene - Fullscreen Fixed */
   .pixel-scene {
-    position: absolute; inset: 0; overflow: hidden; z-index: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    z-index: 0;
     background: linear-gradient(180deg, #2E7FE0 0%, #4FA3F0 35%, #7DC4F5 60%, #A8DFFF 100%);
   }
   .pixel-sprite { position: absolute; width: 1px; height: 1px; background: transparent; }
@@ -279,7 +333,7 @@
     100% { transform: translateX(120vw); }
   }
   .pixel-hill-back, .pixel-hill-front {
-    position: absolute; left: 0; right: 0; bottom: 0; height: 45%;
+    position: absolute; left: 0; right: 0; bottom: 0;
   }
   .pixel-hill-back {
     background: #3E9B4F;
@@ -305,7 +359,7 @@
   .hero-image {
     width: 220px;
     height: 220px;
-    margin: 0 auto 40px;
+    margin: 0 auto 30px;
     background: url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787771294/FyvT48GaIAAx4l4.jpg') center/cover no-repeat;
     border-radius: 20px;
     border: 3px solid var(--accent);
@@ -357,7 +411,6 @@ const DEFAULT_CATEGORIES = [
   "College / School", "Gulf / NRI", "FIFA", "Bigg Boss", "Onam"
 ];
 
-// Start entirely empty. We will wait for Firebase.
 let PACKS = {};
 DEFAULT_CATEGORIES.forEach(cat => PACKS[cat] = []);
 
@@ -375,7 +428,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Tracks the last sync problem so we can show it in the Admin panel instead of it failing silently
 let syncError = null;
 
 // Sync completely from Cloud
@@ -393,72 +445,64 @@ db.ref('packs').on('value', (snapshot) => {
 
     state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
   }
-  // Update UI (always, even if data is null/empty, so admin panel reflects reality)
   if (['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
     render();
   }
 }, (error) => {
-  // This fires on permission-denied or other read errors that were previously swallowed silently
   syncError = error.message;
   console.error('Firebase READ error:', error);
   if (state.screen === 'admin') render();
 });
 
 function savePacks() {
-  // Full-tree write — only used for factory reset. Normal add/delete use savePack(cat) below.
   return db.ref('packs').set(PACKS).then(() => {
     syncError = null;
   }).catch((error) => {
     syncError = error.message;
     console.error('Firebase WRITE error:', error);
-    alert("⚠️ Firebase save failed: " + error.message + "\n\nYour word was NOT saved to the cloud — it will disappear on refresh until this is fixed. Check your Realtime Database rules in the Firebase console.");
+    alert("⚠️ Firebase save failed: " + error.message);
     if (state.screen === 'admin') render();
     throw error;
   });
 }
 
-// Writes ONLY one category's word list, instead of the whole PACKS tree.
-// This is the important fix: if another open tab has a stale/older copy of PACKS
-// in memory and calls savePacks() later, it can silently wipe out words you just
-// added in THIS tab (because a full-tree .set() overwrites everything, including
-// categories the other tab never touched). Scoping the write to one category means
-// two tabs editing DIFFERENT categories can never clobber each other, and even for
-// the SAME category, whichever save lands last is at least based on that one
-// category's real list rather than a whole-tree snapshot that could be minutes stale.
 function savePack(cat) {
   return db.ref('packs/' + cat).set(PACKS[cat]).then(() => {
     syncError = null;
   }).catch((error) => {
     syncError = error.message;
     console.error('Firebase WRITE error:', error);
-    alert("⚠️ Firebase save failed: " + error.message + "\n\nYour word was NOT saved to the cloud — it will disappear on refresh until this is fixed. Check your Realtime Database rules in the Firebase console.");
+    alert("⚠️ Firebase save failed: " + error.message);
     if (state.screen === 'admin') render();
     throw error;
   });
 }
 
-/* ---------------- Onam Flowers Animation ---------------- */
-function startOnamFlowers() {
-  const emojis = ['🌸', '🌼', '🌺', '🍃'];
-  for (let i = 0; i < 25; i++) {
-    let flower = document.createElement('div');
-    flower.className = 'flower';
-    flower.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-    flower.style.left = Math.random() * 100 + 'vw';
-    flower.style.animationDuration = (Math.random() * 3 + 4) + 's'; 
-    flower.style.animationDelay = Math.random() * 5 + 's';
-    flower.style.fontSize = (Math.random() * 10 + 10) + 'px';
-    document.body.appendChild(flower);
+/* ---------------- Subtle Pixel Petals Falling Animation ---------------- */
+function startPixelPetals() {
+  const colors = ['#FF6EC7', '#FFD84D', '#FF9F0A', '#FFFFFF', '#FF453A'];
+  // Moderate, gentle amount of falling pixel petals
+  for (let i = 0; i < 14; i++) {
+    const petal = document.createElement('div');
+    petal.className = 'pixel-petal';
+    const c = colors[Math.floor(Math.random() * colors.length)];
+    petal.style.backgroundColor = c;
+    petal.style.boxShadow = `2px 0 0 0 ${c}, 0 2px 0 0 #00000033`;
+    petal.style.left = Math.random() * 96 + 'vw';
+    petal.style.animationDuration = (Math.random() * 4 + 5) + 's'; 
+    petal.style.animationDelay = (Math.random() * 6) + 's';
+    petal.style.opacity = Math.random() * 0.4 + 0.5;
+    document.body.appendChild(petal);
   }
 }
-startOnamFlowers(); 
+startPixelPetals(); 
 
 /* ---------------- State ---------------- */
 let state = {
   screen: 'setup',
   names: ["Player 1", "Player 2", "Player 3"],
   photos: [null, null, null], 
-  activeCategories: [...DEFAULT_CATEGORIES], // Select all by default
+  activeCategories: [...DEFAULT_CATEGORIES],
   imposterCount: 1,
   imposterSeesCategory: true,
   showImposterHint: false, 
@@ -483,29 +527,33 @@ function render() {
   const hash = window.location.hash;
   if (hash === '' || hash === '#welcome') {
     state.screen = 'welcome';
+    app.className = 'app-container welcome-container';
     renderWelcome();
-  } else if (hash === '#setup') {
-    state.screen = 'setup';
-    renderSetup(); 
-  } else if (hash === '#admin') {
-    state.screen = 'admin';
-    if (!state.adminAuthenticated) renderAdminLogin();
-    else renderAdminPanel();
-  } else if (hash === '#play') {
-    state.screen = 'play';
-    renderPass();
-  } else if (hash === '#interrogate') {
-    state.screen = 'interrogate';
-    renderInterrogate();
-  } else if (hash === '#vote-pass') {
-    state.screen = 'vote-pass';
-    renderVotePass();
-  } else if (hash === '#vote-cast') {
-    state.screen = 'vote-cast';
-    renderVoteCast();
-  } else if (hash === '#results') {
-    state.screen = 'results';
-    renderResults();
+  } else {
+    app.className = 'app-container';
+    if (hash === '#setup') {
+      state.screen = 'setup';
+      renderSetup(); 
+    } else if (hash === '#admin') {
+      state.screen = 'admin';
+      if (!state.adminAuthenticated) renderAdminLogin();
+      else renderAdminPanel();
+    } else if (hash === '#play') {
+      state.screen = 'play';
+      renderPass();
+    } else if (hash === '#interrogate') {
+      state.screen = 'interrogate';
+      renderInterrogate();
+    } else if (hash === '#vote-pass') {
+      state.screen = 'vote-pass';
+      renderVotePass();
+    } else if (hash === '#vote-cast') {
+      state.screen = 'vote-cast';
+      renderVoteCast();
+    } else if (hash === '#results') {
+      state.screen = 'results';
+      renderResults();
+    }
   }
 }
 window.addEventListener('hashchange', render);
@@ -522,16 +570,16 @@ const icons = {
 /* ---------------- 0. Welcome Screen ---------------- */
 function renderWelcome() {
   app.innerHTML = `
-    <div class="game-screen" style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 0; margin-top: -20px; position: relative; overflow: hidden;">
+    <div class="pixel-scene" id="pixelScene">
+      <div class="pixel-hill-back"></div>
+      <div id="pixelSparkles"></div>
+      <div class="pixel-hill-front"></div>
+    </div>
 
-      <div class="pixel-scene" id="pixelScene">
-        <div class="pixel-hill-back"></div>
-        <div id="pixelSparkles"></div>
-        <div class="pixel-hill-front"></div>
-      </div>
-      
-      <div style="text-align: center; margin-bottom: 30px; position: relative; z-index: 2; padding-left: 20px;">
-        <h1 style="font-family: 'Inter', sans-serif; font-size: clamp(34px, 8vw, 44px); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 4px 20px rgba(255,69,58,0.6); display: inline-block; position: relative; margin: 0;">
+    <div class="game-screen" style="height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; position: relative; z-index: 2;">
+
+      <div style="text-align: center; margin-bottom: 25px; position: relative; padding-left: 20px;">
+        <h1 style="font-family: 'Inter', sans-serif; font-size: clamp(34px, 8vw, 44px); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 4px 20px rgba(0,0,0,0.5); display: inline-block; position: relative; margin: 0;">
           IMPOSTER
           <svg onclick="this.classList.add('run-away')" width="40" height="40" viewBox="0 0 512 512" style="position: absolute; top: 50%; right: -50px; transform: translate(0, -50%); cursor: pointer; filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8));">
              <path fill="#FF453A" d="M379.7,85.2c-29.4-36.2-74-56.1-120.4-56.1c-84.3,0-152.7,68.4-152.7,152.7v174c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64v-38.3h43v38.3c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64V188.7C405.2,148.9,396.6,112.5,379.7,85.2z"/>
@@ -541,9 +589,9 @@ function renderWelcome() {
         </h1>
       </div>
       
-      <div class="hero-image" style="position:relative; z-index:2;"></div>
-      <h2 style="font-size: 28px; color: var(--accent); font-weight: 600; margin: 0 0 20px 0; letter-spacing: 1.5px; text-shadow: 0 2px 10px rgba(255,159,10,0.3); position: relative; z-index: 2;">സ്വാഗതം</h2>
-      <button class="start-btn" style="width: 80%; max-width: 300px; background: linear-gradient(135deg, #FF453A 0%, #FF9F0A 100%); color: #FFF; box-shadow: 0 4px 15px rgba(255,69,58,0.4); border: none; position: relative; z-index: 2;" onclick="showOnamPopup()">Enter Game</button>
+      <div class="hero-image"></div>
+      <h2 style="font-size: 28px; color: var(--accent); font-weight: 700; margin: 0 0 24px 0; letter-spacing: 1.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.4); position: relative; z-index: 2;">സ്വാഗതം</h2>
+      <button class="start-btn" style="width: 85%; max-width: 320px; background: linear-gradient(135deg, #FF453A 0%, #FF9F0A 100%); color: #FFF; box-shadow: 0 6px 20px rgba(0,0,0,0.35); border: none; position: relative; z-index: 2;" onclick="showOnamPopup()">Enter Game</button>
     </div>
   `;
   initPixelScene();
@@ -553,11 +601,11 @@ function initPixelScene() {
   const scene = document.getElementById('pixelScene');
   if (!scene) return;
 
-  // --- Sun (blocky pixel circle via box-shadow squares) ---
+  // Sun
   const sun = document.createElement('div');
   sun.className = 'pixel-sprite';
   sun.style.top = '8%';
-  sun.style.right = '12%';
+  sun.style.right = '10%';
   sun.style.boxShadow = pixelArt([
     '  SSS  ',
     ' SSSSS ',
@@ -570,7 +618,7 @@ function initPixelScene() {
   sun.style.filter = 'drop-shadow(0 0 20px rgba(255, 216, 77, 0.6))';
   scene.appendChild(sun);
 
-  // --- Clouds (drifting) ---
+  // Clouds
   const cloudShape = pixelArt([
     '  CCCC  ',
     ' CCCCCCC',
@@ -596,7 +644,7 @@ function initPixelScene() {
     scene.appendChild(cloud);
   });
 
-  // --- Trees along the hill line ---
+  // Trees
   const treeShape = pixelArt([
     ' LLL ',
     'LLLLL',
@@ -620,7 +668,7 @@ function initPixelScene() {
     scene.appendChild(tree);
   });
 
-  // --- Twinkling sparkles ---
+  // Sparkles
   const sparkColors = ['#FF9F0A', '#FF6EC7', '#FFD84D', '#B983FF', '#6EE7E7'];
   const sparkContainer = document.getElementById('pixelSparkles');
   if (sparkContainer) {
@@ -641,7 +689,6 @@ function initPixelScene() {
   }
 }
 
-// Builds a box-shadow string from a small bitmap of characters, e.g. pixelArt(['  S  ','SSSSS'], 8, {S:'#fff'})
 function pixelArt(rows, size, palette) {
   const shadows = [];
   rows.forEach((row, y) => {
@@ -672,7 +719,7 @@ function renderSetup() {
   }).join('');
 
   app.innerHTML = `
-    <h1 style="margin-top: 30px;">Set up game</h1>
+    <h1 style="margin-top: 10px;">Set up game</h1>
     <div class="subtitle">Configure before starting</div>
 
     <div class="card">
@@ -811,7 +858,6 @@ window.selectAllCategories = () => {
   renderSetup();
 };
 window.clearAllCategories = () => {
-  // Keep at least one category active so the game always has something to pull from
   state.activeCategories = [DEFAULT_CATEGORIES[0]];
   renderSetup();
 };
@@ -893,7 +939,7 @@ function renderAdminPanel() {
     const cat = state.adminSelectedCategory;
     const words = PACKS[cat] || [];
     app.innerHTML = `
-      <h1 style="margin-top: 30px;">Manage Words</h1>
+      <h1 style="margin-top: 10px;">Manage Words</h1>
       <p class="subtitle">Category: ${cat}</p>
       <div class="admin-box">
         <div style="display:flex; gap:10px; margin-bottom:10px;">
@@ -921,13 +967,11 @@ function renderAdminPanel() {
     `;
   } else {
     app.innerHTML = `
-      <h1 style="margin-top: 30px;">Admin Panel</h1>
+      <h1 style="margin-top: 10px;">Admin Panel</h1>
       ${syncError ? `
         <div style="background:#3c1414; border:1px solid var(--danger); color:#ffb4ae; padding:12px 14px; border-radius:10px; margin-bottom:14px; font-size:13px; line-height:1.5;">
           <strong>⚠️ Cloud sync error:</strong> ${escapeHtml(syncError)}<br>
-          Words you add will <strong>not</strong> be saved and will vanish on refresh until this is fixed.
-          This is almost always a Firebase Realtime Database <em>rules</em> problem — open the Firebase console →
-          Realtime Database → Rules, and make sure read/write are allowed.
+          Words will not persist until Firebase Database Rules allow read/write.
         </div>
       ` : `<p class="subtitle" style="color: var(--success); font-weight: bold;">Cloud Sync Active ✅</p>`}
       <div class="admin-box">
@@ -975,9 +1019,6 @@ window.addWord = (cat) => {
   btn.disabled = true;
   btn.textContent = 'Saving...';
 
-  // Pull the latest server copy of this category first, so a stale in-memory
-  // PACKS (e.g. this tab sat idle while another tab added words) can't wipe
-  // out words that were added elsewhere in the meantime.
   db.ref('packs/' + cat).once('value').then((snap) => {
     const serverData = snap.val();
     const fresh = serverData ? (Array.isArray(serverData) ? serverData : Object.values(serverData)) : [];
@@ -991,7 +1032,7 @@ window.addWord = (cat) => {
     if (state.adminSelectedCategory === cat) renderAdminPanel();
   }).catch((error) => {
     if (error.message === 'duplicate') {
-      showToast(`"${val}" was just added by someone else`);
+      showToast(`"${val}" was just added`);
       if (state.adminSelectedCategory === cat) renderAdminPanel();
       return;
     }
@@ -1053,7 +1094,6 @@ window.deleteWord = (cat, idx) => {
       });
     });
   }).catch(() => {
-    // Put it back since the delete didn't actually persist
     PACKS[cat].splice(idx, 0, removed);
     renderAdminPanel();
   });
@@ -1180,7 +1220,7 @@ function renderInterrogate() {
       <h1>Interrogation Phase</h1>
       <p class="subtitle" style="margin-bottom:30px;">Discuss and figure out who is lying.</p>
 
-      <div style="padding: 20px; background: var(--bg-card); border-radius: var(--radius); margin-bottom: 20px;">
+      <div style="padding: 20px; background: var(--bg-card); border-radius: var(--radius); margin-bottom: 20px; border: 1px solid #282834;">
         <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px; margin-bottom:10px;">DISCUSSION TIMER</div>
         <div id="timerDisplay" style="font-size:48px; font-weight:800; font-variant-numeric:tabular-nums; color:${timerSeconds === 0 && !timerRunning ? 'var(--text-main)' : 'var(--accent)'};">${formatTimer(timerSeconds)}</div>
         <div style="display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;">
@@ -1196,7 +1236,7 @@ function renderInterrogate() {
         </div>
       </div>
 
-      <div style="padding: 20px; background: var(--bg-card); border-radius: var(--radius); margin-bottom: 20px; text-align: left;">
+      <div style="padding: 20px; background: var(--bg-card); border-radius: var(--radius); margin-bottom: 20px; text-align: left; border: 1px solid #282834;">
         <h3 style="margin-top:0; font-size: 16px;">Next Step: Secret Voting</h3>
         <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 0;">Once the discussion is over, pass the device around again so everyone can secretly cast their vote for the suspected Imposter.</p>
       </div>
@@ -1228,7 +1268,7 @@ window.toggleTimer = () => {
     renderInterrogate();
     return;
   }
-  if (timerSeconds <= 0) timerSeconds = 180; // default 3 min if nothing picked
+  if (timerSeconds <= 0) timerSeconds = 180;
   timerRunning = true;
   renderInterrogate();
   timerInterval = setInterval(() => {
@@ -1419,7 +1459,7 @@ function startResultsBurst(crewWon) {
   const emojis = crewWon ? ['🎉', '✨', '🎊', '👏'] : ['😈', '🕵️', '💀', '🔥'];
   for (let i = 0; i < 20; i++) {
     let el = document.createElement('div');
-    el.className = 'flower';
+    el.className = 'pixel-petal';
     el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
     el.style.left = Math.random() * 100 + 'vw';
     el.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
