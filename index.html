@@ -54,8 +54,8 @@
   /* Among Us Run Animation */
   @keyframes runRight {
     0% { transform: translate(0, -50%); }
-    15% { transform: translate(-20px, -50%); } /* Wind up backwards */
-    100% { transform: translate(150vw, -50%); } /* Sprint off screen */
+    15% { transform: translate(-20px, -50%); } 
+    100% { transform: translate(150vw, -50%); } 
   }
   .run-away {
     animation: runRight 2s ease-in forwards !important;
@@ -299,19 +299,22 @@
 </div>
 
 <script>
-/* ---------------- Initial Data & Firebase Setup ---------------- */
+/* ---------------- Data & Firebase Hybrid Sync ---------------- */
 
-// Define Categories explicitly so they never disappear even if Firebase strips empty lists
 const DEFAULT_CATEGORIES = [
   "Funny", "Movies", "Characters", "Festivals", "Places", "Food", 
   "Bakery", "Household Items", "People", "Kerala Life", "Vehicles", 
   "College / School", "Gulf / NRI", "FIFA", "Bigg Boss", "Onam"
 ];
 
-let PACKS = {};
-DEFAULT_CATEGORIES.forEach(cat => PACKS[cat] = []);
+// 1. Instantly load from local storage so UI doesn't blink or lose data
+let PACKS = JSON.parse(localStorage.getItem('imposterCloudData')) || {};
+DEFAULT_CATEGORIES.forEach(cat => {
+  if (!PACKS[cat]) PACKS[cat] = [];
+});
+let localPacksString = JSON.stringify(PACKS);
 
-// Initialize Firebase
+// 2. Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAtvDrGOe_qR-5_tBPwIn0NYX7E_Z5s_v8",
   authDomain: "imposter-game-f8b23.firebaseapp.com",
@@ -325,34 +328,45 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-// Listen for live updates from Firebase Database
+// 3. Sync seamlessly with Cloud
 db.ref('packs').on('value', (snapshot) => {
-  const data = snapshot.val() || {};
-  
-  // Safely map Firebase data back into our local PACKS object
-  DEFAULT_CATEGORIES.forEach(cat => {
-    if (data[cat]) {
-      // Firebase occasionally turns arrays into objects if items are deleted. This safeguards against that.
-      PACKS[cat] = Array.isArray(data[cat]) ? data[cat] : Object.values(data[cat]);
-    } else {
-      PACKS[cat] = []; // If Firebase deleted it for being empty, put it back
-    }
-  });
+  const data = snapshot.val();
+  if (data) {
+    let newPacks = {};
+    
+    DEFAULT_CATEGORIES.forEach(cat => {
+      if (data[cat]) {
+        newPacks[cat] = Array.isArray(data[cat]) ? data[cat] : Object.values(data[cat]);
+      } else {
+        newPacks[cat] = [];
+      }
+    });
 
-  // Ensure active categories don't contain deleted ones
-  state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
-  
-  // Re-render UI to show synced words (only if not actively playing a round)
-  if (state.screen === 'setup' || state.screen === 'admin' || state.screen === 'welcome' || !window.location.hash) {
-    render();
+    // Only force a UI update if the cloud data is actually different from our local data
+    if (JSON.stringify(newPacks) !== localPacksString) {
+      PACKS = newPacks;
+      localPacksString = JSON.stringify(PACKS);
+      localStorage.setItem('imposterCloudData', localPacksString);
+
+      state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
+      
+      // Update UI gracefully
+      if (['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
+        render();
+      }
+    }
   }
 });
 
 function savePacks() {
-  // Save directly to live Firebase database, WITH ERROR CHECKING!
+  // Save instantly to local storage first
+  localPacksString = JSON.stringify(PACKS);
+  localStorage.setItem('imposterCloudData', localPacksString);
+
+  // Then send to Firebase, catching any rule or connection errors
   db.ref('packs').set(PACKS).catch((error) => {
-    console.error("Firebase save failed:", error);
-    alert("Error saving to database! Check your Firebase Rules.\n\nError details: " + error.message);
+    console.error("Firebase Sync Error:", error);
+    alert("⚠️ Could not sync to cloud! Words are saved locally but may not appear for friends.\n\nError: " + error.message);
   });
 }
 
@@ -443,10 +457,8 @@ function renderWelcome() {
   app.innerHTML = `
     <div class="game-screen" style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-top: 0; margin-top: -20px; position: relative;">
       
-      <!-- Background Glow Effect just for Welcome Screen -->
       <div style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%); width: 250px; height: 250px; background: var(--danger); filter: blur(120px); opacity: 0.35; pointer-events: none; z-index: 0;"></div>
       
-      <!-- Main Title with Among Us SVG - Nudged slightly to the right -->
       <div style="text-align: center; margin-bottom: 30px; position: relative; z-index: 2; padding-left: 20px;">
         <h1 style="font-family: 'Inter', sans-serif; font-size: clamp(34px, 8vw, 44px); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 4px 20px rgba(255,69,58,0.6); display: inline-block; position: relative; margin: 0;">
           IMPOSTER
@@ -458,13 +470,8 @@ function renderWelcome() {
         </h1>
       </div>
       
-      <!-- Hero Image -->
       <div class="hero-image"></div>
-      
-      <!-- Subtitle -->
       <h2 style="font-size: 28px; color: var(--accent); font-weight: 600; margin: 0 0 20px 0; letter-spacing: 1.5px; text-shadow: 0 2px 10px rgba(255,159,10,0.3); position: relative; z-index: 2;">സ്വാഗതം</h2>
-      
-      <!-- Action Button -->
       <button class="start-btn" style="width: 80%; max-width: 300px; background: linear-gradient(135deg, #FF453A 0%, #FF9F0A 100%); color: #FFF; box-shadow: 0 4px 15px rgba(255,69,58,0.4); border: none; position: relative; z-index: 2;" onclick="showOnamPopup()">Enter Game</button>
     </div>
   `;
@@ -548,7 +555,6 @@ function renderSetup() {
     </div>
   `;
 
-  // Render Player Inputs
   const list = document.getElementById('playerList');
   state.names.forEach((name, i) => {
     const hasPhoto = state.photos[i] ? true : false;
@@ -573,25 +579,19 @@ function renderSetup() {
 window.handlePhotoUpload = (e, idx) => {
   const file = e.target.files[0];
   if (!file) return;
-  
   const reader = new FileReader();
   reader.onload = (event) => {
     const img = new Image();
     img.onload = () => {
-      // Compress and crop image to save memory (150x150)
       const canvas = document.createElement('canvas');
       const size = 150; 
       canvas.width = size;
       canvas.height = size;
       const ctx = canvas.getContext('2d');
-      
       const minDim = Math.min(img.width, img.height);
       const startX = (img.width - minDim) / 2;
       const startY = (img.height - minDim) / 2;
-      
       ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, size, size);
-      
-      // Save compressed base64 to state
       state.photos[idx] = canvas.toDataURL('image/jpeg', 0.8);
       renderSetup();
     };
@@ -630,7 +630,6 @@ window.toggleSetting = (key) => { state[key] = !state[key]; renderSetup(); };
 function startGame() {
   if (state.activeCategories.length === 0) return alert("Select at least one category.");
   
-  // Only allow categories that actually have words
   const categoriesWithWords = state.activeCategories.filter(cat => PACKS[cat] && PACKS[cat].length > 0);
   
   if (categoriesWithWords.length === 0) {
@@ -661,7 +660,7 @@ function startGame() {
 
   state.players = finalNames.map((name, i) => ({
     name,
-    photo: state.photos[i], // Store photo with the player
+    photo: state.photos[i], 
     role: imposterSet.has(i) ? 'imposter' : 'crew'
   }));
   
@@ -725,7 +724,7 @@ function renderAdminPanel() {
   } else {
     app.innerHTML = `
       <h1>Admin Panel</h1>
-      <p class="subtitle">Manage Categories & Words (Live Sync)</p>
+      <p class="subtitle" style="color: var(--success); font-weight: bold;">Cloud Sync Active ✅</p>
       <div class="admin-box">
         <div class="player-list">
           ${DEFAULT_CATEGORIES.map(cat => `
@@ -737,6 +736,7 @@ function renderAdminPanel() {
           `).join('')}
         </div>
       </div>
+      <button class="admin-btn" style="width:100%; margin-bottom:10px;" onclick="factoryReset()">Clear All To Defaults</button>
       <button class="admin-btn-secondary" style="width:100%;" onclick="window.location.hash='#setup'">Save & Back to Game</button>
     `;
   }
@@ -756,6 +756,14 @@ window.deleteWord = (cat, idx) => {
   PACKS[cat].splice(idx, 1); 
   savePacks(); 
   renderAdminPanel();
+};
+window.factoryReset = () => {
+  if (confirm("Reset all words to default (empty)? Custom words will be lost.")) {
+    PACKS = {};
+    DEFAULT_CATEGORIES.forEach(cat => PACKS[cat] = []);
+    savePacks(); 
+    renderAdminPanel();
+  }
 };
 
 /* ---------------- 3. Play / Reveal Phase ---------------- */
@@ -812,9 +820,8 @@ function renderPass() {
 
   card.addEventListener('click', () => {
     if (hasDiscarded) return;
-
     if (!isRevealed) {
-      if (viewsLeft <= 0) return; // No views left
+      if (viewsLeft <= 0) return; 
       isRevealed = true;
       viewsLeft--;
       card.classList.add('flipped');
@@ -822,7 +829,6 @@ function renderPass() {
     } else {
       isRevealed = false;
       card.classList.remove('flipped');
-      
       if (viewsLeft > 0) {
         frontHint.innerText = `TAP TO REVEAL (${viewsLeft} VIEW LEFT)`;
       } else {
@@ -830,17 +836,14 @@ function renderPass() {
         frontHint.style.borderColor = 'var(--danger)';
         frontHint.style.color = 'var(--danger)';
       }
-      
-      nextBtn.style.display = 'flex'; // Show pass button
+      nextBtn.style.display = 'flex'; 
     }
   });
 
   nextBtn.addEventListener('click', () => {
     if (hasDiscarded) return;
     hasDiscarded = true;
-    
     card.classList.add('discarded');
-
     setTimeout(() => {
       if (state.currentIndex < total - 1) {
         state.currentIndex++;
