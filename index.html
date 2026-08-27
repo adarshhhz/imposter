@@ -18,7 +18,7 @@
 <style>
   :root {
     --bg-main: #121216;
-    --bg-card: rgba(28, 28, 36, 0.75); /* Translucent for background image */
+    --bg-card: rgba(28, 28, 36, 0.75);
     --bg-input: rgba(37, 37, 48, 0.9);
     --text-main: #FFFFFF;
     --text-muted: #A0A0B0;
@@ -40,23 +40,9 @@
     padding: 0;
     font-family: 'Inter', sans-serif;
     background: linear-gradient(rgba(18, 18, 22, 0.65), rgba(18, 18, 22, 0.85)), url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787806687/pixel-art-style-floral-garden-illustration_23-2151503920_1.jpg') center/cover fixed no-repeat;
-    background-color: var(--bg-main); /* Fallback */
+    background-color: var(--bg-main); 
     color: var(--text-main);
     overflow-x: hidden;
-  }
-
-  /* Setup-screen-only background override (Apple-glass look) */
-  body.setup-bg {
-    background:
-      linear-gradient(rgba(10, 10, 14, 0.55), rgba(10, 10, 14, 0.78)),
-      url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787806687/pixel-art-style-floral-garden-illustration_23-2151503920_1.jpg') center/cover fixed no-repeat;
-  }
-
-  /* Welcome-screen-only full background */
-  body.welcome-bg {
-    background:
-      linear-gradient(rgba(10, 10, 14, 0.35), rgba(10, 10, 14, 0.55)),
-      url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787807028/file_00000000e9448211b6d1eeef8edc2c67.png') center/cover fixed no-repeat;
   }
   
   /* Toast */
@@ -94,36 +80,15 @@
     100% { transform: scale(1); opacity: 1; }
   }
 
-  /* Among Us Zigzag Chase Animation */
-  .imposter-icon {
-    cursor: pointer;
-    transition: filter 0.2s ease;
+  /* Among Us Run Animation */
+  @keyframes runRight {
+    0% { transform: translate(0, -50%); }
+    15% { transform: translate(-20px, -50%); } 
+    100% { transform: translate(150vw, -50%); } 
   }
-  .imposter-icon:hover {
-    filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8)) brightness(1.15);
-  }
-  .imposter-icon.fleeing {
-    pointer-events: none;
-  }
-
-  /* Button reacts when the imposter reaches it */
-  @keyframes impactSquish {
-    0% { transform: scale(1); }
-    25% { transform: scale(1.12, 0.86) rotate(-1.5deg); }
-    55% { transform: scale(0.92, 1.08) rotate(1.5deg); }
-    80% { transform: scale(1.04, 0.98); }
-    100% { transform: scale(1); }
-  }
-  .start-btn.imposter-hit {
-    animation: impactSquish 0.45s ease;
-  }
-
-  .poof-particle {
-    position: fixed;
-    pointer-events: none;
-    z-index: 9998;
-    will-change: transform, opacity;
-    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1), opacity 0.6s ease-out;
+  .run-away {
+    animation: runRight 2s ease-in forwards !important;
+    pointer-events: none; 
   }
 
   /* Watermark */
@@ -211,75 +176,6 @@
     font-size: 15px;
   }
   .card-header .count { color: var(--text-muted); font-size: 13px; font-weight: 400; }
-
-  /* --- Apple-style Liquid Glass upgrade, scoped to the setup screen --- */
-  .setup-screen .card {
-    position: relative;
-    background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%), rgba(30, 30, 38, 0.42);
-    backdrop-filter: blur(28px) saturate(180%);
-    -webkit-backdrop-filter: blur(28px) saturate(180%);
-    border: 1px solid rgba(255,255,255,0.16);
-    box-shadow:
-      0 1px 0 rgba(255,255,255,0.25) inset,
-      0 8px 30px rgba(0,0,0,0.35),
-      0 0 0 1px rgba(0,0,0,0.08);
-    overflow: hidden;
-  }
-  /* faint top sheen sweep, purely decorative */
-  .setup-screen .card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
-  }
-  .setup-screen h1,
-  .setup-screen .subtitle {
-    text-shadow: 0 2px 12px rgba(0,0,0,0.65);
-  }
-  .setup-screen .player-input-wrap {
-    background: rgba(255,255,255,0.07);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.10);
-  }
-  .setup-screen .player-input-wrap:focus-within {
-    background: rgba(255,255,255,0.11);
-    box-shadow: 0 0 0 1px var(--accent), 0 0 16px rgba(255,159,10,0.25);
-  }
-  .setup-screen .chip {
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.10);
-  }
-  .setup-screen .chip.active {
-    background: linear-gradient(180deg, rgba(255,159,10,0.55), rgba(204,126,0,0.55));
-    border: 1px solid rgba(255,200,120,0.55);
-    box-shadow: 0 2px 10px rgba(255,159,10,0.25);
-  }
-  .setup-screen .add-player-btn {
-    background: rgba(255,255,255,0.03);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
-  .setup-screen .switch {
-    background: rgba(0,0,0,0.35);
-    backdrop-filter: blur(4px);
-  }
-  .setup-screen .bottom-bar {
-    background: rgba(18,18,22,0.55);
-    backdrop-filter: blur(24px) saturate(160%);
-    -webkit-backdrop-filter: blur(24px) saturate(160%);
-    border-top: 1px solid rgba(255,255,255,0.10);
-  }
-  .setup-screen .start-btn {
-    background: linear-gradient(180deg, #FFB020, var(--accent));
-    box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 6px 18px rgba(255,159,10,0.35);
-  }
-  .setup-screen .player-idx {
-    box-shadow: 0 1px 0 rgba(255,255,255,0.3) inset, 0 2px 8px rgba(0,0,0,0.3);
-  }
 
   /* Player List */
   .player-list { display: flex; flex-direction: column; gap: 10px; }
@@ -429,6 +325,24 @@
   .vote-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-muted); transition: all 0.2s ease; }
   .vote-option.selected .vote-radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 4px #3c2a12; }
   
+  /* Welcome Screen Image Style */
+  .hero-image {
+    width: 220px;
+    height: 220px;
+    margin: 0 auto 30px;
+    background: url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787771294/FyvT48GaIAAx4l4.jpg') center/cover no-repeat;
+    border-radius: 20px;
+    border: 3px solid var(--accent);
+    box-shadow: 0 10px 40px rgba(255, 159, 10, 0.4); 
+    position: relative;
+    z-index: 2;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .hero-image:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 50px rgba(255, 159, 10, 0.6); 
+  }
+
   /* Overlay Modal */
   .overlay {
     display: none;
@@ -501,11 +415,9 @@ db.ref('gameDataV2').on('value', (snapshot) => {
       if (!PACKS[cat]) PACKS[cat] = [];
     });
 
-    if(state && state.activeCategories) {
-      state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
-    }
+    state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
     
-    if (state && ['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
+    if (['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
       render();
     }
   }
@@ -513,13 +425,14 @@ db.ref('gameDataV2').on('value', (snapshot) => {
 
 function syncToCloud(onSuccess) {
   const payload = JSON.stringify(PACKS);
+  
   db.ref('gameDataV2').set(payload, (error) => {
     if (error) {
       alert("❌ SAVE FAILED!\n\nFirebase blocked the save. Make sure you clicked the blue 'Publish' button in your Firebase Rules.\n\nError details: " + error.message);
     } else {
       if (onSuccess) onSuccess();
     }
-    if(typeof renderAdminPanel === 'function') renderAdminPanel(); 
+    renderAdminPanel(); 
   });
 }
 
@@ -579,7 +492,7 @@ const mp = {
   myName: localStorage.getItem('imposter_pname') || '',
   code: localStorage.getItem('imposter_room_code') || null,
   isHost: false,
-  room: null,         // last known room snapshot from Firebase
+  room: null,         
   roomRef: null,
   listenerFn: null,
   votedThisRound: false,
@@ -587,7 +500,7 @@ const mp = {
   micEnabled: false,
   micRequesting: false,
   localStream: null,
-  voicePeers: {}       // peerId -> { pc, listeners: [{ref, event, fn}], candQueue: [] }
+  voicePeers: {}       
 };
 
 /* ---------------- Voice Chat (WebRTC mesh, signaled via Firebase) ---------------- */
@@ -707,6 +620,7 @@ function syncVoiceConnections(room) {
   Object.keys(mp.voicePeers).forEach(id => { if (!active[id]) teardownVoicePeer(id); });
 }
 
+// FULLY FUNCTIONAL MICROPHONE CHECK WITH TIMEOUT
 window.toggleMic = () => {
   if (mp.micEnabled) {
     teardownVoiceChat();
@@ -714,12 +628,23 @@ window.toggleMic = () => {
     return;
   }
   if (mp.micRequesting) return;
+  
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    return alert('Your browser doesn\'t support in-app voice chat.');
+    return alert('Your browser or app wrapper doesn\'t support voice chat. Please use Chrome or Safari.');
   }
+  
   mp.micRequesting = true;
   render();
-  navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then((stream) => {
+
+  // Create a 5-second timeout in case the Android wrapper blocks the prompt
+  const timeoutPromise = new Promise((_, reject) => 
+    setTimeout(() => reject(new Error("Permission request timed out. The app blocked the microphone.")), 5000)
+  );
+
+  Promise.race([
+    navigator.mediaDevices.getUserMedia({ audio: true, video: false }),
+    timeoutPromise
+  ]).then((stream) => {
     mp.localStream = stream;
     mp.micEnabled = true;
     mp.micRequesting = false;
@@ -728,9 +653,9 @@ window.toggleMic = () => {
     myVoiceRef.onDisconnect().remove();
     syncVoiceConnections(mp.room);
     render();
-  }).catch(() => {
+  }).catch((err) => {
     mp.micRequesting = false;
-    alert('Microphone access was denied or unavailable.');
+    alert('Microphone blocked: ' + err.message + '\n\nIf you are using the app, you must allow microphone permissions. If it still fails, play via Chrome/Safari.');
     render();
   });
 };
@@ -749,13 +674,13 @@ function attachRoomListener(code, onUpdate) {
   mp.listenerFn = mp.roomRef.on('value', (snap) => {
     const val = snap.val();
     mp.room = val;
-    if (!val) return; // room deleted
+    if (!val) return; 
     onUpdate(val);
   });
 }
 
 function generateRoomCode() {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no confusing 0/O/1/I
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; 
   let code = '';
   for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
   return code;
@@ -791,9 +716,7 @@ const ONLINE_HASHES = ['#mode','#online','#online-host','#online-join','#online-
 
 function render() {
   const hash = window.location.hash;
-  document.body.classList.toggle('setup-bg', hash === '#setup' || ONLINE_HASHES.includes(hash));
-  document.body.classList.toggle('welcome-bg', hash === '' || hash === '#welcome');
-
+  
   if (!ONLINE_HASHES.slice(3).includes(hash)) {
     detachRoomListener();
   }
@@ -895,7 +818,7 @@ window.closePopupAndStart = () => {
 /* ---------------- Mode Select ---------------- */
 function renderModeSelect() {
   app.innerHTML = `
-    <div class="setup-screen">
+    <div>
       <h1 style="margin-top: 30px;">How do you want to play?</h1>
       <div class="subtitle">Choose one, you can switch anytime</div>
 
@@ -924,7 +847,7 @@ function renderModeSelect() {
 
 function renderOnlineHome() {
   app.innerHTML = `
-    <div class="setup-screen">
+    <div>
       <h1 style="margin-top: 30px;">Multiplayer</h1>
       <div class="subtitle">Host a room or join one with a code</div>
 
@@ -956,7 +879,7 @@ function renderOnlineHome() {
 /* ---------------- Host a Room ---------------- */
 function renderOnlineHost() {
   app.innerHTML = `
-    <div class="setup-screen">
+    <div>
       <h1 style="margin-top: 30px;">Host a Room</h1>
       <div class="subtitle">Everyone else will join with the code</div>
       <div class="admin-box">
@@ -1012,7 +935,7 @@ window.createRoom = () => {
 /* ---------------- Join a Room ---------------- */
 function renderOnlineJoin() {
   app.innerHTML = `
-    <div class="setup-screen">
+    <div>
       <h1 style="margin-top: 30px;">Join a Room</h1>
       <div class="subtitle">Ask the host for their 4-letter code</div>
       <div class="admin-box">
@@ -1193,7 +1116,7 @@ function drawOnlineLobby(room) {
   const maxImposters = Math.max(1, Math.min(3, players.length - 2));
 
   app.innerHTML = `
-    <div class="setup-screen">
+    <div>
       <h1 style="margin-top:10px; text-align:center;">Room Code</h1>
       <div class="card" style="text-align:center; padding:22px;">
         <div style="font-size:40px; font-weight:800; letter-spacing:10px; color:var(--accent);">${mp.code}</div>
@@ -1361,7 +1284,7 @@ function renderSetup() {
   }).join('');
 
   app.innerHTML = `
-    <div class="setup-screen">
+    <div>
     <h1 style="margin-top: 10px;">Set up game</h1>
     <div class="subtitle">Configure before starting</div>
 
@@ -1815,6 +1738,268 @@ function renderPass() {
   });
 }
 
+/* ---------------- 4. Interrogation ---------------- */
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = false;
+
+function renderInterrogate() {
+  app.innerHTML = `
+    <div class="game-screen" style="padding-top:20px;">
+      <div style="font-size:50px; margin-bottom:10px;">💬</div>
+      <h1>Interrogation Phase</h1>
+      <p class="subtitle" style="margin-bottom:30px;">Discuss and figure out who is lying.</p>
+
+      <div class="card" style="padding: 20px; text-align:center;">
+        <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px; margin-bottom:10px;">DISCUSSION TIMER</div>
+        <div id="timerDisplay" style="font-size:48px; font-weight:800; font-variant-numeric:tabular-nums; color:${timerSeconds === 0 && !timerRunning ? 'var(--text-main)' : 'var(--accent)'}; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">${formatTimer(timerSeconds)}</div>
+        <div style="display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;">
+          ${!timerRunning ? `
+            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(60)">1 min</button>
+            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(180)">3 min</button>
+            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(300)">5 min</button>
+          ` : ''}
+        </div>
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button class="admin-btn" style="flex:1;" onclick="toggleTimer()">${timerRunning ? 'Pause' : (timerSeconds > 0 ? 'Resume' : 'Start')}</button>
+          <button class="admin-btn-secondary" style="flex:1;" onclick="resetTimer()">Reset</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 20px; text-align: left;">
+        <h3 style="margin-top:0; font-size: 16px;">Next Step: Secret Voting</h3>
+        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 0;">Once the discussion is over, pass the device around again so everyone can secretly cast their vote for the suspected Imposter.</p>
+      </div>
+
+      <button class="start-btn" onclick="startVotingPhase()">
+        Start Voting Phase
+      </button>
+    </div>
+  `;
+}
+
+function formatTimer(sec) {
+  const m = Math.floor(sec / 60).toString().padStart(2, '0');
+  const s = (sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+window.setTimerPreset = (sec) => {
+  timerSeconds = sec;
+  const el = document.getElementById('timerDisplay');
+  if (el) { el.textContent = formatTimer(timerSeconds); el.style.color = 'var(--accent)'; }
+  renderInterrogate();
+};
+
+window.toggleTimer = () => {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    renderInterrogate();
+    return;
+  }
+  if (timerSeconds <= 0) timerSeconds = 180;
+  timerRunning = true;
+  renderInterrogate();
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    const el = document.getElementById('timerDisplay');
+    if (el) el.textContent = formatTimer(Math.max(timerSeconds, 0));
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
+      renderInterrogate();
+    }
+  }, 1000);
+};
+
+window.resetTimer = () => {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 0;
+  renderInterrogate();
+};
+
+function startVotingPhase() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 0;
+  state.currentIndex = 0;
+  state.votes = {};
+  window.location.hash = '#vote-pass';
+}
+
+/* ---------------- 5. Voting Phase ---------------- */
+function renderVotePass() {
+  const p = state.players[state.currentIndex];
+  app.innerHTML = `
+    <div class="game-screen" style="padding-top:60px;">
+      <div class="subtitle">Voting phase: ${state.currentIndex + 1} / ${state.players.length}</div>
+      ${p.photo ? `<img src="${p.photo}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin: 20px auto 10px; border:3px solid var(--accent); display:block; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">` : ''}
+      <h1 style="font-size:30px; margin-bottom: 30px;">Pass to <span style="color:var(--accent)">${escapeHtml(p.name)}</span></h1>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom:40px;">Make sure no one else is looking before you continue.</p>
+      
+      <button class="start-btn" onclick="window.location.hash='#vote-cast'">
+        I am ${escapeHtml(p.name)}
+      </button>
+    </div>
+  `;
+}
+
+function renderVoteCast() {
+  state.selectedVoteIndex = null;
+  
+  let optionsHTML = state.players.map((p, i) => {
+    if (i === state.currentIndex) return ''; 
+    const avatar = p.photo 
+      ? `<img src="${p.photo}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">` 
+      : `<div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${i+1}</div>`;
+      
+    return `
+      <div class="vote-option" id="vote-opt-${i}" onclick="selectVote(${i})">
+        <div style="display:flex; align-items:center; gap:12px;">
+          ${avatar}
+          <span>${escapeHtml(p.name)}</span>
+        </div>
+        <div class="vote-radio"></div>
+      </div>
+    `;
+  }).join('');
+
+  app.innerHTML = `
+    <div style="padding-top:20px;">
+      <h2 style="margin-bottom:5px;">Who is the Imposter?</h2>
+      <p class="subtitle" style="text-align:left; margin-bottom:20px;">Secretly select a player to eliminate.</p>
+      
+      <div style="margin-bottom: 80px;">
+        ${optionsHTML}
+      </div>
+
+      <div class="bottom-bar">
+        <div class="inner">
+          <button class="start-btn" id="confirmVoteBtn" disabled onclick="submitVote()">
+            Confirm Vote
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.selectVote = (idx) => {
+  state.selectedVoteIndex = idx;
+  document.querySelectorAll('.vote-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById(`vote-opt-${idx}`).classList.add('selected');
+  document.getElementById('confirmVoteBtn').disabled = false;
+};
+
+window.submitVote = () => {
+  if (state.selectedVoteIndex === null) return;
+  state.votes[state.currentIndex] = state.selectedVoteIndex;
+  
+  if (state.currentIndex < state.players.length - 1) {
+    state.currentIndex++;
+    window.location.hash = '#vote-pass';
+  } else {
+    window.location.hash = '#results';
+  }
+};
+
+/* ---------------- 6. Results ---------------- */
+function renderResults() {
+  const voteCounts = {};
+  Object.values(state.votes).forEach(votedIdx => {
+    voteCounts[votedIdx] = (voteCounts[votedIdx] || 0) + 1;
+  });
+
+  let maxVotes = 0;
+  for (let idx in voteCounts) {
+    if (voteCounts[idx] > maxVotes) maxVotes = voteCounts[idx];
+  }
+
+  const eliminatedIndices = Object.keys(voteCounts)
+    .map(Number)
+    .filter(idx => voteCounts[idx] === maxVotes);
+    
+  const imposters = state.players.filter(p => p.role === 'imposter');
+  const imposterIndices = state.players.map((p, i) => p.role === 'imposter' ? i : -1).filter(i => i !== -1);
+  
+  const imposterCaught = eliminatedIndices.some(idx => imposterIndices.includes(idx));
+  
+  let outcomeHTML = "";
+  if (eliminatedIndices.length > 1) {
+    outcomeHTML = `<h1 style="color:var(--accent)">Voting Tied!</h1>
+                   <p style="color:var(--text-muted); margin-top:5px;">${eliminatedIndices.map(i => escapeHtml(state.players[i].name)).join(' and ')} tied with ${maxVotes} votes. The imposter survived!</p>`;
+  } else if (imposterCaught) {
+    outcomeHTML = `<h1 style="color:var(--success)">Imposter Caught!</h1>
+                   <p style="color:var(--text-muted); margin-top:5px;">Crew wins! ${escapeHtml(state.players[eliminatedIndices[0]].name)} was voted out.</p>`;
+  } else {
+    outcomeHTML = `<h1 style="color:var(--danger)">Crew Failed!</h1>
+                   <p style="color:var(--text-muted); margin-top:5px;">${escapeHtml(state.players[eliminatedIndices[0]].name)} was innocent! The imposter survives.</p>`;
+  }
+
+  app.innerHTML = `
+    <div class="game-screen" style="padding-top:20px; padding-bottom:40px;">
+      <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">CASE CLOSED</div>
+      
+      <div style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">${outcomeHTML}</div>
+      
+      <div class="card" style="padding: 20px; margin: 30px 0;">
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">THE WORD WAS</div>
+        <div style="font-size:24px; color:var(--accent); font-weight:700; text-transform:uppercase;">${escapeHtml(state.secretWord)}</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">ACTUAL IMPOSTER: <b style="color:var(--danger)">${imposters.map(i => escapeHtml(i.name)).join(', ')}</b></div>
+      </div>
+      
+      <div style="text-align:left; margin-bottom:10px; font-weight:600; font-size: 15px;">Voting Breakdown</div>
+      <div class="player-list" style="text-align:left; margin-bottom:40px;">
+        ${state.players.map((p, i) => {
+          const votesReceived = voteCounts[i] || 0;
+          const isEliminated = eliminatedIndices.includes(i);
+          const avatar = p.photo 
+            ? `<img src="${p.photo}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">` 
+            : `<div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${i+1}</div>`;
+            
+          return `
+            <div class="player-row" style="background:${isEliminated ? 'rgba(255, 69, 58, 0.2)' : 'var(--bg-card)'}; border: 1px solid ${isEliminated ? 'var(--danger)' : 'rgba(255,255,255,0.05)'}; padding:12px; border-radius:8px; justify-content:space-between; backdrop-filter: blur(8px);">
+              <div style="display:flex; align-items:center; gap:12px;">
+                ${avatar}
+                <div style="display:flex; flex-direction:column;">
+                  <span style="font-weight:${isEliminated ? '700' : '400'}">${escapeHtml(p.name)}</span>
+                  ${p.role === 'imposter' ? `<span style="font-size:11px; color:var(--danger); margin-top:2px;">(Imposter)</span>` : ''}
+                </div>
+              </div>
+              <div style="font-size:13px; color:var(--text-muted);">
+                ${votesReceived} vote${votesReceived !== 1 ? 's' : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <button class="start-btn" style="margin-bottom:10px;" onclick="startGame()">Same Roster, New Word</button>
+      <button class="admin-btn-secondary" style="width:100%" onclick="window.location.hash='#setup'">New Setup</button>
+    </div>
+  `;
+
+  startResultsBurst(imposterCaught && eliminatedIndices.length === 1);
+}
+
+function startResultsBurst(crewWon) {
+  const emojis = crewWon ? ['🎉', '✨', '🎊', '👏'] : ['😈', '🕵️', '💀', '🔥'];
+  for (let i = 0; i < 20; i++) {
+    let el = document.createElement('div');
+    el.className = 'pixel-petal';
+    el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
+    el.style.animationDelay = (Math.random() * 0.6) + 's';
+    el.style.fontSize = (Math.random() * 12 + 14) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  }
+}
+
 /* ---------------- Online Play (each device shows only its own role) ---------------- */
 function renderOnlinePlay() {
   if (!mp.code) { window.location.hash = '#online'; return; }
@@ -1903,44 +2088,8 @@ window.forceStartInterrogation = () => {
   db.ref(`imposterRooms/${mp.code}/status`).set('interrogate');
 };
 
-/* ---------------- 4. Interrogation ---------------- */
+/* ---------------- Online Interrogation (synced timer) ---------------- */
 let mpTimerRAF = null;
-
-function renderInterrogate() {
-  app.innerHTML = `
-    <div class="game-screen" style="padding-top:20px;">
-      <div style="font-size:50px; margin-bottom:10px;">💬</div>
-      <h1>Interrogation Phase</h1>
-      <p class="subtitle" style="margin-bottom:30px;">Discuss and figure out who is lying.</p>
-
-      <div class="card" style="padding: 20px; text-align:center;">
-        <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px; margin-bottom:10px;">DISCUSSION TIMER</div>
-        <div id="timerDisplay" style="font-size:48px; font-weight:800; font-variant-numeric:tabular-nums; color:${timerSeconds === 0 && !timerRunning ? 'var(--text-main)' : 'var(--accent)'}; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">${formatTimer(timerSeconds)}</div>
-        <div style="display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;">
-          ${!timerRunning ? `
-            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(60)">1 min</button>
-            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(180)">3 min</button>
-            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(300)">5 min</button>
-          ` : ''}
-        </div>
-        <div style="display:flex; gap:10px; margin-top:14px;">
-          <button class="admin-btn" style="flex:1;" onclick="toggleTimer()">${timerRunning ? 'Pause' : (timerSeconds > 0 ? 'Resume' : 'Start')}</button>
-          <button class="admin-btn-secondary" style="flex:1;" onclick="resetTimer()">Reset</button>
-        </div>
-      </div>
-
-      <div class="card" style="padding: 20px; text-align: left;">
-        <h3 style="margin-top:0; font-size: 16px;">Next Step: Secret Voting</h3>
-        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 0;">Once the discussion is over, pass the device around again so everyone can secretly cast their vote for the suspected Imposter.</p>
-      </div>
-
-      <button class="start-btn" onclick="startVotingPhase()">
-        Start Voting Phase
-      </button>
-    </div>
-  `;
-}
-
 function renderOnlineInterrogate() {
   if (!mp.code) { window.location.hash = '#online'; return; }
 
@@ -2003,7 +2152,7 @@ function drawOnlineInterrogate(room) {
         ${players.length ? `
           <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:14px;">
             ${players.map(p => `
-              <div style="display:flex; align-items:center; gap:6px; background:var(--bg-input); padding:6px 10px; border-radius:20px; font-size:12px; ${voiceActive[p.id] ? '' : 'opacity:0.45;'}; border: 1px solid rgba(255,255,255,0.05);">
+              <div style="display:flex; align-items:center; gap:6px; background:var(--bg-input); padding:6px 10px; border-radius:20px; font-size:12px; ${voiceActive[p.id] ? '' : 'opacity:0.45;'}">
                 <span style="width:7px; height:7px; border-radius:50%; background:${voiceActive[p.id] ? 'var(--success)' : 'var(--text-muted)'};"></span>
                 ${escapeHtml(p.name)}${p.id === mp.myId ? ' (You)' : ''}
               </div>
@@ -2035,58 +2184,6 @@ function drawOnlineInterrogate(room) {
   }
 }
 
-function formatTimer(sec) {
-  const m = Math.floor(sec / 60).toString().padStart(2, '0');
-  const s = (sec % 60).toString().padStart(2, '0');
-  return `${m}:${s}`;
-}
-
-window.setTimerPreset = (sec) => {
-  timerSeconds = sec;
-  const el = document.getElementById('timerDisplay');
-  if (el) { el.textContent = formatTimer(timerSeconds); el.style.color = 'var(--accent)'; }
-  renderInterrogate();
-};
-
-window.toggleTimer = () => {
-  if (timerRunning) {
-    clearInterval(timerInterval);
-    timerRunning = false;
-    renderInterrogate();
-    return;
-  }
-  if (timerSeconds <= 0) timerSeconds = 180;
-  timerRunning = true;
-  renderInterrogate();
-  timerInterval = setInterval(() => {
-    timerSeconds--;
-    const el = document.getElementById('timerDisplay');
-    if (el) el.textContent = formatTimer(Math.max(timerSeconds, 0));
-    if (timerSeconds <= 0) {
-      clearInterval(timerInterval);
-      timerRunning = false;
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200, 100, 200]);
-      renderInterrogate();
-    }
-  }, 1000);
-};
-
-window.resetTimer = () => {
-  clearInterval(timerInterval);
-  timerRunning = false;
-  timerSeconds = 0;
-  renderInterrogate();
-};
-
-function startVotingPhase() {
-  clearInterval(timerInterval);
-  timerRunning = false;
-  timerSeconds = 0;
-  state.currentIndex = 0;
-  state.votes = {};
-  window.location.hash = '#vote-pass';
-}
-
 window.setMpTimerPreset = (sec) => {
   if (!mp.isHost) return;
   db.ref(`imposterRooms/${mp.code}/timer`).set({ seconds: sec, running: false, endTime: null });
@@ -2112,83 +2209,6 @@ window.resetMpTimer = () => {
 window.startMpVoting = () => {
   if (!mp.isHost) return;
   db.ref(`imposterRooms/${mp.code}`).update({ status: 'voting', votes: null });
-};
-
-
-/* ---------------- 5. Voting Phase ---------------- */
-function renderVotePass() {
-  const p = state.players[state.currentIndex];
-  app.innerHTML = `
-    <div class="game-screen" style="padding-top:60px;">
-      <div class="subtitle">Voting phase: ${state.currentIndex + 1} / ${state.players.length}</div>
-      ${p.photo ? `<img src="${p.photo}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin: 20px auto 10px; border:3px solid var(--accent); display:block; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">` : ''}
-      <h1 style="font-size:30px; margin-bottom: 30px;">Pass to <span style="color:var(--accent)">${escapeHtml(p.name)}</span></h1>
-      <p style="color:var(--text-muted); font-size:14px; margin-bottom:40px;">Make sure no one else is looking before you continue.</p>
-      
-      <button class="start-btn" onclick="window.location.hash='#vote-cast'">
-        I am ${escapeHtml(p.name)}
-      </button>
-    </div>
-  `;
-}
-
-function renderVoteCast() {
-  state.selectedVoteIndex = null;
-  
-  let optionsHTML = state.players.map((p, i) => {
-    if (i === state.currentIndex) return ''; 
-    const avatar = p.photo 
-      ? `<img src="${p.photo}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">` 
-      : `<div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${i+1}</div>`;
-      
-    return `
-      <div class="vote-option" id="vote-opt-${i}" onclick="selectVote(${i})">
-        <div style="display:flex; align-items:center; gap:12px;">
-          ${avatar}
-          <span>${escapeHtml(p.name)}</span>
-        </div>
-        <div class="vote-radio"></div>
-      </div>
-    `;
-  }).join('');
-
-  app.innerHTML = `
-    <div style="padding-top:20px;">
-      <h2 style="margin-bottom:5px;">Who is the Imposter?</h2>
-      <p class="subtitle" style="text-align:left; margin-bottom:20px;">Secretly select a player to eliminate.</p>
-      
-      <div style="margin-bottom: 80px;">
-        ${optionsHTML}
-      </div>
-
-      <div class="bottom-bar">
-        <div class="inner">
-          <button class="start-btn" id="confirmVoteBtn" disabled onclick="submitVote()">
-            Confirm Vote
-          </button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-window.selectVote = (idx) => {
-  state.selectedVoteIndex = idx;
-  document.querySelectorAll('.vote-option').forEach(el => el.classList.remove('selected'));
-  document.getElementById(`vote-opt-${idx}`).classList.add('selected');
-  document.getElementById('confirmVoteBtn').disabled = false;
-};
-
-window.submitVote = () => {
-  if (state.selectedVoteIndex === null) return;
-  state.votes[state.currentIndex] = state.selectedVoteIndex;
-  
-  if (state.currentIndex < state.players.length - 1) {
-    state.currentIndex++;
-    window.location.hash = '#vote-pass';
-  } else {
-    window.location.hash = '#results';
-  }
 };
 
 /* ---------------- Online Voting ---------------- */
@@ -2280,85 +2300,7 @@ window.finishMpVoting = () => {
   db.ref(`imposterRooms/${mp.code}/status`).set('results');
 };
 
-/* ---------------- 6. Results ---------------- */
-function renderResults() {
-  const voteCounts = {};
-  Object.values(state.votes).forEach(votedIdx => {
-    voteCounts[votedIdx] = (voteCounts[votedIdx] || 0) + 1;
-  });
-
-  let maxVotes = 0;
-  for (let idx in voteCounts) {
-    if (voteCounts[idx] > maxVotes) maxVotes = voteCounts[idx];
-  }
-
-  const eliminatedIndices = Object.keys(voteCounts)
-    .map(Number)
-    .filter(idx => voteCounts[idx] === maxVotes);
-    
-  const imposters = state.players.filter(p => p.role === 'imposter');
-  const imposterIndices = state.players.map((p, i) => p.role === 'imposter' ? i : -1).filter(i => i !== -1);
-  
-  const imposterCaught = eliminatedIndices.some(idx => imposterIndices.includes(idx));
-  
-  let outcomeHTML = "";
-  if (eliminatedIndices.length > 1) {
-    outcomeHTML = `<h1 style="color:var(--accent)">Voting Tied!</h1>
-                   <p style="color:var(--text-muted); margin-top:5px;">${eliminatedIndices.map(i => escapeHtml(state.players[i].name)).join(' and ')} tied with ${maxVotes} votes. The imposter survived!</p>`;
-  } else if (imposterCaught) {
-    outcomeHTML = `<h1 style="color:var(--success)">Imposter Caught!</h1>
-                   <p style="color:var(--text-muted); margin-top:5px;">Crew wins! ${escapeHtml(state.players[eliminatedIndices[0]].name)} was voted out.</p>`;
-  } else {
-    outcomeHTML = `<h1 style="color:var(--danger)">Crew Failed!</h1>
-                   <p style="color:var(--text-muted); margin-top:5px;">${escapeHtml(state.players[eliminatedIndices[0]].name)} was innocent! The imposter survives.</p>`;
-  }
-
-  app.innerHTML = `
-    <div class="game-screen" style="padding-top:20px; padding-bottom:40px;">
-      <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">CASE CLOSED</div>
-      
-      <div style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">${outcomeHTML}</div>
-      
-      <div class="card" style="padding: 20px; margin: 30px 0;">
-        <div style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">THE WORD WAS</div>
-        <div style="font-size:24px; color:var(--accent); font-weight:700; text-transform:uppercase;">${escapeHtml(state.secretWord)}</div>
-        <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">ACTUAL IMPOSTER: <b style="color:var(--danger)">${imposters.map(i => escapeHtml(i.name)).join(', ')}</b></div>
-      </div>
-      
-      <div style="text-align:left; margin-bottom:10px; font-weight:600; font-size: 15px;">Voting Breakdown</div>
-      <div class="player-list" style="text-align:left; margin-bottom:40px;">
-        ${state.players.map((p, i) => {
-          const votesReceived = voteCounts[i] || 0;
-          const isEliminated = eliminatedIndices.includes(i);
-          const avatar = p.photo 
-            ? `<img src="${p.photo}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">` 
-            : `<div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${i+1}</div>`;
-            
-          return `
-            <div class="player-row" style="background:${isEliminated ? 'rgba(255, 69, 58, 0.2)' : 'var(--bg-card)'}; border: 1px solid ${isEliminated ? 'var(--danger)' : 'rgba(255,255,255,0.05)'}; padding:12px; border-radius:8px; justify-content:space-between; backdrop-filter: blur(8px);">
-              <div style="display:flex; align-items:center; gap:12px;">
-                ${avatar}
-                <div style="display:flex; flex-direction:column;">
-                  <span style="font-weight:${isEliminated ? '700' : '400'}">${escapeHtml(p.name)}</span>
-                  ${p.role === 'imposter' ? `<span style="font-size:11px; color:var(--danger); margin-top:2px;">(Imposter)</span>` : ''}
-                </div>
-              </div>
-              <div style="font-size:13px; color:var(--text-muted);">
-                ${votesReceived} vote${votesReceived !== 1 ? 's' : ''}
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-
-      <button class="start-btn" style="margin-bottom:10px;" onclick="startGame()">Same Roster, New Word</button>
-      <button class="admin-btn-secondary" style="width:100%" onclick="window.location.hash='#setup'">New Setup</button>
-    </div>
-  `;
-
-  startResultsBurst(imposterCaught && eliminatedIndices.length === 1);
-}
-
+/* ---------------- Online Results ---------------- */
 function renderOnlineResults() {
   if (!mp.code) { window.location.hash = '#online'; return; }
 
@@ -2440,21 +2382,6 @@ function drawOnlineResults(room) {
   `;
 
   startResultsBurst(imposterCaught && eliminatedIds.length === 1 && maxVotes > 0);
-}
-
-function startResultsBurst(crewWon) {
-  const emojis = crewWon ? ['🎉', '✨', '🎊', '👏'] : ['😈', '🕵️', '💀', '🔥'];
-  for (let i = 0; i < 20; i++) {
-    let el = document.createElement('div');
-    el.className = 'pixel-petal';
-    el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-    el.style.left = Math.random() * 100 + 'vw';
-    el.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
-    el.style.animationDelay = (Math.random() * 0.6) + 's';
-    el.style.fontSize = (Math.random() * 12 + 14) + 'px';
-    document.body.appendChild(el);
-    setTimeout(() => el.remove(), 5000);
-  }
 }
 
 /* ---------------- Helpers ---------------- */
