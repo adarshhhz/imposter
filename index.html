@@ -347,8 +347,12 @@ db.ref('.info/connected').on('value', function(snap) {
   }
 });
 
+// Tracks the last sync problem so we can show it in the Admin panel instead of it failing silently
+let syncError = null;
+
 // Sync completely from Cloud
 db.ref('packs').on('value', (snapshot) => {
+  syncError = null;
   const data = snapshot.val();
   if (data) {
     DEFAULT_CATEGORIES.forEach(cat => {
@@ -360,17 +364,27 @@ db.ref('packs').on('value', (snapshot) => {
     });
 
     state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
-    
-    // Update UI
-    if (['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
-      render();
-    }
   }
+  // Update UI (always, even if data is null/empty, so admin panel reflects reality)
+  if (['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
+    render();
+  }
+}, (error) => {
+  // This fires on permission-denied or other read errors that were previously swallowed silently
+  syncError = error.message;
+  console.error('Firebase READ error:', error);
+  if (state.screen === 'admin') render();
 });
 
 function savePacks() {
-  db.ref('packs').set(PACKS).catch((error) => {
-    alert("⚠️ Firebase Error: " + error.message);
+  return db.ref('packs').set(PACKS).then(() => {
+    syncError = null;
+  }).catch((error) => {
+    syncError = error.message;
+    console.error('Firebase WRITE error:', error);
+    alert("⚠️ Firebase save failed: " + error.message + "\n\nYour word was NOT saved to the cloud — it will disappear on refresh until this is fixed. Check your Realtime Database rules in the Firebase console.");
+    if (state.screen === 'admin') render();
+    throw error;
   });
 }
 
@@ -737,7 +751,14 @@ function renderAdminPanel() {
   } else {
     app.innerHTML = `
       <h1 style="margin-top: 30px;">Admin Panel</h1>
-      <p class="subtitle" style="color: var(--success); font-weight: bold;">Cloud Sync Active ✅</p>
+      ${syncError ? `
+        <div style="background:#3c1414; border:1px solid var(--danger); color:#ffb4ae; padding:12px 14px; border-radius:10px; margin-bottom:14px; font-size:13px; line-height:1.5;">
+          <strong>⚠️ Cloud sync error:</strong> ${escapeHtml(syncError)}<br>
+          Words you add will <strong>not</strong> be saved and will vanish on refresh until this is fixed.
+          This is almost always a Firebase Realtime Database <em>rules</em> problem — open the Firebase console →
+          Realtime Database → Rules, and make sure read/write are allowed.
+        </div>
+      ` : `<p class="subtitle" style="color: var(--success); font-weight: bold;">Cloud Sync Active ✅</p>`}
       <div class="admin-box">
         <div class="player-list">
           ${DEFAULT_CATEGORIES.map(cat => `
@@ -756,26 +777,44 @@ function renderAdminPanel() {
 }
 
 window.addWord = (cat) => {
-  const val = document.getElementById('newWord').value.trim();
-  if (val) { 
-    if(!PACKS[cat]) PACKS[cat] = [];
-    PACKS[cat].push(val); 
-    savePacks(); 
-    renderAdminPanel(); 
-    document.getElementById('newWord').value = '';
-  }
+  const input = document.getElementById('newWord');
+  const val = input.value.trim();
+  if (!val) return;
+
+  if (!PACKS[cat]) PACKS[cat] = [];
+  PACKS[cat].push(val);
+  renderAdminPanel(); // optimistic UI update so it feels instant
+  input.value = '';
+
+  savePacks().catch(() => {
+    // Roll back the optimistic add since it didn't actually persist
+    const i = PACKS[cat].lastIndexOf(val);
+    if (i !== -1) PACKS[cat].splice(i, 1);
+    renderAdminPanel();
+  });
 };
 window.deleteWord = (cat, idx) => {
-  PACKS[cat].splice(idx, 1); 
-  savePacks(); 
+  const removed = PACKS[cat][idx];
+  PACKS[cat].splice(idx, 1);
   renderAdminPanel();
+
+  savePacks().catch(() => {
+    // Put it back since the delete didn't actually persist
+    PACKS[cat].splice(idx, 0, removed);
+    renderAdminPanel();
+  });
 };
 window.factoryReset = () => {
   if (confirm("Reset all words to default (empty)? Custom words will be lost.")) {
+    const backup = PACKS;
     PACKS = {};
     DEFAULT_CATEGORIES.forEach(cat => PACKS[cat] = []);
-    savePacks(); 
     renderAdminPanel();
+
+    savePacks().catch(() => {
+      PACKS = backup;
+      renderAdminPanel();
+    });
   }
 };
 
