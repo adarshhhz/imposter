@@ -18,10 +18,10 @@
 <style>
   :root {
     --bg-main: #121216;
-    --bg-card: #1C1C24;
-    --bg-input: #252530;
+    --bg-card: rgba(28, 28, 36, 0.75); /* Translucent for background image */
+    --bg-input: rgba(37, 37, 48, 0.9);
     --text-main: #FFFFFF;
-    --text-muted: #8E8E9E;
+    --text-muted: #A0A0B0;
     --accent: #FF9F0A;
     --accent-dark: #CC7E00;
     --danger: #FF453A;
@@ -32,12 +32,15 @@
   }
   
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
+  /* Global Background using the user's pixel art image */
   html, body {
     height: 100%;
     margin: 0;
     padding: 0;
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg-main);
+    /* Uses the exact filename provided, with a slight dark overlay to keep text readable */
+    background: linear-gradient(rgba(18, 18, 22, 0.65), rgba(18, 18, 22, 0.85)), url('1000107918.jpg') center/cover fixed no-repeat;
     color: var(--text-main);
     overflow-x: hidden;
   }
@@ -53,11 +56,11 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
   .toast button { background: none; border: none; color: var(--accent); font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'Inter', sans-serif; }
 
-  /* Pixel Flower Petal Animation */
+  /* Pixel Flower Petal Animation (Reduced amount) */
   .pixel-petal {
     position: fixed;
     top: -15px;
-    z-index: 9998;
+    z-index: 1;
     pointer-events: none;
     user-select: none;
     width: 6px;
@@ -110,6 +113,7 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    z-index: 2;
   }
 
   /* Fullscreen Welcome Container */
@@ -149,16 +153,19 @@
   }
 
   /* Typography */
-  h1 { font-size: 24px; font-weight: 700; text-align: center; margin: 10px 0 4px; }
-  .subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+  h1 { font-size: 24px; font-weight: 700; text-align: center; margin: 10px 0 4px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+  .subtitle { text-align: center; color: var(--text-muted); font-size: 14px; margin-bottom: 24px; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
   
-  /* Cards */
+  /* Cards with Glassmorphism for the background image */
   .card {
     background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-radius: var(--radius);
     padding: 16px;
     margin-bottom: 16px;
-    border: 1px solid #282834;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   }
   .card-header {
     display: flex;
@@ -194,7 +201,7 @@
   }
   .player-idx:hover { border-color: var(--accent); transform: scale(1.05); }
   .player-idx .add-photo-icon {
-    position: absolute; bottom: -2px; right: -2px; background: var(--bg-input);
+    position: absolute; bottom: -2px; right: -2px; background: #333;
     border-radius: 50%; padding: 2px; width: 14px; height: 14px;
     display: flex; align-items: center; justify-content: center; font-size: 10px;
     transition: all 0.2s ease;
@@ -208,9 +215,11 @@
     padding: 12px 14px;
     display: flex; align-items: center;
     transition: all 0.2s ease;
+    border: 1px solid rgba(255,255,255,0.05);
   }
   .player-input-wrap:focus-within {
     box-shadow: 0 0 0 1px var(--accent);
+    background: rgba(45, 45, 58, 0.95);
   }
   .player-input-wrap input {
     background: transparent; border: none; color: var(--text-main); font-size: 15px; width: 100%; outline: none; font-family: 'Inter', sans-serif;
@@ -222,7 +231,7 @@
   .del-btn:hover { color: var(--danger); transform: scale(1.15); }
   
   .add-player-btn {
-    width: 100%; background: transparent; border: 1px dashed var(--text-muted); color: var(--text-muted); padding: 12px; border-radius: var(--radius-sm); margin-top: 10px; cursor: pointer; font-size: 15px; font-weight: 500;
+    width: 100%; background: transparent; border: 1px dashed rgba(255,255,255,0.2); color: var(--text-muted); padding: 12px; border-radius: var(--radius-sm); margin-top: 10px; cursor: pointer; font-size: 15px; font-weight: 500;
     transition: all 0.2s ease;
   }
   .add-player-btn:hover {
@@ -233,13 +242,13 @@
 
   /* Settings Toggles */
   .setting-row {
-    display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #30303C; cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;
     transition: background 0.2s ease;
     border-radius: 8px;
     margin: 0 -8px;
     padding: 12px 8px;
   }
-  .setting-row:hover { background: rgba(255, 255, 255, 0.02); }
+  .setting-row:hover { background: rgba(255, 255, 255, 0.05); }
   .setting-row:last-child { border-bottom: none; }
   .setting-info { display: flex; gap: 12px; align-items: center; flex: 1; }
   .setting-icon { color: var(--accent); font-size: 18px; }
@@ -248,17 +257,18 @@
   
   /* Toggle Switch */
   .switch {
-    width: 44px; height: 24px; background: var(--bg-input); border-radius: 12px; position: relative; transition: 0.3s;
+    width: 44px; height: 24px; background: rgba(0,0,0,0.4); border-radius: 12px; position: relative; transition: 0.3s;
+    border: 1px solid rgba(255,255,255,0.1);
   }
   .switch::after {
-    content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #FFF; border-radius: 50%; transition: 0.3s;
+    content: ''; position: absolute; top: 1px; left: 2px; width: 20px; height: 20px; background: #FFF; border-radius: 50%; transition: 0.3s;
   }
-  .switch.active { background: var(--accent); }
-  .switch.active::after { transform: translateX(20px); }
+  .switch.active { background: var(--accent); border-color: var(--accent); }
+  .switch.active::after { transform: translateX(18px); }
 
   /* Bottom Bar */
   .bottom-bar {
-    position: fixed; bottom: 0; left: 0; right: 0; padding: 16px; background: var(--bg-main); border-top: 1px solid #202028; display: flex; justify-content: center; z-index: 10;
+    position: fixed; bottom: 0; left: 0; right: 0; padding: 16px; background: rgba(18, 18, 22, 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: center; z-index: 10;
   }
   .bottom-bar .inner { width: 100%; max-width: var(--max-w); }
   .start-btn {
@@ -275,23 +285,23 @@
 
   /* Chips */
   .chip-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .chip { background: var(--bg-input); color: var(--text-muted); padding: 8px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s ease; }
-  .chip:hover:not(.active) { background: #353545; color: #FFF; }
+  .chip { background: var(--bg-input); color: var(--text-muted); padding: 8px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.05); }
+  .chip:hover:not(.active) { background: rgba(255,255,255,0.1); color: #FFF; }
   .chip.active { background: var(--accent-dark); color: #FFF; border: 1px solid var(--accent); }
 
   /* Admin Panel specific */
-  .admin-box { background: var(--bg-card); padding: 20px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid #282834;}
-  .admin-input { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid #30303C; color: #FFF; border-radius: 8px; margin-bottom: 10px; font-size: 16px; transition: border-color 0.2s;}
+  .admin-box { background: var(--bg-card); padding: 20px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(12px);}
+  .admin-input { width: 100%; padding: 12px; background: var(--bg-input); border: 1px solid rgba(255,255,255,0.1); color: #FFF; border-radius: 8px; margin-bottom: 10px; font-size: 16px; transition: border-color 0.2s;}
   .admin-input:focus { outline: none; border-color: var(--accent); }
   .admin-btn { background: var(--accent); color: #000; padding: 10px 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s ease; }
   .admin-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
   .admin-btn:active { transform: scale(0.96); }
-  .admin-btn-secondary { background: var(--bg-input); color: #FFF; border: 1px solid #30303C; padding: 10px 16px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 15px; font-weight: 500; transition: all 0.2s ease; }
-  .admin-btn-secondary:hover { background: #2a2a36; border-color: var(--text-muted); }
+  .admin-btn-secondary { background: var(--bg-input); color: #FFF; border: 1px solid rgba(255,255,255,0.1); padding: 10px 16px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 15px; font-weight: 500; transition: all 0.2s ease; }
+  .admin-btn-secondary:hover { background: rgba(255,255,255,0.1); border-color: var(--text-muted); }
   .admin-btn-secondary:active { transform: scale(0.98); }
   .word-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-  .word-chip { background: var(--bg-input); padding: 5px 10px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 5px; transition: background 0.2s; }
-  .word-chip:hover { background: #2a2a36; }
+  .word-chip { background: var(--bg-input); padding: 5px 10px; border-radius: 4px; font-size: 12px; display: flex; align-items: center; gap: 5px; transition: background 0.2s; border: 1px solid rgba(255,255,255,0.05); }
+  .word-chip:hover { background: rgba(255,255,255,0.1); }
   .word-chip span { transition: transform 0.2s; display: inline-block; }
   .word-chip span:hover { transform: scale(1.2); }
   
@@ -302,60 +312,20 @@
   .card-3d:hover:not(.flipped):not(.discarded) { transform: scale(1.02); }
   .card-3d.flipped { transform: rotateY(180deg); }
   .card-3d.discarded { top: 100%; opacity: 0; pointer-events: none; transform: rotateY(180deg) scale(0.8); }
-  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid #30303C; transition: box-shadow 0.3s ease; }
+  .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 1px solid rgba(255,255,255,0.1); transition: box-shadow 0.3s ease; backdrop-filter: blur(15px); }
   .card-3d:hover .card-face { box-shadow: 0 8px 25px rgba(0,0,0,0.4); }
   .card-front { background: var(--bg-card); }
   .card-back { background: var(--bg-input); transform: rotateY(180deg); }
-  .tap-hint { border: 1px dashed var(--text-muted); color: var(--text-muted); padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-top: 20px; transition: 0.3s; }
+  .tap-hint { border: 1px dashed var(--text-muted); color: var(--text-muted); padding: 8px 12px; border-radius: 6px; font-size: 12px; margin-top: 20px; transition: 0.3s; background: rgba(0,0,0,0.3); }
 
   /* Voting UI */
-  .vote-option { background: var(--bg-input); border: 2px solid transparent; padding: 16px; border-radius: var(--radius-sm); margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 16px; transition: all 0.2s ease; }
-  .vote-option:hover:not(.selected) { background: #2a2a36; transform: translateX(4px); }
-  .vote-option.selected { border-color: var(--accent); background: #3c2a12; }
+  .vote-option { background: var(--bg-input); border: 2px solid rgba(255,255,255,0.05); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 16px; transition: all 0.2s ease; backdrop-filter: blur(8px); }
+  .vote-option:hover:not(.selected) { background: rgba(255,255,255,0.1); transform: translateX(4px); }
+  .vote-option.selected { border-color: var(--accent); background: rgba(204, 126, 0, 0.3); }
   .vote-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-muted); transition: all 0.2s ease; }
   .vote-option.selected .vote-radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 4px #3c2a12; }
   
-  /* Pixel Art Welcome Scene - Fullscreen Fixed */
-  .pixel-scene {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden;
-    z-index: 0;
-    background: linear-gradient(180deg, #2E7FE0 0%, #4FA3F0 35%, #7DC4F5 60%, #A8DFFF 100%);
-  }
-  .pixel-sprite { position: absolute; width: 1px; height: 1px; background: transparent; }
-  .pixel-cloud { animation: driftCloud linear infinite; }
-  @keyframes driftCloud {
-    0% { transform: translateX(-20vw); }
-    100% { transform: translateX(120vw); }
-  }
-  .pixel-hill-back, .pixel-hill-front {
-    position: absolute; left: 0; right: 0; bottom: 0;
-  }
-  .pixel-hill-back {
-    background: #3E9B4F;
-    clip-path: polygon(0% 100%, 0% 55%, 12% 55%, 12% 40%, 28% 40%, 28% 58%, 45% 58%, 45% 35%, 62% 35%, 62% 50%, 78% 50%, 78% 30%, 100% 30%, 100% 100%);
-    height: 50%;
-    opacity: 0.85;
-  }
-  .pixel-hill-front {
-    background: #2F7A3E;
-    clip-path: polygon(0% 100%, 0% 70%, 15% 70%, 15% 55%, 32% 55%, 32% 72%, 50% 72%, 50% 50%, 68% 50%, 68% 65%, 85% 65%, 85% 45%, 100% 45%, 100% 100%);
-    height: 40%;
-  }
-  .pixel-spark {
-    position: absolute; width: 8px; height: 8px; transform: rotate(45deg);
-    animation: twinkleFloat ease-in-out infinite;
-    z-index: 1;
-  }
-  @keyframes twinkleFloat {
-    0%, 100% { opacity: 0; transform: rotate(45deg) translateY(0) scale(0.5); }
-    50% { opacity: 1; transform: rotate(45deg) translateY(-16px) scale(1); }
-  }
-
+  /* Welcome Screen Image Style */
   .hero-image {
     width: 220px;
     height: 220px;
@@ -475,7 +445,7 @@ function syncToCloud(onSuccess) {
     } else {
       if (onSuccess) onSuccess();
     }
-    renderAdminPanel(); // Refresh UI to reset buttons
+    renderAdminPanel(); 
   });
 }
 
@@ -486,7 +456,7 @@ function forceRefresh() {
 /* ---------------- Subtle Pixel Petals Falling Animation ---------------- */
 function startPixelPetals() {
   const colors = ['#FF6EC7', '#FFD84D', '#FF9F0A', '#FFFFFF', '#FF453A'];
-  // Reduced amount of falling pixel petals from 14 to 5
+  // Very minimal falling pixels (just 5)
   for (let i = 0; i < 5; i++) {
     const petal = document.createElement('div');
     petal.className = 'pixel-petal';
@@ -507,7 +477,7 @@ let state = {
   screen: 'setup',
   names: ["Player 1", "Player 2", "Player 3"],
   photos: [null, null, null], 
-  activeCategories: [...DEFAULT_CATEGORIES], // Select all by default
+  activeCategories: [...DEFAULT_CATEGORIES], 
   imposterCount: 1,
   imposterSeesCategory: true,
   showImposterHint: false, 
@@ -575,12 +545,6 @@ const icons = {
 /* ---------------- 0. Welcome Screen ---------------- */
 function renderWelcome() {
   app.innerHTML = `
-    <div class="pixel-scene" id="pixelScene">
-      <div class="pixel-hill-back"></div>
-      <div id="pixelSparkles"></div>
-      <div class="pixel-hill-front"></div>
-    </div>
-
     <div class="game-screen" style="height: 100vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; position: relative; z-index: 2;">
 
       <div style="text-align: center; margin-bottom: 25px; position: relative; padding-left: 20px;">
@@ -595,113 +559,10 @@ function renderWelcome() {
       </div>
       
       <div class="hero-image"></div>
-      <h2 style="font-size: 28px; color: var(--accent); font-weight: 700; margin: 0 0 24px 0; letter-spacing: 1.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.4); position: relative; z-index: 2;">സ്വാഗതം</h2>
+      <h2 style="font-size: 28px; color: var(--accent); font-weight: 700; margin: 0 0 24px 0; letter-spacing: 1.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.6); position: relative; z-index: 2;">സ്വാഗതം</h2>
       <button class="start-btn" style="width: 85%; max-width: 320px; background: linear-gradient(135deg, #FF453A 0%, #FF9F0A 100%); color: #FFF; box-shadow: 0 6px 20px rgba(0,0,0,0.35); border: none; position: relative; z-index: 2;" onclick="showOnamPopup()">Enter Game</button>
     </div>
   `;
-  initPixelScene();
-}
-
-function initPixelScene() {
-  const scene = document.getElementById('pixelScene');
-  if (!scene) return;
-
-  // Sun
-  const sun = document.createElement('div');
-  sun.className = 'pixel-sprite';
-  sun.style.top = '8%';
-  sun.style.right = '10%';
-  sun.style.boxShadow = pixelArt([
-    '  SSS  ',
-    ' SSSSS ',
-    'SSSSSSS',
-    'SSSSSSS',
-    'SSSSSSS',
-    ' SSSSS ',
-    '  SSS  '
-  ], 9, { S: '#FFD84D' });
-  sun.style.filter = 'drop-shadow(0 0 20px rgba(255, 216, 77, 0.6))';
-  scene.appendChild(sun);
-
-  // Clouds (Reduced from 3 to 2)
-  const cloudShape = pixelArt([
-    '  CCCC  ',
-    ' CCCCCCC',
-    'CCCCCCCC',
-    ' CCCCCC '
-  ], 8, { C: '#FFFFFF' });
-
-  [
-    { top: '14%', size: 1, dur: 55, delay: 0, opacity: 0.95 },
-    { top: '28%', size: 0.7, dur: 70, delay: -20, opacity: 0.8 }
-  ].forEach(cfg => {
-    const cloud = document.createElement('div');
-    cloud.className = 'pixel-sprite pixel-cloud';
-    cloud.style.top = cfg.top;
-    cloud.style.left = '0';
-    cloud.style.boxShadow = cloudShape;
-    cloud.style.transform = `scale(${cfg.size})`;
-    cloud.style.transformOrigin = 'left top';
-    cloud.style.opacity = cfg.opacity;
-    cloud.style.animationDuration = cfg.dur + 's';
-    cloud.style.animationDelay = cfg.delay + 's';
-    scene.appendChild(cloud);
-  });
-
-  // Trees
-  const treeShape = pixelArt([
-    ' LLL ',
-    'LLLLL',
-    'LLLLL',
-    '  T  ',
-    '  T  '
-  ], 7, { L: '#2E6B3E', T: '#5C3A21' });
-
-  [
-    { left: '6%', bottom: '30%', scale: 0.9 },
-    { left: '80%', bottom: '34%', scale: 1.1 },
-    { left: '88%', bottom: '22%', scale: 0.7 }
-  ].forEach(cfg => {
-    const tree = document.createElement('div');
-    tree.className = 'pixel-sprite';
-    tree.style.left = cfg.left;
-    tree.style.bottom = cfg.bottom;
-    tree.style.boxShadow = treeShape;
-    tree.style.transform = `scale(${cfg.scale})`;
-    tree.style.transformOrigin = 'left bottom';
-    scene.appendChild(tree);
-  });
-
-  // Sparkles (Reduced from 16 to 5)
-  const sparkColors = ['#FF9F0A', '#FF6EC7', '#FFD84D', '#B983FF', '#6EE7E7'];
-  const sparkContainer = document.getElementById('pixelSparkles');
-  if (sparkContainer) {
-    sparkContainer.innerHTML = '';
-    for (let i = 0; i < 5; i++) {
-      const spark = document.createElement('div');
-      spark.className = 'pixel-spark';
-      spark.style.left = Math.random() * 100 + '%';
-      spark.style.top = Math.random() * 90 + '%';
-      spark.style.background = sparkColors[Math.floor(Math.random() * sparkColors.length)];
-      spark.style.animationDuration = (Math.random() * 2 + 2) + 's';
-      spark.style.animationDelay = (Math.random() * 3) + 's';
-      const size = Math.floor(Math.random() * 5) + 5;
-      spark.style.width = size + 'px';
-      spark.style.height = size + 'px';
-      sparkContainer.appendChild(spark);
-    }
-  }
-}
-
-function pixelArt(rows, size, palette) {
-  const shadows = [];
-  rows.forEach((row, y) => {
-    [...row].forEach((ch, x) => {
-      const color = palette[ch];
-      if (color) shadows.push(`${x * size}px ${y * size}px 0 0 ${color}`);
-    });
-  });
-  return shadows.join(',');
 }
 
 window.showOnamPopup = () => {
@@ -719,7 +580,7 @@ function renderSetup() {
     const isActive = state.activeCategories.includes(cat);
     const count = PACKS[cat] ? PACKS[cat].length : 0;
     const isEmpty = count === 0;
-    return `<div class="chip ${isActive ? 'active' : ''}" style="${isEmpty ? 'opacity:0.5; border:1px dashed var(--text-muted);' : ''}" onclick="toggleCategory('${cat}')">${cat} (${count})${isEmpty ? ' ⚠️' : ''}</div>`;
+    return `<div class="chip ${isActive ? 'active' : ''}" style="${isEmpty ? 'opacity:0.5; border:1px dashed rgba(255,255,255,0.3);' : ''}" onclick="toggleCategory('${cat}')">${cat} (${count})${isEmpty ? ' ⚠️' : ''}</div>`;
   }).join('');
 
   app.innerHTML = `
@@ -730,16 +591,6 @@ function renderSetup() {
       <div class="card-header">
         <span style="display:flex; align-items:center; gap:8px;">
           👥 Players
-          <svg width="20" height="20" viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg" style="border-radius:2px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">
-            <rect width="8" height="8" fill="#55FF55"/>
-            <rect x="1" y="2" width="2" height="2" fill="#000"/>
-            <rect x="5" y="2" width="2" height="2" fill="#000"/>
-            <rect x="3" y="4" width="2" height="1" fill="#000"/>
-            <rect x="2" y="5" width="4" height="2" fill="#000"/>
-            <rect x="2" y="7" width="1" height="1" fill="#000"/>
-            <rect x="5" y="7" width="1" height="1" fill="#000"/>
-            <rect x="3" y="7" width="2" height="1" fill="#55FF55"/>
-          </svg>
         </span>
         <span class="count">${state.names.length} / 15</span>
       </div>
@@ -750,31 +601,6 @@ function renderSetup() {
         <button class="add-player-btn" onclick="addPlayer()">
           <span style="display:flex; align-items:center; justify-content:center; gap:8px;">
             + Add Player
-            <svg width="14" height="14" viewBox="0 0 10 10" xmlns="http://www.w3.org/2000/svg">
-              <rect x="1" y="8" width="1" height="1" fill="#8B4513"/>
-              <rect x="2" y="7" width="1" height="1" fill="#8B4513"/>
-              <rect x="2" y="8" width="1" height="1" fill="#555"/>
-              <rect x="1" y="7" width="1" height="1" fill="#555"/>
-              <rect x="0" y="9" width="1" height="1" fill="#444"/>
-              <rect x="3" y="6" width="1" height="1" fill="#444"/>
-              <rect x="4" y="5" width="1" height="1" fill="#444"/>
-              <rect x="2" y="5" width="1" height="1" fill="#444"/>
-              <rect x="3" y="4" width="1" height="1" fill="#444"/>
-              <rect x="4" y="4" width="1" height="1" fill="#00FFFF"/>
-              <rect x="5" y="3" width="1" height="1" fill="#00FFFF"/>
-              <rect x="6" y="2" width="1" height="1" fill="#00FFFF"/>
-              <rect x="7" y="1" width="1" height="1" fill="#00FFFF"/>
-              <rect x="8" y="0" width="1" height="1" fill="#00FFFF"/>
-              <rect x="3" y="5" width="1" height="1" fill="#008888"/>
-              <rect x="4" y="3" width="1" height="1" fill="#008888"/>
-              <rect x="5" y="2" width="1" height="1" fill="#008888"/>
-              <rect x="6" y="1" width="1" height="1" fill="#008888"/>
-              <rect x="7" y="0" width="1" height="1" fill="#008888"/>
-              <rect x="5" y="4" width="1" height="1" fill="#008888"/>
-              <rect x="6" y="3" width="1" height="1" fill="#008888"/>
-              <rect x="7" y="2" width="1" height="1" fill="#008888"/>
-              <rect x="8" y="1" width="1" height="1" fill="#008888"/>
-            </svg>
           </span>
         </button>
       ` : ''}
@@ -790,7 +616,7 @@ function renderSetup() {
               <p>${state.activeCategories.length} of ${DEFAULT_CATEGORIES.length} selected</p>
             </div>
           </div>
-          <button onclick="forceRefresh()" style="background:var(--bg-input); border:1px solid #444; color:#FFF; padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer;">🔄 Sync Info</button>
+          <button onclick="forceRefresh()" style="background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.2); color:#FFF; padding:6px 12px; border-radius:8px; font-size:12px; cursor:pointer; backdrop-filter:blur(5px);">🔄 Sync Info</button>
         </div>
       </div>
       <div class="chip-container">${categoriesHTML}</div>
@@ -1019,14 +845,14 @@ function renderAdminPanel() {
           <strong>⚠️ Cloud sync error:</strong> ${escapeHtml(syncError)}<br>
           Words will not persist until Firebase Database Rules allow read/write.
         </div>
-      ` : `<p class="subtitle" style="color: var(--success); font-weight: bold;">Cloud Sync Active ✅</p>`}
+      ` : `<p class="subtitle" style="color: var(--success); font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.8);">Cloud Sync Active ✅</p>`}
       <div class="admin-box">
         <div class="player-list">
           ${DEFAULT_CATEGORIES.map(cat => {
             const count = PACKS[cat] ? PACKS[cat].length : 0;
             return `
-            <div class="player-row" style="background:var(--bg-input); padding:10px; border-radius:8px; ${count === 0 ? 'border:1px dashed #4a4a58;' : ''}">
-              <div style="flex:1; cursor:pointer; ${count === 0 ? 'color:var(--text-muted);' : ''}" onclick="state.adminSelectedCategory='${cat}'; renderAdminPanel();">
+            <div class="player-row" style="background:var(--bg-input); padding:10px; border-radius:8px; border:1px solid rgba(255,255,255,0.05); ${count === 0 ? 'opacity:0.6;' : ''}">
+              <div style="flex:1; cursor:pointer;" onclick="state.adminSelectedCategory='${cat}'; renderAdminPanel();">
                 ${cat} (${count} word${count !== 1 ? 's' : ''}) ${count === 0 ? '<span style="color:var(--danger); font-size:11px;">· empty</span>' : ''}
               </div>
             </div>
@@ -1223,9 +1049,9 @@ function renderInterrogate() {
       <h1>Interrogation Phase</h1>
       <p class="subtitle" style="margin-bottom:30px;">Discuss and figure out who is lying.</p>
 
-      <div style="padding: 20px; background: var(--bg-card); border-radius: var(--radius); margin-bottom: 20px; border: 1px solid #282834;">
+      <div class="card" style="padding: 20px; text-align:center;">
         <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px; margin-bottom:10px;">DISCUSSION TIMER</div>
-        <div id="timerDisplay" style="font-size:48px; font-weight:800; font-variant-numeric:tabular-nums; color:${timerSeconds === 0 && !timerRunning ? 'var(--text-main)' : 'var(--accent)'};">${formatTimer(timerSeconds)}</div>
+        <div id="timerDisplay" style="font-size:48px; font-weight:800; font-variant-numeric:tabular-nums; color:${timerSeconds === 0 && !timerRunning ? 'var(--text-main)' : 'var(--accent)'}; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">${formatTimer(timerSeconds)}</div>
         <div style="display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;">
           ${!timerRunning ? `
             <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(60)">1 min</button>
@@ -1239,7 +1065,7 @@ function renderInterrogate() {
         </div>
       </div>
 
-      <div style="padding: 20px; background: var(--bg-card); border-radius: var(--radius); margin-bottom: 20px; text-align: left; border: 1px solid #282834;">
+      <div class="card" style="padding: 20px; text-align: left;">
         <h3 style="margin-top:0; font-size: 16px;">Next Step: Secret Voting</h3>
         <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 0;">Once the discussion is over, pass the device around again so everyone can secretly cast their vote for the suspected Imposter.</p>
       </div>
@@ -1309,7 +1135,7 @@ function renderVotePass() {
   app.innerHTML = `
     <div class="game-screen" style="padding-top:60px;">
       <div class="subtitle">Voting phase: ${state.currentIndex + 1} / ${state.players.length}</div>
-      ${p.photo ? `<img src="${p.photo}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin: 20px auto 10px; border:3px solid var(--accent); display:block;">` : ''}
+      ${p.photo ? `<img src="${p.photo}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin: 20px auto 10px; border:3px solid var(--accent); display:block; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">` : ''}
       <h1 style="font-size:30px; margin-bottom: 30px;">Pass to <span style="color:var(--accent)">${escapeHtml(p.name)}</span></h1>
       <p style="color:var(--text-muted); font-size:14px; margin-bottom:40px;">Make sure no one else is looking before you continue.</p>
       
@@ -1418,7 +1244,7 @@ function renderResults() {
       
       <div style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">${outcomeHTML}</div>
       
-      <div style="border: 1px dashed #30303C; padding: 20px; border-radius: var(--radius); margin: 30px 0;">
+      <div class="card" style="padding: 20px; margin: 30px 0;">
         <div style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">THE WORD WAS</div>
         <div style="font-size:24px; color:var(--accent); font-weight:700; text-transform:uppercase;">${escapeHtml(state.secretWord)}</div>
         <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">ACTUAL IMPOSTER: <b style="color:var(--danger)">${imposters.map(i => escapeHtml(i.name)).join(', ')}</b></div>
@@ -1434,7 +1260,7 @@ function renderResults() {
             : `<div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${i+1}</div>`;
             
           return `
-            <div class="player-row" style="background:${isEliminated ? '#FF453A11' : 'var(--bg-card)'}; border: 1px solid ${isEliminated ? 'var(--danger)' : 'transparent'}; padding:12px; border-radius:8px; justify-content:space-between;">
+            <div class="player-row" style="background:${isEliminated ? 'rgba(255, 69, 58, 0.2)' : 'var(--bg-card)'}; border: 1px solid ${isEliminated ? 'var(--danger)' : 'rgba(255,255,255,0.05)'}; padding:12px; border-radius:8px; justify-content:space-between; backdrop-filter: blur(8px);">
               <div style="display:flex; align-items:center; gap:12px;">
                 ${avatar}
                 <div style="display:flex; flex-direction:column;">
