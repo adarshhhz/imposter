@@ -377,7 +377,28 @@ db.ref('packs').on('value', (snapshot) => {
 });
 
 function savePacks() {
+  // Full-tree write — only used for factory reset. Normal add/delete use savePack(cat) below.
   return db.ref('packs').set(PACKS).then(() => {
+    syncError = null;
+  }).catch((error) => {
+    syncError = error.message;
+    console.error('Firebase WRITE error:', error);
+    alert("⚠️ Firebase save failed: " + error.message + "\n\nYour word was NOT saved to the cloud — it will disappear on refresh until this is fixed. Check your Realtime Database rules in the Firebase console.");
+    if (state.screen === 'admin') render();
+    throw error;
+  });
+}
+
+// Writes ONLY one category's word list, instead of the whole PACKS tree.
+// This is the important fix: if another open tab has a stale/older copy of PACKS
+// in memory and calls savePacks() later, it can silently wipe out words you just
+// added in THIS tab (because a full-tree .set() overwrites everything, including
+// categories the other tab never touched). Scoping the write to one category means
+// two tabs editing DIFFERENT categories can never clobber each other, and even for
+// the SAME category, whichever save lands last is at least based on that one
+// category's real list rather than a whole-tree snapshot that could be minutes stale.
+function savePack(cat) {
+  return db.ref('packs/' + cat).set(PACKS[cat]).then(() => {
     syncError = null;
   }).catch((error) => {
     syncError = error.message;
@@ -781,16 +802,22 @@ window.addWord = (cat) => {
   const val = input.value.trim();
   if (!val) return;
 
-  if (!PACKS[cat]) PACKS[cat] = [];
-  PACKS[cat].push(val);
-  renderAdminPanel(); // optimistic UI update so it feels instant
   input.value = '';
 
-  savePacks().catch(() => {
-    // Roll back the optimistic add since it didn't actually persist
-    const i = PACKS[cat].lastIndexOf(val);
-    if (i !== -1) PACKS[cat].splice(i, 1);
-    renderAdminPanel();
+  // Pull the latest server copy of this category first, so a stale in-memory
+  // PACKS (e.g. this tab sat idle while another tab added words) can't wipe
+  // out words that were added elsewhere in the meantime.
+  db.ref('packs/' + cat).once('value').then((snap) => {
+    const serverData = snap.val();
+    const fresh = serverData ? (Array.isArray(serverData) ? serverData : Object.values(serverData)) : [];
+    fresh.push(val);
+    PACKS[cat] = fresh;
+    if (state.adminSelectedCategory === cat) renderAdminPanel();
+    return savePack(cat);
+  }).catch((error) => {
+    syncError = error.message;
+    alert("⚠️ Could not add word: " + error.message);
+    if (state.screen === 'admin') render();
   });
 };
 window.deleteWord = (cat, idx) => {
@@ -798,7 +825,7 @@ window.deleteWord = (cat, idx) => {
   PACKS[cat].splice(idx, 1);
   renderAdminPanel();
 
-  savePacks().catch(() => {
+  savePack(cat).catch(() => {
     // Put it back since the delete didn't actually persist
     PACKS[cat].splice(idx, 0, removed);
     renderAdminPanel();
