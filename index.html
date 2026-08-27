@@ -577,7 +577,7 @@ function getMyPlayerId() {
 const mp = {
   myId: getMyPlayerId(),
   myName: localStorage.getItem('imposter_pname') || '',
-  code: null,        // current room code
+  code: localStorage.getItem('imposter_room_code') || null,
   isHost: false,
   room: null,         // last known room snapshot from Firebase
   roomRef: null,
@@ -617,6 +617,30 @@ function mpPlayerList(room) {
   return Object.keys(room.players)
     .map(id => ({ id, ...room.players[id] }))
     .sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+}
+
+// Once the game has actually started, a dropped connection (phone screen
+// lock, tab backgrounding, brief signal loss) should NOT remove the player
+// from the room -- only the lobby "leave" cleanup should do that. Call this
+// as soon as a client sees status move past 'lobby'.
+function cancelMyDisconnectHook() {
+  if (!mp.code) return;
+  db.ref(`imposterRooms/${mp.code}/players/${mp.myId}`).onDisconnect().cancel();
+}
+
+// If this device briefly dropped and its player node got removed before we
+// managed to cancel the disconnect hook (e.g. very first update after a
+// reconnect), rejoin using our cached name so ready/vote counts stay correct
+// for everyone, including the host.
+function healMyPlayerEntry(room) {
+  if (!mp.code || !room || room.status === 'lobby') return;
+  const iAmInGame = room.game && room.game.roles && room.game.roles[mp.myId] !== undefined;
+  const iAmMissing = !room.players || !room.players[mp.myId];
+  if (iAmInGame && iAmMissing) {
+    db.ref(`imposterRooms/${mp.code}/players/${mp.myId}`).set({
+      name: mp.myName, joinedAt: Date.now(), ready: room.status !== 'playing'
+    });
+  }
 }
 
 const app = document.getElementById('app');
@@ -836,6 +860,7 @@ window.createRoom = () => {
     }
     mp.code = code;
     mp.isHost = true;
+    localStorage.setItem('imposter_room_code', code);
     db.ref(`imposterRooms/${code}/players/${mp.myId}`).onDisconnect().remove();
     window.location.hash = '#online-lobby';
   });
@@ -895,6 +920,7 @@ window.joinRoom = () => {
         btn.textContent = 'Join Room';
         return;
       }
+      localStorage.setItem('imposter_room_code', code);
       db.ref(`imposterRooms/${code}/players/${mp.myId}`).onDisconnect().remove();
       window.location.hash = '#online-lobby';
     });
@@ -1133,6 +1159,7 @@ window.leaveRoom = () => {
   detachRoomListener();
   mp.code = null;
   mp.isHost = false;
+  localStorage.removeItem('imposter_room_code');
   window.location.hash = '#online';
 };
 
@@ -1907,6 +1934,8 @@ function renderOnlinePlay() {
 
   attachRoomListener(mp.code, (room) => {
     mp.isHost = (room.hostId === mp.myId);
+    cancelMyDisconnectHook();
+    healMyPlayerEntry(room);
     if (room.status === 'interrogate') { window.location.hash = '#online-interrogate'; return; }
     if (room.status === 'voting') { window.location.hash = '#online-vote'; return; }
     if (room.status === 'results') { window.location.hash = '#online-results'; return; }
@@ -1969,17 +1998,24 @@ function drawOnlinePlay(room) {
 
 window.markMpReady = () => {
   db.ref(`imposterRooms/${mp.code}/players/${mp.myId}/ready`).set(true).then(() => {
-    if (!mp.room || !mp.room.players) return;
-    const players = mpPlayerList(mp.room);
-    const allReady = players.every(p => p.id === mp.myId ? true : p.ready);
-    if (allReady && mp.isHost) {
-      db.ref(`imposterRooms/${mp.code}/status`).set('interrogate');
-    }
+    // Whoever ends up being the last to ready re-reads fresh from the
+    // server (not the local cache) before advancing the phase, so a stale
+    // snapshot can't trigger an early jump -- and it isn't limited to only
+    // the host's own click triggering the check.
+    db.ref(`imposterRooms/${mp.code}/players`).once('value', (snap) => {
+      const players = snap.val() || {};
+      const ids = Object.keys(players);
+      const allReady = ids.length > 0 && ids.every(id => players[id].ready);
+      if (allReady) {
+        db.ref(`imposterRooms/${mp.code}/status`).set('interrogate');
+      }
+    });
   });
 };
 
 window.forceStartInterrogation = () => {
   if (!mp.isHost) return;
+  if (!confirm('Some players may not have seen their card yet. Start discussion anyway?')) return;
   db.ref(`imposterRooms/${mp.code}/status`).set('interrogate');
 };
 
@@ -1990,6 +2026,8 @@ function renderOnlineInterrogate() {
 
   attachRoomListener(mp.code, (room) => {
     mp.isHost = (room.hostId === mp.myId);
+    cancelMyDisconnectHook();
+    healMyPlayerEntry(room);
     if (room.status === 'voting') { window.location.hash = '#online-vote'; return; }
     if (room.status === 'results') { window.location.hash = '#online-results'; return; }
     drawOnlineInterrogate(room);
@@ -2083,6 +2121,8 @@ function renderOnlineVote() {
 
   attachRoomListener(mp.code, (room) => {
     mp.isHost = (room.hostId === mp.myId);
+    cancelMyDisconnectHook();
+    healMyPlayerEntry(room);
     if (room.status === 'results') { window.location.hash = '#online-results'; return; }
     drawOnlineVote(room);
   });
@@ -2143,17 +2183,26 @@ window.selectMpVote = (id) => {
 window.submitMpVote = () => {
   if (!mpSelectedVote) return;
   db.ref(`imposterRooms/${mp.code}/votes/${mp.myId}`).set(mpSelectedVote).then(() => {
-    if (!mp.room) return;
-    const players = mpPlayerList(mp.room);
-    const votes = { ...(mp.room.votes || {}), [mp.myId]: mpSelectedVote };
-    if (Object.keys(votes).length >= players.length && mp.isHost) {
-      db.ref(`imposterRooms/${mp.code}/status`).set('results');
-    }
+    // Re-read both votes and the current player roster fresh from the
+    // server -- whoever happens to be last to vote triggers the advance,
+    // using live counts instead of a possibly-stale local snapshot.
+    Promise.all([
+      db.ref(`imposterRooms/${mp.code}/votes`).once('value'),
+      db.ref(`imposterRooms/${mp.code}/players`).once('value')
+    ]).then(([votesSnap, playersSnap]) => {
+      const votes = votesSnap.val() || {};
+      const players = playersSnap.val() || {};
+      const totalPlayers = Object.keys(players).length;
+      if (totalPlayers > 0 && Object.keys(votes).length >= totalPlayers) {
+        db.ref(`imposterRooms/${mp.code}/status`).set('results');
+      }
+    });
   });
 };
 
 window.finishMpVoting = () => {
   if (!mp.isHost) return;
+  if (!confirm('Some players may not have voted yet. Reveal results anyway?')) return;
   db.ref(`imposterRooms/${mp.code}/status`).set('results');
 };
 
@@ -2163,6 +2212,7 @@ function renderOnlineResults() {
 
   attachRoomListener(mp.code, (room) => {
     mp.isHost = (room.hostId === mp.myId);
+    cancelMyDisconnectHook();
     if (room.status === 'playing') { window.location.hash = '#online-play'; return; }
     if (room.status === 'lobby') { window.location.hash = '#online-lobby'; return; }
     drawOnlineResults(room);
