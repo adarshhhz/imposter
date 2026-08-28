@@ -169,6 +169,10 @@
     width: 38px; height: 38px; background: var(--accent-dark); color: #FFF; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; cursor: pointer; background-size: cover; background-position: center; position: relative; border: 2px solid transparent; transition: all 0.2s ease;
   }
   .player-idx:hover { border-color: var(--accent); transform: scale(1.05); }
+  .player-idx .add-photo-icon {
+    position: absolute; bottom: -2px; right: -2px; background: #333; border-radius: 50%; padding: 2px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all 0.2s ease;
+  }
+  .player-idx:hover .add-photo-icon { background: var(--accent); color: #000; }
 
   .player-input-wrap {
     flex: 1; background: var(--bg-input); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.05);
@@ -221,73 +225,6 @@
   .word-chip:hover { background: rgba(255,255,255,0.1); }
   .word-chip span { transition: transform 0.2s; display: inline-block; }
   .word-chip span:hover { transform: scale(1.2); }
-
-  /* Voice chat widget */
-  .voice-card {
-    background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%), var(--bg-card);
-    border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius); padding: 18px; margin-bottom: 16px;
-    position: relative; overflow: hidden;
-  }
-  .voice-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
-  }
-  .voice-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .voice-status { display: flex; flex-direction: column; gap: 2px; }
-  .voice-status-title { font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-  .voice-status-sub { font-size: 12px; color: var(--text-muted); }
-  .voice-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; transition: all 0.25s ease; }
-  .voice-dot.live { background: var(--success); box-shadow: 0 0 8px rgba(50,215,75,0.7); animation: voiceDotPulse 1.6s ease-in-out infinite; }
-  .voice-dot.connecting { background: var(--accent); box-shadow: 0 0 8px rgba(255,159,10,0.7); animation: voiceDotPulse 0.8s ease-in-out infinite; }
-  @keyframes voiceDotPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
-
-  .voice-controls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-  .voice-btn {
-    width: 52px; height: 52px; border-radius: 50%; border: none; cursor: pointer; position: relative;
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    background: var(--bg-input); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.08);
-    transition: transform 0.15s ease, background 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
-  }
-  .voice-btn:active { transform: scale(0.92); }
-  .voice-btn.secondary { width: 44px; height: 44px; }
-  .voice-btn.mic-on {
-    background: linear-gradient(180deg, #FFB020, var(--accent)); color: #1a1200;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.4) inset, 0 4px 16px rgba(255,159,10,0.4);
-  }
-  .voice-btn.speaker-on { background: linear-gradient(180deg, #3a3a48, #26262f); color: var(--accent); border-color: rgba(255,159,10,0.4); }
-  .voice-btn.mic-off-state { background: rgba(255,69,58,0.12); color: var(--danger); border-color: rgba(255,69,58,0.3); }
-  .voice-btn .voice-ring {
-    position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; pointer-events: none;
-  }
-  .voice-btn.speaking .voice-ring { animation: voiceRingPulse 1s ease-out infinite; }
-  @keyframes voiceRingPulse {
-    0% { transform: scale(0.85); opacity: 0.9; }
-    100% { transform: scale(1.35); opacity: 0; }
-  }
-  .voice-btn.loading .voice-spinner { display: block; }
-  .voice-spinner {
-    display: none; position: absolute; inset: 0; border-radius: 50%;
-    border: 2.5px solid rgba(0,0,0,0.15); border-top-color: rgba(0,0,0,0.55);
-    animation: voiceSpin 0.7s linear infinite;
-  }
-  @keyframes voiceSpin { to { transform: rotate(360deg); } }
-
-  .voice-participants { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-  .voice-participant { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 56px; }
-  .voice-avatar-ring {
-    width: 44px; height: 44px; border-radius: 50%; padding: 3px; display: flex; align-items: center; justify-content: center;
-    border: 2px solid transparent; transition: border-color 0.15s ease, box-shadow 0.15s ease;
-  }
-  .voice-avatar-ring.speaking { border-color: var(--success); box-shadow: 0 0 10px rgba(50,215,75,0.55); }
-  .voice-avatar-ring.muted-peer { opacity: 0.45; }
-  .voice-participant-name { font-size: 10px; color: var(--text-muted); text-align: center; max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .voice-mini-mute { position: relative; }
-  .voice-mini-mute::after {
-    content: ''; position: absolute; bottom: -1px; right: -1px; width: 14px; height: 14px; border-radius: 50%;
-    background: var(--danger); border: 2px solid var(--bg-main); display: none;
-  }
-  .voice-mini-mute.is-muted::after { display: block; }
-
   
   .game-screen { text-align: center; padding-top: 40px; }
   .card-3d-wrap { perspective: 1000px; width: 100%; height: 300px; margin: 30px 0; position: relative; }
@@ -307,6 +244,14 @@
   .vote-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--text-muted); transition: all 0.2s ease; }
   .vote-option.selected .vote-radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 4px #3c2a12; }
   
+  .hero-image {
+    width: 220px; height: 220px; margin: 0 auto 30px;
+    background: url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787771294/FyvT48GaIAAx4l4.jpg') center/cover no-repeat;
+    border-radius: 20px; border: 3px solid var(--accent);
+    box-shadow: 0 10px 40px rgba(255, 159, 10, 0.4); position: relative; z-index: 2; transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .hero-image:hover { transform: scale(1.05); box-shadow: 0 15px 50px rgba(255, 159, 10, 0.6); }
+
   .overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 10000; justify-content: center; align-items: center; padding: 20px; }
   .popup-box {
     background: var(--bg-card); border: 2px solid var(--accent); padding: 40px 20px;
@@ -320,6 +265,7 @@
 <div class="watermark">powered by adruzz</div>
 <div class="app-container" id="app"></div>
 
+<!-- Happy Onam Modal -->
 <div class="overlay" id="onamModal">
   <div class="popup-box">
     <div style="font-size: 50px; margin-bottom: 10px;">🌸</div>
@@ -418,57 +364,14 @@ function startPixelPetals() {
 }
 startPixelPetals(); 
 
-const SETUP_STORAGE_KEY = 'imposter_setup_state';
-
-function loadSetupState() {
-  const defaults = {
-    names: ["Player 1", "Player 2", "Player 3"],
-    photos: [null, null, null],
-    activeCategories: [...DEFAULT_CATEGORIES],
-    imposterCount: 1,
-    imposterSeesCategory: true,
-    showImposterHint: false
-  };
-  try {
-    const raw = localStorage.getItem(SETUP_STORAGE_KEY);
-    if (!raw) return defaults;
-    const saved = JSON.parse(raw);
-    return {
-      names: Array.isArray(saved.names) && saved.names.length ? saved.names : defaults.names,
-      photos: Array.isArray(saved.photos) && saved.photos.length === (Array.isArray(saved.names) ? saved.names.length : 0) ? saved.photos : defaults.photos,
-      activeCategories: Array.isArray(saved.activeCategories) && saved.activeCategories.length ? saved.activeCategories : defaults.activeCategories,
-      imposterCount: typeof saved.imposterCount === 'number' ? saved.imposterCount : defaults.imposterCount,
-      imposterSeesCategory: typeof saved.imposterSeesCategory === 'boolean' ? saved.imposterSeesCategory : defaults.imposterSeesCategory,
-      showImposterHint: typeof saved.showImposterHint === 'boolean' ? saved.showImposterHint : defaults.showImposterHint
-    };
-  } catch (e) {
-    return defaults;
-  }
-}
-
-function saveSetupState() {
-  try {
-    localStorage.setItem(SETUP_STORAGE_KEY, JSON.stringify({
-      names: state.names,
-      photos: state.photos,
-      activeCategories: state.activeCategories,
-      imposterCount: state.imposterCount,
-      imposterSeesCategory: state.imposterSeesCategory,
-      showImposterHint: state.showImposterHint
-    }));
-  } catch (e) { /* storage unavailable, ignore */ }
-}
-
-const savedSetup = loadSetupState();
-
 let state = {
   screen: 'setup',
-  names: savedSetup.names,
-  photos: savedSetup.photos, 
-  activeCategories: savedSetup.activeCategories, 
-  imposterCount: savedSetup.imposterCount,
-  imposterSeesCategory: savedSetup.imposterSeesCategory,
-  showImposterHint: savedSetup.showImposterHint, 
+  names: ["Player 1", "Player 2", "Player 3"],
+  photos: [null, null, null], 
+  activeCategories: [...DEFAULT_CATEGORIES], 
+  imposterCount: 1,
+  imposterSeesCategory: true,
+  showImposterHint: false, 
   players: [],      
   secretWord: "",
   secretCategory: "",
@@ -499,17 +402,16 @@ const mp = {
   listenerFn: null,
   votedThisRound: false,
   cardRevealed: false,
+  voiceJoined: false,
+  needsRebuild: false,
   speakerOn: false,
   micOn: false,
   micRequesting: false,
-  micError: null,
   localStream: null,
-  localSpeaking: false,
-  voicePeers: {},
-  audioCtx: null,
-  speakingListeners: []
+  voicePeers: {}       
 };
 
+// Robust STUN servers for cross-network connectivity
 const ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
@@ -517,74 +419,6 @@ const ICE_SERVERS = [
 ];
 
 function voicePairKey(a, b) { return [a, b].sort().join('_'); }
-
-function getAudioCtx() {
-  if (!mp.audioCtx) {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    mp.audioCtx = new Ctx();
-  }
-  if (mp.audioCtx.state === 'suspended') mp.audioCtx.resume().catch(() => {});
-  return mp.audioCtx;
-}
-
-// Attaches an analyser to a stream and returns a fn that returns true while the
-// speaker is currently talking above a noise threshold. Cheap: reused single
-// requestAnimationFrame loop below polls all of these instead of one loop per peer.
-function attachSpeechAnalyser(stream) {
-  try {
-    const ctx = getAudioCtx();
-    const source = ctx.createMediaStreamSource(stream);
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 512;
-    analyser.smoothingTimeConstant = 0.75;
-    source.connect(analyser);
-    const data = new Uint8Array(analyser.frequencyBinCount);
-    return {
-      analyser, source,
-      isSpeaking() {
-        analyser.getByteFrequencyData(data);
-        let sum = 0;
-        for (let i = 0; i < data.length; i++) sum += data[i];
-        return (sum / data.length) > 10;
-      },
-      destroy() { try { source.disconnect(); } catch (e) {} }
-    };
-  } catch (e) {
-    return null;
-  }
-}
-
-let speakingLoopRunning = false;
-function ensureSpeakingLoop() {
-  if (speakingLoopRunning) return;
-  speakingLoopRunning = true;
-  function tick() {
-    const anyActive = mp.micOn || mp.speakerOn || Object.keys(mp.voicePeers).length > 0;
-    if (!anyActive) { speakingLoopRunning = false; return; }
-
-    if (mp.localAnalyser) {
-      const speaking = mp.micOn && mp.localAnalyser.isSpeaking();
-      if (speaking !== mp.localSpeaking) {
-        mp.localSpeaking = speaking;
-        const btn = document.getElementById('voiceMicBtn');
-        if (btn) btn.classList.toggle('speaking', speaking);
-      }
-    }
-    Object.entries(mp.voicePeers).forEach(([peerId, entry]) => {
-      if (!entry.analyser) return;
-      const speaking = entry.analyser.isSpeaking();
-      if (speaking !== entry.speaking) {
-        entry.speaking = speaking;
-        const ring = document.getElementById('voice-avatar-' + peerId);
-        if (ring) ring.classList.toggle('speaking', speaking);
-      }
-    });
-
-    requestAnimationFrame(tick);
-  }
-  requestAnimationFrame(tick);
-}
-
 
 function getVoiceAudioEl(peerId) {
   let el = document.getElementById('voice-audio-' + peerId);
@@ -603,8 +437,6 @@ function teardownVoicePeer(peerId) {
   const entry = mp.voicePeers[peerId];
   if (!entry) return;
   entry.listeners.forEach(({ ref, event, fn }) => ref.off(event, fn));
-  if (entry.retryTimer) clearTimeout(entry.retryTimer);
-  if (entry.analyser) entry.analyser.destroy();
   try { entry.pc.close(); } catch (e) {}
   const el = document.getElementById('voice-audio-' + peerId);
   if (el) el.remove();
@@ -614,7 +446,6 @@ function teardownVoicePeer(peerId) {
     db.ref(`imposterRooms/${mp.code}/voice/${pairKey}`).remove();
   }
   delete mp.voicePeers[peerId];
-  updateVoiceStatusUI();
 }
 
 function fullTeardownVoice() {
@@ -623,18 +454,16 @@ function fullTeardownVoice() {
     mp.localStream.getTracks().forEach(t => t.stop());
     mp.localStream = null;
   }
-  if (mp.localAnalyser) { mp.localAnalyser.destroy(); mp.localAnalyser = null; }
-  mp.localSpeaking = false;
-  if (mp.code) {
+  if (mp.code && mp.voiceJoined) {
     db.ref(`imposterRooms/${mp.code}/voiceActive/${mp.myId}`).remove();
   }
+  mp.voiceJoined = false;
   mp.micOn = false;
   mp.speakerOn = false;
   mp.micRequesting = false;
-  mp.micError = null;
 }
 
-function connectVoicePeer(peerId) {
+function connectVoicePeer(peerId, token) {
   if (peerId === mp.myId || mp.voicePeers[peerId]) return;
   const code = mp.code;
   const pairKey = voicePairKey(mp.myId, peerId);
@@ -642,8 +471,12 @@ function connectVoicePeer(peerId) {
   const myTag = amOfferer ? 'a' : 'b';
   const theirTag = amOfferer ? 'b' : 'a';
 
+  if (amOfferer) {
+    db.ref(`imposterRooms/${code}/voice/${pairKey}`).remove();
+  }
+
   const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
-  const entry = { pc, listeners: [], candQueue: [], analyser: null, speaking: false, retryTimer: null, retried: false };
+  const entry = { pc, listeners: [], candQueue: [], token: token };
   mp.voicePeers[peerId] = entry;
 
   if (mp.localStream) {
@@ -657,36 +490,12 @@ function connectVoicePeer(peerId) {
     el.srcObject = e.streams[0];
     el.muted = !mp.speakerOn;
     el.play().catch(err => console.log("Audio autoplay prevented:", err));
-    entry.analyser = attachSpeechAnalyser(e.streams[0]);
-    ensureSpeakingLoop();
-    updateVoiceStatusUI();
   };
 
   pc.onicecandidate = (e) => {
     if (e.candidate) {
       db.ref(`imposterRooms/${code}/voice/${pairKey}/cand_${myTag}`).push(e.candidate.toJSON());
     }
-  };
-
-  // Reconnect once automatically on a dropped/failed connection instead of
-  // silently leaving the peer muted for the rest of the round.
-  pc.oniceconnectionstatechange = () => {
-    const st = pc.iceConnectionState;
-    if ((st === 'failed' || st === 'disconnected') && !entry.retryTimer) {
-      entry.retryTimer = setTimeout(() => {
-        entry.retryTimer = null;
-        if (!mp.voicePeers[peerId]) return;
-        if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
-          teardownVoicePeer(peerId);
-          if (mp.room && mp.room.voiceActive && mp.room.voiceActive[peerId]) {
-            connectVoicePeer(peerId);
-          }
-        }
-      }, 2500);
-    } else if (st === 'connected' || st === 'completed') {
-      if (entry.retryTimer) { clearTimeout(entry.retryTimer); entry.retryTimer = null; }
-    }
-    updateVoiceStatusUI();
   };
 
   const remoteCandRef = db.ref(`imposterRooms/${code}/voice/${pairKey}/cand_${theirTag}`);
@@ -712,8 +521,8 @@ function connectVoicePeer(peerId) {
     const answerRef = db.ref(`imposterRooms/${code}/voice/${pairKey}/answer`);
     const answerFn = answerRef.on('value', (snap) => {
       const answer = snap.val();
-      if (answer && !pc.currentRemoteDescription) {
-        pc.setRemoteDescription(new RTCSessionDescription(answer)).then(flushCandQueue);
+      if (answer) {
+        pc.setRemoteDescription(new RTCSessionDescription(answer)).then(flushCandQueue).catch(() => {});
       }
     });
     entry.listeners.push({ ref: answerRef, event: 'value', fn: answerFn });
@@ -721,86 +530,63 @@ function connectVoicePeer(peerId) {
     const offerRef = db.ref(`imposterRooms/${code}/voice/${pairKey}/offer`);
     const offerFn = offerRef.on('value', (snap) => {
       const offer = snap.val();
-      if (offer && !pc.currentRemoteDescription) {
+      if (offer) {
         pc.setRemoteDescription(new RTCSessionDescription(offer))
           .then(flushCandQueue)
           .then(() => pc.createAnswer())
           .then(answer => pc.setLocalDescription(answer))
-          .then(() => db.ref(`imposterRooms/${code}/voice/${pairKey}/answer`).set(pc.localDescription.toJSON()));
+          .then(() => db.ref(`imposterRooms/${code}/voice/${pairKey}/answer`).set(pc.localDescription.toJSON()))
+          .catch(() => {});
       }
     });
     entry.listeners.push({ ref: offerRef, event: 'value', fn: offerFn });
   }
-
-  updateVoiceStatusUI();
 }
 
 function syncVoiceConnections(room) {
-  if (!mp.speakerOn && !mp.micOn) return;
+  if (!mp.voiceJoined) return;
   const active = (room && room.voiceActive) || {};
+  
   Object.keys(active).forEach(id => {
-    if (active[id] && id !== mp.myId) connectVoicePeer(id);
+    if (id === mp.myId) return;
+    const peerToken = active[id];
+    
+    // Peer's connection state changed (e.g. they turned their mic on), force rebuild
+    if (mp.voicePeers[id] && mp.voicePeers[id].token !== peerToken) {
+      teardownVoicePeer(id);
+    }
+    
+    if (!mp.voicePeers[id]) {
+      const amOfferer = mp.myId < id;
+      if (!amOfferer) {
+          // Add a tiny delay for answerers so offerer has time to clear the DB
+          setTimeout(() => {
+              if (mp.voiceJoined && mp.room && mp.room.voiceActive && mp.room.voiceActive[id] === peerToken) {
+                  connectVoicePeer(id, peerToken);
+              }
+          }, 800);
+      } else {
+          connectVoicePeer(id, peerToken);
+      }
+    }
   });
+  
   Object.keys(mp.voicePeers).forEach(id => {
     if (!active[id]) teardownVoicePeer(id);
   });
 }
 
 function updateVoiceMesh() {
-  const shouldBeJoined = mp.speakerOn || mp.micOn;
-  if (shouldBeJoined) {
+  if (!mp.voiceJoined) {
+    mp.voiceJoined = true;
     const myVoiceRef = db.ref(`imposterRooms/${mp.code}/voiceActive/${mp.myId}`);
-    myVoiceRef.set({ micOn: mp.micOn });
+    myVoiceRef.set(Date.now()); 
     myVoiceRef.onDisconnect().remove();
-    syncVoiceConnections(mp.room);
-  } else {
-    fullTeardownVoice();
+  } else if (mp.needsRebuild) {
+    mp.needsRebuild = false;
+    db.ref(`imposterRooms/${mp.code}/voiceActive/${mp.myId}`).set(Date.now());
   }
-  updateVoiceStatusUI();
-}
-
-// Lightweight UI refresh for the voice widget that avoids a full render() —
-// button/status/ring updates happen via direct DOM writes so a mic toggle or
-// a peer reconnecting doesn't re-render the whole lobby list underneath it.
-function updateVoiceStatusUI() {
-  const micBtn = document.getElementById('voiceMicBtn');
-  const spkBtn = document.getElementById('voiceSpeakerBtn');
-  const statusDot = document.getElementById('voiceStatusDot');
-  const statusTitle = document.getElementById('voiceStatusTitle');
-  const statusSub = document.getElementById('voiceStatusSub');
-  if (!micBtn) return; // widget not on screen
-
-  micBtn.classList.toggle('loading', mp.micRequesting);
-  micBtn.classList.toggle('mic-on', mp.micOn && !mp.micRequesting);
-  micBtn.classList.toggle('mic-off-state', !mp.micOn && !mp.micRequesting && !!mp.localStream);
-  micBtn.innerHTML = `<span class="voice-ring"></span><span class="voice-spinner"></span>${mp.micOn ? icons.mic : icons.micOff}`;
-
-  if (spkBtn) {
-    spkBtn.classList.toggle('speaker-on', mp.speakerOn);
-    spkBtn.innerHTML = mp.speakerOn ? icons.speaker : icons.speakerOff;
-  }
-
-  const connectedCount = Object.values(mp.voicePeers).filter(e => e.pc && (e.pc.iceConnectionState === 'connected' || e.pc.iceConnectionState === 'completed')).length;
-  const totalPeers = Object.keys(mp.voicePeers).length;
-
-  if (statusDot && statusTitle && statusSub) {
-    if (mp.micRequesting) {
-      statusDot.className = 'voice-dot connecting';
-      statusTitle.textContent = 'Requesting mic access…';
-      statusSub.textContent = 'Allow the permission prompt to continue';
-    } else if (mp.micOn || mp.speakerOn) {
-      const connecting = totalPeers > connectedCount;
-      statusDot.className = 'voice-dot ' + (connecting ? 'connecting' : 'live');
-      statusTitle.textContent = mp.micOn ? 'Voice chat live' : 'Listening only';
-      statusSub.textContent = connecting
-        ? `Connecting to ${totalPeers - connectedCount} of ${totalPeers}…`
-        : (totalPeers > 0 ? `Connected to ${totalPeers} player${totalPeers !== 1 ? 's' : ''}` : 'Waiting for others to join in');
-    } else {
-      statusDot.className = 'voice-dot';
-      statusTitle.textContent = 'Voice chat off';
-      statusSub.textContent = 'Tap the mic to talk with the room';
-    }
-  }
+  syncVoiceConnections(mp.room);
 }
 
 window.toggleSpeaker = () => {
@@ -812,31 +598,37 @@ window.toggleSpeaker = () => {
       if (mp.speakerOn) el.play().catch(() => {});
     }
   });
-  updateVoiceMesh();
+  if (mp.speakerOn && !mp.voiceJoined) {
+    updateVoiceMesh(); 
+  } else if (!mp.speakerOn && !mp.micOn) {
+    fullTeardownVoice();
+  }
+  render();
 };
 
 window.toggleMic = () => {
   if (mp.micOn) {
     mp.micOn = false;
     if (mp.localStream) mp.localStream.getAudioTracks().forEach(t => t.enabled = false);
-    updateVoiceMesh();
+    if (!mp.speakerOn) {
+        fullTeardownVoice();
+    }
+    render();
   } else {
     if (mp.localStream) {
       mp.micOn = true;
       mp.localStream.getAudioTracks().forEach(t => t.enabled = true);
-      updateVoiceMesh();
+      if (!mp.voiceJoined) updateVoiceMesh();
+      render();
     } else {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        mp.micError = 'Voice chat is not supported on this browser.';
-        showToast(mp.micError);
-        return;
+        return alert('Voice chat is not supported on this browser. Please use Chrome or Safari.');
       }
       mp.micRequesting = true;
-      mp.micError = null;
-      updateVoiceStatusUI();
+      render();
       
       const timeoutPromise = new Promise((_, r) => 
-        setTimeout(() => r(new Error("Permission prompt was blocked or timed out.")), 8000)
+        setTimeout(() => r(new Error("Permission request timed out. App blocked the microphone.")), 6000)
       );
 
       Promise.race([
@@ -851,22 +643,17 @@ window.toggleMic = () => {
         mp.micOn = true;
         mp.micRequesting = false;
         if (!mp.speakerOn) mp.speakerOn = true;
-        mp.localAnalyser = attachSpeechAnalyser(stream);
-        ensureSpeakingLoop();
 
-        Object.values(mp.voicePeers).forEach(entry => {
-          stream.getAudioTracks().forEach(t => entry.pc.addTrack(t, stream));
-        });
-
+        // TEAR DOWN AND REBUILD CONNECTIONS SO THE NEW TRACK IS NEGOTIATED
+        Object.keys(mp.voicePeers).forEach(teardownVoicePeer);
+        mp.needsRebuild = true;
         updateVoiceMesh();
+        render();
       })
       .catch(err => {
         mp.micRequesting = false;
-        mp.micError = err.name === 'NotAllowedError'
-          ? 'Microphone permission was denied. Check your browser settings.'
-          : ('Microphone error: ' + err.message);
-        showToast(mp.micError);
-        updateVoiceStatusUI();
+        alert('Microphone Error: ' + err.message);
+        render();
       });
     }
   }
@@ -935,7 +722,7 @@ function render() {
     detachRoomListener();
   }
   
-  if (!ONLINE_HASHES.includes(hash) && (mp.micOn || mp.speakerOn || mp.localStream)) {
+  if (hash !== '#online-interrogate' && (mp.micOn || mp.speakerOn || mp.localStream)) {
     fullTeardownVoice();
   }
 
@@ -995,11 +782,7 @@ const icons = {
   tag: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>`,
   bulb: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"></path><path d="M10 22h4"></path><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"></path></svg>`,
   play: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>`,
-  admin: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`,
-  mic: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>`,
-  micOff: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"></line><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path><path d="M17 16.95A7 7 0 0 1 5 12v-2"></path><path d="M19 10v2a7 7 0 0 1-.11 1.23"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>`,
-  speaker: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>`,
-  speakerOff: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`
+  admin: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>`
 };
 
 function renderWelcome() {
@@ -1314,7 +1097,6 @@ function renderOnlineLobby() {
 function drawOnlineLobby(room) {
   const players = mpPlayerList(room);
   const settings = room.settings || { activeCategories: DEFAULT_CATEGORIES, imposterCount: 1, imposterSeesCategory: true, showImposterHint: false };
-  const voiceActive = room.voiceActive || {};
 
   const categoriesHTML = DEFAULT_CATEGORIES.map(cat => {
     const isActive = settings.activeCategories.includes(cat);
@@ -1325,18 +1107,6 @@ function drawOnlineLobby(room) {
 
   const maxImposters = Math.max(1, Math.min(3, players.length - 2));
 
-  function voiceAvatarHTML(p, i) {
-    const inVoice = !!voiceActive[p.id];
-    const micIsOn = inVoice && (voiceActive[p.id].micOn === undefined ? true : voiceActive[p.id].micOn);
-    const isMe = p.id === mp.myId;
-    const speaking = isMe ? mp.localSpeaking : !!(mp.voicePeers[p.id] && mp.voicePeers[p.id].speaking);
-    return `
-      <div class="voice-avatar-ring ${speaking ? 'speaking' : ''} ${inVoice ? '' : 'muted-peer'} voice-mini-mute ${inVoice && !micIsOn ? 'is-muted' : ''}" id="voice-avatar-${p.id}">
-        <div class="player-idx" style="width:38px;height:38px;">${i + 1}</div>
-      </div>
-    `;
-  }
-
   app.innerHTML = `
     <div>
       <h1 style="margin-top:10px; text-align:center;">Room Code</h1>
@@ -1344,27 +1114,6 @@ function drawOnlineLobby(room) {
         <div style="font-size:40px; font-weight:800; letter-spacing:10px; color:var(--accent);">${mp.code}</div>
         <p style="color:var(--text-muted); font-size:13px; margin:8px 0 0;">Share this code — others join from their own device</p>
         <button class="admin-btn-secondary" style="margin-top:12px; width:auto; padding:8px 16px;" onclick="copyRoomCode()">Copy Code</button>
-      </div>
-
-      <div class="voice-card">
-        <div class="voice-top">
-          <div class="voice-status">
-            <div class="voice-status-title"><span class="voice-dot" id="voiceStatusDot"></span><span id="voiceStatusTitle">Voice chat off</span></div>
-            <div class="voice-status-sub" id="voiceStatusSub">Tap the mic to talk with the room</div>
-          </div>
-          <div class="voice-controls">
-            <button class="voice-btn secondary ${mp.speakerOn ? 'speaker-on' : ''}" id="voiceSpeakerBtn" onclick="toggleSpeaker()" aria-label="Toggle speaker">${mp.speakerOn ? icons.speaker : icons.speakerOff}</button>
-            <button class="voice-btn ${mp.micRequesting ? 'loading' : ''} ${mp.micOn ? 'mic-on' : ''} ${!mp.micOn && mp.localStream ? 'mic-off-state' : ''}" id="voiceMicBtn" onclick="toggleMic()" aria-label="Toggle microphone"><span class="voice-ring"></span><span class="voice-spinner"></span>${mp.micOn ? icons.mic : icons.micOff}</button>
-          </div>
-        </div>
-        <div class="voice-participants">
-          ${players.map((p, i) => `
-            <div class="voice-participant">
-              ${voiceAvatarHTML(p, i)}
-              <div class="voice-participant-name">${escapeHtml(p.name)}</div>
-            </div>
-          `).join('')}
-        </div>
       </div>
 
       <div class="card">
@@ -1426,10 +1175,7 @@ function drawOnlineLobby(room) {
       <button class="admin-btn-secondary" style="margin-top:10px;" onclick="leaveRoom()">Leave Room</button>
     </div>
   `;
-
-  updateVoiceStatusUI();
 }
-
 
 window.copyRoomCode = () => {
   navigator.clipboard?.writeText(mp.code).then(() => showToast('Room code copied')).catch(() => {});
@@ -1509,6 +1255,9 @@ window.startOnlineGame = () => {
   const roles = {};
   players.forEach(p => { roles[p.id] = imposterIds.has(p.id) ? 'imposter' : 'crew'; });
 
+  const readyReset = {};
+  players.forEach(p => { readyReset[p.id + '/ready'] = false; });
+
   db.ref(`imposterRooms/${mp.code}`).update({
     status: 'playing',
     game: { secretWord: word, secretCategory: category, imposterHintWord: hintWord, roles },
@@ -1516,31 +1265,6 @@ window.startOnlineGame = () => {
     players: Object.fromEntries(players.map(p => [p.id, { name: p.name, joinedAt: p.joinedAt || 0, ready: false }]))
   });
 };
-
-// --- Online game/interrogate/vote/results are not built yet. Without these,
-// starting an online game (status flips to 'playing') sends the hash to
-// '#online-play' and render() calls a function that doesn't exist, throwing
-// and leaving the screen permanently blank (and it re-throws on every
-// reopen, since the hash and room status both persist). These placeholders
-// keep the room valid and give people a way back out instead of a dead app.
-function renderOnlineComingSoon(label) {
-  app.innerHTML = `
-    <div style="padding-top:60px; text-align:center;">
-      <div style="font-size:44px; margin-bottom:16px;">🚧</div>
-      <h1>${escapeHtml(label)}</h1>
-      <p class="subtitle" style="max-width:320px; margin-left:auto; margin-right:auto;">This part of online play isn't built yet — same-device play works fully in the meantime.</p>
-      <div class="card" style="text-align:left; margin-top:20px;">
-        <div class="card-header"><span>Room ${mp.code || ''}</span></div>
-        <p style="color:var(--text-muted); font-size:13px; margin:0;">The host can restart a fresh room once this screen is finished, or leave now.</p>
-      </div>
-      <button class="admin-btn-secondary" style="margin-top:20px;" onclick="leaveRoom()">Leave Room</button>
-    </div>
-  `;
-}
-function renderOnlinePlay() { renderOnlineComingSoon('Round Starting Soon'); }
-function renderOnlineInterrogate() { renderOnlineComingSoon('Interrogation'); }
-function renderOnlineVote() { renderOnlineComingSoon('Voting'); }
-function renderOnlineResults() { renderOnlineComingSoon('Results'); }
 
 function renderSetup() {
   let categoriesHTML = DEFAULT_CATEGORIES.map(cat => {
@@ -1653,7 +1377,6 @@ window.handlePhotoUpload = (e, idx) => {
       const startY = (img.height - minDim) / 2;
       ctx.drawImage(img, startX, startY, minDim, minDim, 0, 0, size, size);
       state.photos[idx] = canvas.toDataURL('image/jpeg', 0.8);
-      saveSetupState();
       renderSetup();
     };
     img.src = event.target.result;
@@ -1661,12 +1384,11 @@ window.handlePhotoUpload = (e, idx) => {
   reader.readAsDataURL(file);
 };
 
-window.updatePlayerName = (idx, val) => { state.names[idx] = val; saveSetupState(); };
+window.updatePlayerName = (idx, val) => { state.names[idx] = val; };
 window.addPlayer = () => { 
   if (state.names.length < 15) { 
     state.names.push(`Player ${state.names.length + 1}`); 
     state.photos.push(null);
-    saveSetupState();
     renderSetup(); 
   } 
 };
@@ -1674,7 +1396,6 @@ window.removePlayer = (idx) => {
   if (state.names.length > 3) { 
     state.names.splice(idx, 1); 
     state.photos.splice(idx, 1);
-    saveSetupState();
     renderSetup(); 
   } else { 
     alert("Minimum 3 players required."); 
@@ -1686,20 +1407,17 @@ window.toggleCategory = (cat) => {
   } else {
     state.activeCategories.push(cat);
   }
-  saveSetupState();
   renderSetup();
 };
 window.selectAllCategories = () => {
   state.activeCategories = [...DEFAULT_CATEGORIES];
-  saveSetupState();
   renderSetup();
 };
 window.clearAllCategories = () => {
   state.activeCategories = [DEFAULT_CATEGORIES[0]];
-  saveSetupState();
   renderSetup();
 };
-window.toggleSetting = (key) => { state[key] = !state[key]; saveSetupState(); renderSetup(); };
+window.toggleSetting = (key) => { state[key] = !state[key]; renderSetup(); };
 
 function startGame() {
   if (state.activeCategories.length === 0) return alert("Select at least one category.");
@@ -2238,4 +1956,32 @@ function startResultsBurst(crewWon) {
 }
 
 function escapeHtml(str) {
-  return String(st
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+let toastTimer = null;
+function showToast(message, undoLabel, undoFn) {
+  let el = document.getElementById('appToast');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'appToast';
+    el.className = 'toast';
+    document.body.appendChild(el);
+  }
+  el.innerHTML = `<span>${escapeHtml(message)}</span>${undoFn ? `<button id="toastUndoBtn">${escapeHtml(undoLabel || 'Undo')}</button>` : ''}`;
+  if (undoFn) {
+    document.getElementById('toastUndoBtn').onclick = () => {
+      undoFn();
+      el.classList.remove('show');
+      clearTimeout(toastTimer);
+    };
+  }
+  requestAnimationFrame(() => el.classList.add('show'));
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+render();
+</script>
+</body>
+</html>
