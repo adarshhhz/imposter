@@ -75,27 +75,6 @@
   .imposter-icon:hover { filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8)) brightness(1.15); }
   .imposter-icon.fleeing { pointer-events: none; }
 
-  @keyframes imposterZigzag {
-    0%   { transform: translate(0, -50%) rotate(0deg); }
-    12%  { transform: translate(-14px, -68%) rotate(-10deg); }
-    25%  { transform: translate(-24px, -50%) rotate(-3deg); }
-    37%  { transform: translate(-14px, -32%) rotate(6deg); }
-    50%  { transform: translate(0, -50%) rotate(0deg); }
-    62%  { transform: translate(14px, -68%) rotate(10deg); }
-    75%  { transform: translate(24px, -50%) rotate(3deg); }
-    87%  { transform: translate(14px, -32%) rotate(-6deg); }
-    100% { transform: translate(0, -50%) rotate(0deg); }
-  }
-  .imposter-icon.zigzag { animation: imposterZigzag 2.6s ease-in-out infinite; }
-
-  @keyframes imposterFlee {
-    0%   { transform: translate(0, -50%) scale(1) rotate(0deg); opacity: 1; }
-    15%  { transform: translate(-16px, -70%) scale(1.05) rotate(-12deg); opacity: 1; }
-    35%  { transform: translate(20px, -30%) scale(0.9) rotate(10deg); opacity: 1; }
-    100% { transform: translate(140px, -10%) scale(0.15) rotate(30deg); opacity: 0; }
-  }
-  .imposter-icon.imposter-leaving { animation: imposterFlee 0.6s cubic-bezier(0.4, 0, 0.7, 1) forwards !important; pointer-events: none; }
-
   @keyframes impactSquish {
     0% { transform: scale(1); } 25% { transform: scale(1.12, 0.86) rotate(-1.5deg); }
     55% { transform: scale(0.92, 1.08) rotate(1.5deg); } 80% { transform: scale(1.04, 0.98); } 100% { transform: scale(1); }
@@ -813,7 +792,7 @@ function renderWelcome() {
       <div style="text-align: center; margin-bottom: 25px; position: relative; padding-left: 20px;">
         <h1 style="font-family: 'Inter', sans-serif; font-size: clamp(34px, 8vw, 44px); font-weight: 900; letter-spacing: 4px; text-transform: uppercase; color: #FFFFFF; text-shadow: 0 4px 20px rgba(0,0,0,0.5); display: inline-block; position: relative; margin: 0;">
           IMPOSTER
-          <svg class="imposter-icon zigzag" onclick="runAwayZigzag(this)" width="40" height="40" viewBox="0 0 512 512" style="position: absolute; top: 50%; right: -50px; transform: translate(0, -50%); filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8));">
+          <svg class="imposter-icon" onclick="runAwayZigzag(this)" width="40" height="40" viewBox="0 0 512 512" style="position: absolute; top: 50%; right: -50px; transform: translate(0, -50%); filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8));">
              <path fill="#FF453A" d="M379.7,85.2c-29.4-36.2-74-56.1-120.4-56.1c-84.3,0-152.7,68.4-152.7,152.7v174c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64v-38.3h43v38.3c0,35.3,28.6,64,63.9,64c35.3,0,63.9-28.7,63.9-64V188.7C405.2,148.9,396.6,112.5,379.7,85.2z"/>
              <path fill="#71C7D5" d="M366.5,124.9H228.3c-29.6,0-53.5,24-53.5,53.5v15c0,29.6,24,53.5,53.5,53.5h138.2c29.6,0,53.5-24,53.5-53.5v-15C420,148.9,396.1,124.9,366.5,124.9z"/>
              <path fill="#FF453A" d="M106.6,193.3H78.9c-21.7,0-39.3,17.6-39.3,39.3v85.2c0,21.7,17.6,39.3,39.3,39.3h27.7V193.3z"/>
@@ -821,31 +800,10 @@ function renderWelcome() {
         </h1>
       </div>
       <h2 style="font-size: 28px; color: var(--accent); font-weight: 700; margin: 0 0 24px 0; letter-spacing: 1.5px; text-shadow: 0 2px 10px rgba(0,0,0,0.6); position: relative; z-index: 2;">സ്വാഗതം</h2>
-      <button class="start-btn" style="width: 85%; max-width: 320px; background: linear-gradient(135deg, #FF453A 0%, #FF9F0A 100%); color: #FFF; box-shadow: 0 6px 20px rgba(0,0,0,0.35); border: none; position: relative; z-index: 2;" onclick="enterGameFromWelcome()">Enter Game</button>
+      <button class="start-btn" style="width: 85%; max-width: 320px; background: linear-gradient(135deg, #FF453A 0%, #FF9F0A 100%); color: #FFF; box-shadow: 0 6px 20px rgba(0,0,0,0.35); border: none; position: relative; z-index: 2;" onclick="showOnamPopup()">Enter Game</button>
     </div>
   `;
 }
-
-window.enterGameFromWelcome = () => {
-  const icon = document.querySelector('.imposter-icon');
-  if (icon && !icon.classList.contains('imposter-leaving')) {
-    icon.classList.remove('zigzag');
-    icon.classList.add('imposter-leaving');
-    setTimeout(showOnamPopup, 500);
-  } else {
-    showOnamPopup();
-  }
-};
-
-window.runAwayZigzag = (el) => {
-  if (!el || el.classList.contains('imposter-leaving')) return;
-  el.classList.remove('zigzag');
-  el.classList.add('imposter-leaving');
-  setTimeout(() => {
-    el.classList.remove('imposter-leaving');
-    el.classList.add('zigzag');
-  }, 900);
-};
 
 window.showOnamPopup = () => { document.getElementById('onamModal').style.display = 'flex'; };
 window.closePopupAndStart = () => { document.getElementById('onamModal').style.display = 'none'; navigate('#mode'); };
@@ -1819,4 +1777,419 @@ function renderAdminPanel() {
   }
 }
 
-window.toggleBu
+window.toggleBulkAdd = (cat) => {
+  const box = document.getElementById('bulkAddBox');
+  const toggle = document.getElementById('bulkToggle');
+  const show = box.style.display === 'none';
+  box.style.display = show ? 'block' : 'none';
+  toggle.textContent = show ? '− Hide bulk add' : '+ Add multiple words at once';
+  if (show) document.getElementById('bulkWords').focus();
+};
+
+window.addWord = (cat) => {
+  const input = document.getElementById('newWord');
+  const btn = document.getElementById('addWordBtn');
+  const val = input.value.trim();
+  if (!val) return;
+
+  const existingLower = (PACKS[cat] || []).map(w => w.toLowerCase());
+  if (existingLower.includes(val.toLowerCase())) {
+    showToast(`"${val}" is already in this category`);
+    return;
+  }
+
+  input.value = '';
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  if(!PACKS[cat]) PACKS[cat] = [];
+  PACKS[cat].push(val); 
+  
+  syncToCloud(() => {
+     document.getElementById('newWord').value = '';
+  });
+};
+
+window.addBulkWords = (cat) => {
+  const textarea = document.getElementById('bulkWords');
+  const btn = document.getElementById('bulkAddBtn');
+  const raw = textarea.value;
+  const candidates = raw.split(/[\n,]/).map(w => w.trim()).filter(Boolean);
+  if (candidates.length === 0) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const existingLower = (PACKS[cat] || []).map(w => w.toLowerCase());
+  let added = 0, skipped = 0;
+  candidates.forEach(w => {
+    if (existingLower.includes(w.toLowerCase())) { skipped++; return; }
+    PACKS[cat].push(w);
+    existingLower.push(w.toLowerCase());
+    added++;
+  });
+  
+  syncToCloud(() => {
+    textarea.value = '';
+    showToast(`Added ${added} word${added !== 1 ? 's' : ''}${skipped ? `, skipped ${skipped} duplicate${skipped !== 1 ? 's' : ''}` : ''}`);
+    btn.disabled = false;
+    btn.textContent = 'Add All';
+  });
+};
+
+window.deleteWord = (cat, idx) => {
+  PACKS[cat].splice(idx, 1); 
+  syncToCloud();
+};
+
+window.factoryReset = () => {
+  PACKS = {};
+  DEFAULT_CATEGORIES.forEach(cat => PACKS[cat] = []);
+  syncToCloud();
+  showToast("Reset categories to default.");
+};
+
+function renderPass() {
+  const p = state.players[state.currentIndex];
+  const total = state.players.length;
+  
+  app.innerHTML = `
+    <div class="game-screen">
+      <div class="subtitle">Agent ${state.currentIndex + 1} of ${total}</div>
+      <p style="color:var(--text-muted); font-size:14px;">Pass device to <b style="color:var(--text-main)">${escapeHtml(p.name)}</b></p>
+      
+      <div class="card-3d-wrap">
+        <div class="card-3d" id="activeCard">
+          <div class="card-face card-front">
+            ${p.photo ? `<img src="${p.photo}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin-bottom:15px; border:2px solid var(--accent);">` : ''}
+            <div style="color:var(--accent); font-weight:600; font-size:12px; letter-spacing:2px;">CLASSIFIED</div>
+            <h2 style="font-size:32px; margin:10px 0;">${escapeHtml(p.name)}</h2>
+            <div class="tap-hint" id="frontHint">TAP TO REVEAL (2 VIEWS LEFT)</div>
+          </div>
+          
+          <div class="card-face card-back">
+            ${p.role === 'imposter' ? `
+              <div style="color:var(--danger); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">STATUS</div>
+              <h2 style="color:var(--danger); font-size:32px; margin:0; line-height:1.2;">You Are<br>The Imposter</h2>
+              ${state.imposterSeesCategory ? `<div style="margin-top:10px; font-size:14px; color:var(--text-muted);">Category:<br><b style="color:var(--text-main)">${escapeHtml(state.secretCategory)}</b></div>` : ''}
+              ${state.showImposterHint ? `<div style="margin-top:5px; font-size:14px; color:var(--text-muted);">Fake Hint Word:<br><b style="color:var(--accent)">${escapeHtml(state.imposterHintWord)}</b></div>` : ''}
+            ` : `
+              <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">THE SECRET WORD</div>
+              <h2 style="font-size:32px; margin:0; color:var(--accent);">${escapeHtml(state.secretWord)}</h2>
+              <div style="margin-top:20px; font-size:14px; color:var(--text-muted);">Category: <b style="color:var(--text-main)">${escapeHtml(state.secretCategory)}</b></div>
+            `}
+            <div class="tap-hint" id="backHint" style="margin-top:15px; border-color:var(--text-muted); color:var(--text-muted);">TAP TO HIDE</div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="min-height: 60px; margin-top: 20px;">
+        <button class="start-btn" id="nextPlayerBtn" style="display:none; width: 100%;">I'm Done - Pass Device</button>
+      </div>
+      <button class="admin-btn-secondary" id="cancelBtn" style="margin-top:10px;" onclick="navigate('#setup')">Cancel Round</button>
+    </div>
+  `;
+
+  const card = document.getElementById('activeCard');
+  const frontHint = document.getElementById('frontHint');
+  const nextBtn = document.getElementById('nextPlayerBtn');
+
+  let viewsLeft = 2;
+  let isRevealed = false;
+  let hasDiscarded = false;
+
+  card.addEventListener('click', () => {
+    if (hasDiscarded) return;
+    if (!isRevealed) {
+      if (viewsLeft <= 0) return; 
+      isRevealed = true;
+      viewsLeft--;
+      card.classList.add('flipped');
+      nextBtn.style.display = 'none'; 
+    } else {
+      isRevealed = false;
+      card.classList.remove('flipped');
+      if (viewsLeft > 0) {
+        frontHint.innerText = `TAP TO REVEAL (${viewsLeft} VIEW LEFT)`;
+      } else {
+        frontHint.innerText = `FILE LOCKED (0 VIEWS LEFT)`;
+        frontHint.style.borderColor = 'var(--danger)';
+        frontHint.style.color = 'var(--danger)';
+      }
+      nextBtn.style.display = 'flex'; 
+    }
+  });
+
+  nextBtn.addEventListener('click', () => {
+    if (hasDiscarded) return;
+    hasDiscarded = true;
+    card.classList.add('discarded');
+    setTimeout(() => {
+      if (state.currentIndex < total - 1) {
+        state.currentIndex++;
+        renderPass();
+      } else {
+        navigate('#interrogate');
+      }
+    }, 500); 
+  });
+}
+
+let timerInterval = null;
+let timerSeconds = 0;
+let timerRunning = false;
+
+function renderInterrogate() {
+  app.innerHTML = `
+    <div class="game-screen" style="padding-top:20px;">
+      <div style="font-size:50px; margin-bottom:10px;">💬</div>
+      <h1>Interrogation Phase</h1>
+      <p class="subtitle" style="margin-bottom:30px;">Discuss and figure out who is lying.</p>
+
+      <div class="card" style="padding: 20px; text-align:center;">
+        <div style="font-size:12px; color:var(--text-muted); font-weight:600; letter-spacing:1px; margin-bottom:10px;">DISCUSSION TIMER</div>
+        <div id="timerDisplay" style="font-size:48px; font-weight:800; font-variant-numeric:tabular-nums; color:${timerSeconds === 0 && !timerRunning ? 'var(--text-main)' : 'var(--accent)'}; text-shadow: 0 2px 5px rgba(0,0,0,0.5);">${formatTimer(timerSeconds)}</div>
+        <div style="display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;">
+          ${!timerRunning ? `
+            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(60)">1 min</button>
+            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(180)">3 min</button>
+            <button class="admin-btn-secondary" style="width:auto; padding:8px 14px;" onclick="setTimerPreset(300)">5 min</button>
+          ` : ''}
+        </div>
+        <div style="display:flex; gap:10px; margin-top:14px;">
+          <button class="admin-btn" style="flex:1;" onclick="toggleTimer()">${timerRunning ? 'Pause' : (timerSeconds > 0 ? 'Resume' : 'Start')}</button>
+          <button class="admin-btn-secondary" style="flex:1;" onclick="resetTimer()">Reset</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 20px; text-align: left;">
+        <h3 style="margin-top:0; font-size: 16px;">Next Step: Secret Voting</h3>
+        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 0;">Once the discussion is over, pass the device around again so everyone can secretly cast their vote for the suspected Imposter.</p>
+      </div>
+
+      <button class="start-btn" onclick="startVotingPhase()">Start Voting Phase</button>
+    </div>
+  `;
+}
+
+function formatTimer(sec) {
+  const m = Math.floor(sec / 60).toString().padStart(2, '0');
+  const s = (sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+window.setTimerPreset = (sec) => {
+  timerSeconds = sec;
+  const el = document.getElementById('timerDisplay');
+  if (el) { el.textContent = formatTimer(timerSeconds); el.style.color = 'var(--accent)'; }
+  renderInterrogate();
+};
+
+window.toggleTimer = () => {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    renderInterrogate();
+    return;
+  }
+  if (timerSeconds <= 0) timerSeconds = 180;
+  timerRunning = true;
+  renderInterrogate();
+  timerInterval = setInterval(() => {
+    timerSeconds--;
+    const el = document.getElementById('timerDisplay');
+    if (el) el.textContent = formatTimer(Math.max(timerSeconds, 0));
+    if (timerSeconds <= 0) {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      renderInterrogate();
+    }
+  }, 1000);
+};
+
+window.resetTimer = () => {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 0;
+  renderInterrogate();
+};
+
+function startVotingPhase() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = 0;
+  state.currentIndex = 0;
+  state.votes = {};
+  navigate('#vote-pass');
+}
+
+function renderVotePass() {
+  const p = state.players[state.currentIndex];
+  app.innerHTML = `
+    <div class="game-screen" style="padding-top:60px;">
+      <div class="subtitle">Voting phase: ${state.currentIndex + 1} / ${state.players.length}</div>
+      ${p.photo ? `<img src="${p.photo}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin: 20px auto 10px; border:3px solid var(--accent); display:block; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">` : ''}
+      <h1 style="font-size:30px; margin-bottom: 30px;">Pass to <span style="color:var(--accent)">${escapeHtml(p.name)}</span></h1>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom:40px;">Make sure no one else is looking before you continue.</p>
+      
+      <button class="start-btn" onclick="navigate('#vote-cast')">I am ${escapeHtml(p.name)}</button>
+    </div>
+  `;
+}
+
+function renderVoteCast() {
+  state.selectedVoteIndex = null;
+  let optionsHTML = state.players.map((p, i) => {
+    if (i === state.currentIndex) return ''; 
+    const avatar = p.photo 
+      ? `<img src="${p.photo}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">` 
+      : `<div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${i+1}</div>`;
+      
+    return `
+      <div class="vote-option" id="vote-opt-${i}" onclick="selectVote(${i})">
+        <div style="display:flex; align-items:center; gap:12px;">
+          ${avatar}
+          <span>${escapeHtml(p.name)}</span>
+        </div>
+        <div class="vote-radio"></div>
+      </div>
+    `;
+  }).join('');
+
+  app.innerHTML = `
+    <div style="padding-top:20px;">
+      <h2 style="margin-bottom:5px;">Who is the Imposter?</h2>
+      <p class="subtitle" style="text-align:left; margin-bottom:20px;">Secretly select a player to eliminate.</p>
+      <div style="margin-bottom: 80px;">${optionsHTML}</div>
+      <div class="bottom-bar">
+        <div class="inner">
+          <button class="start-btn" id="confirmVoteBtn" disabled onclick="submitVote()">Confirm Vote</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.selectVote = (idx) => {
+  state.selectedVoteIndex = idx;
+  document.querySelectorAll('.vote-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById(`vote-opt-${idx}`).classList.add('selected');
+  document.getElementById('confirmVoteBtn').disabled = false;
+};
+
+window.submitVote = () => {
+  if (state.selectedVoteIndex === null) return;
+  state.votes[state.currentIndex] = state.selectedVoteIndex;
+  
+  if (state.currentIndex < state.players.length - 1) {
+    state.currentIndex++;
+    navigate('#vote-pass');
+  } else {
+    navigate('#results');
+  }
+};
+
+function renderResults() {
+  const voteCounts = {};
+  Object.values(state.votes).forEach(votedIdx => {
+    voteCounts[votedIdx] = (voteCounts[votedIdx] || 0) + 1;
+  });
+
+  let maxVotes = 0;
+  for (let idx in voteCounts) {
+    if (voteCounts[idx] > maxVotes) maxVotes = voteCounts[idx];
+  }
+
+  const eliminatedIndices = Object.keys(voteCounts).map(Number).filter(idx => voteCounts[idx] === maxVotes);
+  const imposters = state.players.filter(p => p.role === 'imposter');
+  const imposterIndices = state.players.map((p, i) => p.role === 'imposter' ? i : -1).filter(i => i !== -1);
+  const imposterCaught = eliminatedIndices.some(idx => imposterIndices.includes(idx));
+  
+  let outcomeHTML = "";
+  if (eliminatedIndices.length > 1) {
+    outcomeHTML = `<h1 style="color:var(--accent)">Voting Tied!</h1><p style="color:var(--text-muted); margin-top:5px;">${eliminatedIndices.map(i => escapeHtml(state.players[i].name)).join(' and ')} tied with ${maxVotes} votes. The imposter survived!</p>`;
+  } else if (imposterCaught) {
+    outcomeHTML = `<h1 style="color:var(--success)">Imposter Caught!</h1><p style="color:var(--text-muted); margin-top:5px;">Crew wins! ${escapeHtml(state.players[eliminatedIndices[0]].name)} was voted out.</p>`;
+  } else {
+    outcomeHTML = `<h1 style="color:var(--danger)">Crew Failed!</h1><p style="color:var(--text-muted); margin-top:5px;">${escapeHtml(state.players[eliminatedIndices[0]].name)} was innocent! The imposter survives.</p>`;
+  }
+
+  app.innerHTML = `
+    <div class="game-screen" style="padding-top:20px; padding-bottom:40px;">
+      <div style="color:var(--text-muted); font-size:12px; font-weight:700; letter-spacing:2px; margin-bottom:10px;">CASE CLOSED</div>
+      <div style="animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);">${outcomeHTML}</div>
+      
+      <div class="card" style="padding: 20px; margin: 30px 0;">
+        <div style="font-size:12px; color:var(--text-muted); margin-bottom:5px;">THE WORD WAS</div>
+        <div style="font-size:24px; color:var(--accent); font-weight:700; text-transform:uppercase;">${escapeHtml(state.secretWord)}</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:10px;">ACTUAL IMPOSTER: <b style="color:var(--danger)">${imposters.map(i => escapeHtml(i.name)).join(', ')}</b></div>
+      </div>
+      
+      <div style="text-align:left; margin-bottom:10px; font-weight:600; font-size: 15px;">Voting Breakdown</div>
+      <div class="player-list" style="text-align:left; margin-bottom:40px;">
+        ${state.players.map((p, i) => {
+          const votesReceived = voteCounts[i] || 0;
+          const isEliminated = eliminatedIndices.includes(i);
+          const avatar = p.photo 
+            ? `<img src="${p.photo}" style="width:32px; height:32px; border-radius:50%; object-fit:cover;">` 
+            : `<div style="width:32px; height:32px; border-radius:50%; background:var(--accent-dark); display:flex; align-items:center; justify-content:center; font-size:12px; color:#FFF; font-weight:bold;">${i+1}</div>`;
+            
+          return `
+            <div class="player-row" style="background:${isEliminated ? 'rgba(255, 69, 58, 0.2)' : 'var(--bg-card)'}; border: 1px solid ${isEliminated ? 'var(--danger)' : 'rgba(255,255,255,0.05)'}; padding:12px; border-radius:8px; justify-content:space-between; backdrop-filter: blur(8px);">
+              <div style="display:flex; align-items:center; gap:12px;">
+                ${avatar}
+                <div style="display:flex; flex-direction:column;">
+                  <span style="font-weight:${isEliminated ? '700' : '400'}">${escapeHtml(p.name)}</span>
+                  ${p.role === 'imposter' ? `<span style="font-size:11px; color:var(--danger); margin-top:2px;">(Imposter)</span>` : ''}
+                </div>
+              </div>
+              <div style="font-size:13px; color:var(--text-muted);">${votesReceived} vote${votesReceived !== 1 ? 's' : ''}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <button class="start-btn" style="margin-bottom:10px;" onclick="startGame()">Same Roster, New Word</button>
+      <button class="admin-btn-secondary" style="width:100%" onclick="navigate('#setup')">New Setup</button>
+    </div>
+  `;
+
+  startResultsBurst(imposterCaught && eliminatedIndices.length === 1);
+}
+
+function startResultsBurst(crewWon) {
+  const emojis = crewWon ? ['🎉', '✨', '🎊', '👏'] : ['😈', '🕵️', '💀', '🔥'];
+  for (let i = 0; i < 20; i++) {
+    let el = document.createElement('div');
+    el.className = 'pixel-petal';
+    el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.animationDuration = (Math.random() * 2 + 2.5) + 's';
+    el.style.animationDelay = (Math.random() * 0.6) + 's';
+    el.style.fontSize = (Math.random() * 12 + 14) + 'px';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 5000);
+  }
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+let toastTimer = null;
+function showToast(message, undoLabel, undoFn) {
+  let el = document.getElementById('appToast');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'appToast'; el.className = 'toast'; document.body.appendChild(el);
+  }
+  el.innerHTML = `<span>${escapeHtml(message)}</span>${undoFn ? `<button id="toastUndoBtn">${escapeHtml(undoLabel || 'Undo')}</button>` : ''}`;
+  if (undoFn) { document.getElementById('toastUndoBtn').onclick = () => { undoFn(); el.classList.remove('show'); clearTimeout(toastTimer); }; }
+  requestAnimationFrame(() => el.classList.add('show'));
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+render();
+</script>
+</body>
+</html>
