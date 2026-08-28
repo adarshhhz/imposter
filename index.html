@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#121216">
 
 <!-- Firebase SDKs -->
@@ -151,8 +152,27 @@
   .home-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); }
   .home-btn:active { transform: scale(0.92); }
 
+  /* Drag and Drop Styling */
   .player-list { display: flex; flex-direction: column; gap: 10px; }
-  .player-row { display: flex; align-items: center; gap: 12px; }
+  .player-row { display: flex; align-items: center; gap: 12px; transition: transform 0.2s ease, opacity 0.2s; background: transparent; }
+  .player-row.is-sorting {
+    position: relative; z-index: 100;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+    background: rgba(45, 45, 58, 0.95);
+    border: 1px solid var(--accent);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin: -4px;
+  }
+  .drag-handle {
+    cursor: grab; color: var(--text-muted);
+    padding: 10px 5px; margin-left: -5px;
+    display: flex; align-items: center; justify-content: center;
+    touch-action: none; /* Crucial for mobile dragging without scrolling */
+    transition: color 0.2s;
+  }
+  .drag-handle:active, .drag-handle:hover { color: var(--text-main); cursor: grabbing; }
+
   .player-idx {
     width: 38px; height: 38px; background: var(--accent-dark); color: #FFF; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; cursor: pointer; background-size: cover; background-position: center; position: relative; border: 2px solid transparent; transition: all 0.2s ease;
   }
@@ -1505,6 +1525,79 @@ function drawOnlineResults(room) {
   startResultsBurst(imposterCaught && eliminatedIds.length === 1 && maxVotes > 0);
 }
 
+/* ---------------- CUSTOM TOUCH/MOUSE DRAG-AND-DROP REORDER LOGIC ---------------- */
+let sortState = { active: false };
+
+window.startSort = (e, idx) => {
+  if (e.type === 'mousedown' && e.button !== 0) return; // Only left click allowed
+  e.preventDefault(); 
+  const row = document.getElementById(`player-row-${idx}`);
+  if (!row) return;
+
+  sortState = {
+    active: true, 
+    idx: idx, 
+    el: row, 
+    targetIdx: idx,
+    startY: e.touches ? e.touches[0].clientY : e.clientY,
+    rowHeight: row.offsetHeight + 10 // Adding gap spacing
+  };
+  
+  row.classList.add('is-sorting');
+  document.body.style.userSelect = 'none';
+  
+  window.addEventListener('mousemove', moveSort);
+  window.addEventListener('touchmove', moveSort, {passive: false});
+  window.addEventListener('mouseup', endSort);
+  window.addEventListener('touchend', endSort);
+};
+
+window.moveSort = (e) => {
+  if (!sortState.active) return;
+  e.preventDefault(); 
+  const y = e.touches ? e.touches[0].clientY : e.clientY;
+  const deltaY = y - sortState.startY;
+  sortState.el.style.transform = `translateY(${deltaY}px)`;
+  
+  const shift = Math.round(deltaY / sortState.rowHeight);
+  const newIdx = Math.max(0, Math.min(state.names.length - 1, sortState.idx + shift));
+  
+  document.querySelectorAll('.player-row').forEach((r, i) => {
+    if (i === sortState.idx) return;
+    r.style.transition = 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)';
+    if (sortState.idx < newIdx && i > sortState.idx && i <= newIdx) {
+      r.style.transform = `translateY(-${sortState.rowHeight}px)`;
+    } else if (sortState.idx > newIdx && i < sortState.idx && i >= newIdx) {
+      r.style.transform = `translateY(${sortState.rowHeight}px)`;
+    } else {
+      r.style.transform = 'translateY(0)';
+    }
+  });
+  sortState.targetIdx = newIdx;
+};
+
+window.endSort = (e) => {
+  if (!sortState.active) return;
+  sortState.active = false;
+  window.removeEventListener('mousemove', moveSort);
+  window.removeEventListener('touchmove', moveSort);
+  window.removeEventListener('mouseup', endSort);
+  window.removeEventListener('touchend', endSort);
+  
+  document.body.style.userSelect = '';
+  
+  if (sortState.targetIdx !== sortState.idx) {
+    const tIdx = sortState.targetIdx;
+    const sIdx = sortState.idx;
+    const name = state.names.splice(sIdx, 1)[0];
+    const photo = state.photos.splice(sIdx, 1)[0];
+    state.names.splice(tIdx, 0, name);
+    state.photos.splice(tIdx, 0, photo);
+    saveSetupState();
+  }
+  renderSetup(); 
+};
+
 function renderSetup() {
   const current = Array.isArray(state.activeCategories) ? state.activeCategories : Object.values(state.activeCategories || {}).filter(Boolean);
   
@@ -1526,7 +1619,7 @@ function renderSetup() {
         <span style="display:flex; align-items:center; gap:8px;">👥 Players</span>
         <span class="count">${state.names.length} / 15</span>
       </div>
-      <p style="font-size:12px; color:var(--text-muted); margin-top:-10px; margin-bottom:15px;">Tap the circle to add a player photo</p>
+      <p style="font-size:12px; color:var(--text-muted); margin-top:-10px; margin-bottom:15px;">Tap the circle to add a photo. Drag the handle to reorder.</p>
       <div class="player-list" id="playerList"></div>
       ${state.names.length < 15 ? `
         <button class="add-player-btn" onclick="addPlayer()">
@@ -1588,7 +1681,12 @@ function renderSetup() {
     const bgStyle = hasPhoto ? `background-image: url('${state.photos[i]}'); color: transparent;` : '';
     
     list.innerHTML += `
-      <div class="player-row">
+      <div class="player-row" id="player-row-${i}">
+        <div class="drag-handle" onmousedown="startSort(event, ${i})" ontouchstart="startSort(event, ${i})" title="Drag to reorder">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line>
+          </svg>
+        </div>
         <input type="file" id="photo-upload-${i}" style="display:none" accept="image/*" onchange="handlePhotoUpload(event, ${i})">
         <div class="player-idx" style="${bgStyle}" onclick="document.getElementById('photo-upload-${i}').click()">
           ${hasPhoto ? '' : i + 1}
