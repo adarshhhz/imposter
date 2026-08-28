@@ -13,7 +13,7 @@
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#121216">
 
-<!-- Add Firebase SDKs -->
+<!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 
@@ -36,26 +36,17 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   
   html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', sans-serif;
+    height: 100%; margin: 0; padding: 0; font-family: 'Inter', sans-serif;
     background: linear-gradient(rgba(18, 18, 22, 0.65), rgba(18, 18, 22, 0.85)), url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787806687/pixel-art-style-floral-garden-illustration_23-2151503920_1.jpg') center/cover fixed no-repeat;
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    overflow-x: hidden;
+    background-color: var(--bg-main); color: var(--text-main); overflow-x: hidden;
   }
 
   body.setup-bg {
-    background:
-      linear-gradient(rgba(10, 10, 14, 0.55), rgba(10, 10, 14, 0.78)),
-      url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787806687/pixel-art-style-floral-garden-illustration_23-2151503920_1.jpg') center/cover fixed no-repeat;
+    background: linear-gradient(rgba(10, 10, 14, 0.55), rgba(10, 10, 14, 0.78)), url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787806687/pixel-art-style-floral-garden-illustration_23-2151503920_1.jpg') center/cover fixed no-repeat;
   }
 
   body.welcome-bg {
-    background:
-      linear-gradient(rgba(10, 10, 14, 0.35), rgba(10, 10, 14, 0.55)),
-      url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787807028/file_00000000e9448211b6d1eeef8edc2c67.png') center/cover fixed no-repeat;
+    background: linear-gradient(rgba(10, 10, 14, 0.35), rgba(10, 10, 14, 0.55)), url('https://res.cloudinary.com/uzfgyrxf/image/upload/v1787807028/file_00000000e9448211b6d1eeef8edc2c67.png') center/cover fixed no-repeat;
   }
   
   .toast {
@@ -69,15 +60,8 @@
   .toast button { background: none; border: none; color: var(--accent); font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'Inter', sans-serif; }
 
   .pixel-petal {
-    position: fixed;
-    top: -15px;
-    z-index: 1;
-    pointer-events: none;
-    user-select: none;
-    width: 6px;
-    height: 6px;
-    image-rendering: pixelated;
-    animation: pixelFall linear infinite;
+    position: fixed; top: -15px; z-index: 1; pointer-events: none; user-select: none; width: 6px; height: 6px;
+    image-rendering: pixelated; animation: pixelFall linear infinite;
   }
   @keyframes pixelFall {
     0% { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0.85; }
@@ -85,26 +69,15 @@
     100% { transform: translateY(105vh) rotate(360deg) translateX(-12px); opacity: 0; }
   }
 
-  @keyframes popIn {
-    0% { transform: scale(0.8); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-  }
+  @keyframes popIn { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
 
-  .imposter-icon {
-    cursor: pointer;
-    transition: filter 0.2s ease;
-  }
-  .imposter-icon:hover {
-    filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8)) brightness(1.15);
-  }
+  .imposter-icon { cursor: pointer; transition: filter 0.2s ease; }
+  .imposter-icon:hover { filter: drop-shadow(0 2px 5px rgba(255,69,58,0.8)) brightness(1.15); }
   .imposter-icon.fleeing { pointer-events: none; }
 
   @keyframes impactSquish {
-    0% { transform: scale(1); }
-    25% { transform: scale(1.12, 0.86) rotate(-1.5deg); }
-    55% { transform: scale(0.92, 1.08) rotate(1.5deg); }
-    80% { transform: scale(1.04, 0.98); }
-    100% { transform: scale(1); }
+    0% { transform: scale(1); } 25% { transform: scale(1.12, 0.86) rotate(-1.5deg); }
+    55% { transform: scale(0.92, 1.08) rotate(1.5deg); } 80% { transform: scale(1.04, 0.98); } 100% { transform: scale(1); }
   }
   .start-btn.imposter-hit { animation: impactSquish 0.45s ease; }
 
@@ -113,23 +86,14 @@
     transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.3, 1), opacity 0.6s ease-out;
   }
 
-  .watermark {
-    position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: var(--text-muted); opacity: 0.5; z-index: 9999; pointer-events: none; letter-spacing: 0.5px;
-  }
+  .watermark { position: fixed; bottom: 8px; right: 12px; font-size: 10px; color: var(--text-muted); opacity: 0.5; z-index: 9999; pointer-events: auto; cursor: pointer; letter-spacing: 0.5px; }
 
-  .app-container {
-    width: 100%; max-width: var(--max-w); margin: 0 auto; min-height: 100vh; padding: 20px 16px 100px; 
-    display: flex; flex-direction: column; position: relative; z-index: 2;
-  }
-
+  .app-container { width: 100%; max-width: var(--max-w); margin: 0 auto; min-height: 100vh; padding: 20px 16px 100px; display: flex; flex-direction: column; position: relative; z-index: 2; }
   .welcome-container { padding: 0 !important; max-width: 100% !important; width: 100vw !important; }
 
   @media (min-width: 768px) {
-    :root { --max-w: 620px; }
-    .app-container { padding: 36px 24px 120px; }
-    .card { padding: 20px; }
-    h1 { font-size: 28px !important; }
-    .subtitle { font-size: 15px !important; }
+    :root { --max-w: 620px; } .app-container { padding: 36px 24px 120px; }
+    .card { padding: 20px; } h1 { font-size: 28px !important; } .subtitle { font-size: 15px !important; }
     .hero-image { width: 260px !important; height: 260px !important; }
   }
   @media (min-width: 1200px) { :root { --max-w: 680px; } }
@@ -149,9 +113,7 @@
     backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%);
     border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 8px 30px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.08); overflow: hidden;
   }
-  .setup-screen .card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
-  }
+  .setup-screen .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent); }
   .setup-screen h1, .setup-screen .subtitle { text-shadow: 0 2px 12px rgba(0,0,0,0.65); }
   .setup-screen .player-input-wrap { background: rgba(255,255,255,0.07); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.10); }
   .setup-screen .player-input-wrap:focus-within { background: rgba(255,255,255,0.11); box-shadow: 0 0 0 1px var(--accent), 0 0 16px rgba(255,159,10,0.25); }
@@ -169,19 +131,13 @@
     width: 38px; height: 38px; background: var(--accent-dark); color: #FFF; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; cursor: pointer; background-size: cover; background-position: center; position: relative; border: 2px solid transparent; transition: all 0.2s ease;
   }
   .player-idx:hover { border-color: var(--accent); transform: scale(1.05); }
-  .player-idx .add-photo-icon {
-    position: absolute; bottom: -2px; right: -2px; background: #333; border-radius: 50%; padding: 2px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all 0.2s ease;
-  }
+  .player-idx .add-photo-icon { position: absolute; bottom: -2px; right: -2px; background: #333; border-radius: 50%; padding: 2px; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; font-size: 10px; transition: all 0.2s ease; }
   .player-idx:hover .add-photo-icon { background: var(--accent); color: #000; }
-
-  .player-input-wrap {
-    flex: 1; background: var(--bg-input); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.05);
-  }
+  .player-input-wrap { flex: 1; background: var(--bg-input); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; align-items: center; transition: all 0.2s ease; border: 1px solid rgba(255,255,255,0.05); }
   .player-input-wrap:focus-within { box-shadow: 0 0 0 1px var(--accent); background: rgba(45, 45, 58, 0.95); }
   .player-input-wrap input { background: transparent; border: none; color: var(--text-main); font-size: 15px; width: 100%; outline: none; font-family: 'Inter', sans-serif; }
   .del-btn { background: none; border: none; color: var(--text-muted); padding: 5px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
   .del-btn:hover { color: var(--danger); transform: scale(1.15); }
-  
   .add-player-btn { width: 100%; background: transparent; border: 1px dashed rgba(255,255,255,0.2); color: var(--text-muted); padding: 12px; border-radius: var(--radius-sm); margin-top: 10px; cursor: pointer; font-size: 15px; font-weight: 500; transition: all 0.2s ease; }
   .add-player-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(255, 159, 10, 0.05); }
 
@@ -285,14 +241,7 @@
   .voice-avatar-ring.speaking { border-color: var(--success); box-shadow: 0 0 10px rgba(50,215,75,0.55); }
   .voice-avatar-ring.muted-peer { opacity: 0.45; }
   .voice-participant-name { font-size: 10px; color: var(--text-muted); text-align: center; max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .voice-mini-mute { position: relative; }
-  .voice-mini-mute::after {
-    content: ''; position: absolute; bottom: -1px; right: -1px; width: 14px; height: 14px; border-radius: 50%;
-    background: var(--danger); border: 2px solid var(--bg-main); display: none;
-  }
-  .voice-mini-mute.is-muted::after { display: block; }
 
-  
   .game-screen { text-align: center; padding-top: 40px; }
   .card-3d-wrap { perspective: 1000px; width: 100%; height: 300px; margin: 30px 0; position: relative; }
   .card-3d { width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), top 0.5s ease, opacity 0.5s ease; transform-style: preserve-3d; cursor: pointer; position: absolute; top:0; }
@@ -312,16 +261,12 @@
   .vote-option.selected .vote-radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 4px #3c2a12; }
   
   .overlay { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); z-index: 10000; justify-content: center; align-items: center; padding: 20px; }
-  .popup-box {
-    background: var(--bg-card); border: 2px solid var(--accent); padding: 40px 20px;
-    border-radius: 20px; text-align: center; width: 100%; max-width: 350px;
-    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 40px rgba(255, 159, 10, 0.2);
-  }
+  .popup-box { background: var(--bg-card); border: 2px solid var(--accent); padding: 40px 20px; border-radius: 20px; text-align: center; width: 100%; max-width: 350px; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 10px 40px rgba(255, 159, 10, 0.2); }
 </style>
 </head>
 <body>
 
-<div class="watermark">powered by adruzz</div>
+<div class="watermark" onclick="navigate('#admin')">powered by adruzz</div>
 <div class="app-container" id="app"></div>
 
 <div class="overlay" id="onamModal">
@@ -378,16 +323,15 @@ let syncError = null;
 db.ref('gameDataV2').on('value', (snapshot) => {
   const dataString = snapshot.val();
   if (dataString) {
-    try {
-      PACKS = JSON.parse(dataString);
-    } catch (e) {
-      console.error("Data Parse Error", e);
-    }
-    DEFAULT_CATEGORIES.forEach(cat => {
-      if (!PACKS[cat]) PACKS[cat] = [];
-    });
-    state.activeCategories = state.activeCategories.filter(c => DEFAULT_CATEGORIES.includes(c));
-    if (['setup', 'admin', 'welcome'].includes(state.screen) || !window.location.hash) {
+    try { PACKS = JSON.parse(dataString); } catch (e) { }
+    DEFAULT_CATEGORIES.forEach(cat => { if (!PACKS[cat]) PACKS[cat] = []; });
+    
+    const current = Array.isArray(state.activeCategories) ? state.activeCategories : Object.values(state.activeCategories || {});
+    state.activeCategories = current.filter(c => DEFAULT_CATEGORIES.includes(c));
+    
+    if (['setup', 'welcome'].includes(state.screen) || !window.location.hash) {
+      render();
+    } else if (state.screen === 'admin' && !state.adminSelectedCategory) {
       render();
     }
   }
@@ -396,11 +340,8 @@ db.ref('gameDataV2').on('value', (snapshot) => {
 function syncToCloud(onSuccess) {
   const payload = JSON.stringify(PACKS);
   db.ref('gameDataV2').set(payload, (error) => {
-    if (error) {
-      alert("❌ SAVE FAILED: " + error.message);
-    } else {
-      if (onSuccess) onSuccess();
-    }
+    if (error) { showToast("❌ SAVE FAILED: " + error.message); } 
+    else { if (onSuccess) onSuccess(); }
     if (state.screen === 'admin') renderAdminPanel(); 
   });
 }
@@ -426,12 +367,8 @@ const SETUP_STORAGE_KEY = 'imposter_setup_state';
 
 function loadSetupState() {
   const defaults = {
-    names: ["Player 1", "Player 2", "Player 3"],
-    photos: [null, null, null],
-    activeCategories: [...DEFAULT_CATEGORIES],
-    imposterCount: 1,
-    imposterSeesCategory: true,
-    showImposterHint: false
+    names: ["Player 1", "Player 2", "Player 3"], photos: [null, null, null], activeCategories: [...DEFAULT_CATEGORIES],
+    imposterCount: 1, imposterSeesCategory: true, showImposterHint: false
   };
   try {
     const raw = localStorage.getItem(SETUP_STORAGE_KEY);
@@ -445,20 +382,14 @@ function loadSetupState() {
       imposterSeesCategory: typeof saved.imposterSeesCategory === 'boolean' ? saved.imposterSeesCategory : defaults.imposterSeesCategory,
       showImposterHint: typeof saved.showImposterHint === 'boolean' ? saved.showImposterHint : defaults.showImposterHint
     };
-  } catch (e) {
-    return defaults;
-  }
+  } catch (e) { return defaults; }
 }
 
 function saveSetupState() {
   try {
     localStorage.setItem(SETUP_STORAGE_KEY, JSON.stringify({
-      names: state.names,
-      photos: state.photos,
-      activeCategories: state.activeCategories,
-      imposterCount: state.imposterCount,
-      imposterSeesCategory: state.imposterSeesCategory,
-      showImposterHint: state.showImposterHint
+      names: state.names, photos: state.photos, activeCategories: state.activeCategories,
+      imposterCount: state.imposterCount, imposterSeesCategory: state.imposterSeesCategory, showImposterHint: state.showImposterHint
     }));
   } catch (e) { }
 }
@@ -466,22 +397,10 @@ function saveSetupState() {
 const savedSetup = loadSetupState();
 
 let state = {
-  screen: 'setup',
-  names: savedSetup.names,
-  photos: savedSetup.photos, 
-  activeCategories: savedSetup.activeCategories, 
-  imposterCount: savedSetup.imposterCount,
-  imposterSeesCategory: savedSetup.imposterSeesCategory,
-  showImposterHint: savedSetup.showImposterHint, 
-  players: [],      
-  secretWord: "",
-  secretCategory: "",
-  imposterHintWord: "", 
-  currentIndex: 0,
-  votes: {},
-  selectedVoteIndex: null, 
-  adminAuthenticated: false,
-  adminSelectedCategory: null
+  screen: 'setup', names: savedSetup.names, photos: savedSetup.photos, activeCategories: savedSetup.activeCategories, 
+  imposterCount: savedSetup.imposterCount, imposterSeesCategory: savedSetup.imposterSeesCategory, showImposterHint: savedSetup.showImposterHint, 
+  players: [], secretWord: "", secretCategory: "", imposterHintWord: "", currentIndex: 0, votes: {}, selectedVoteIndex: null, 
+  adminAuthenticated: false, adminSelectedCategory: null
 };
 
 function getMyPlayerId() {
@@ -494,67 +413,37 @@ function getMyPlayerId() {
 }
 
 const mp = {
-  myId: getMyPlayerId(),
-  myName: localStorage.getItem('imposter_pname') || '',
-  code: localStorage.getItem('imposter_room_code') || null,
-  isHost: false,
-  room: null,         
-  roomRef: null,
-  listenerFn: null,
-  votedThisRound: false,
-  cardRevealed: false,
-  voiceJoined: false,
-  needsRebuild: false,
-  speakerOn: false,
-  micOn: false,
-  micRequesting: false,
-  micError: null,
-  localStream: null,
-  localSpeaking: false,
-  voicePeers: {},
-  audioCtx: null,
-  speakingListeners: []
+  myId: getMyPlayerId(), myName: localStorage.getItem('imposter_pname') || '', code: localStorage.getItem('imposter_room_code') || null,
+  isHost: false, room: null, roomRef: null, listenerFn: null, votedThisRound: false, cardRevealed: false,
+  voiceJoined: false, speakerOn: false, micOn: false, micRequesting: false, micError: null, localStream: null,
+  localSpeaking: false, voicePeers: {}, audioCtx: null
 };
 
-const ICE_SERVERS = [
-  { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
-  { urls: 'stun:stun2.l.google.com:19302' }
-];
+const ICE_SERVERS = [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }, { urls: 'stun:stun2.l.google.com:19302' }];
 
 function voicePairKey(a, b) { return [a, b].sort().join('_'); }
 
 function getAudioCtx() {
-  if (!mp.audioCtx) {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    mp.audioCtx = new Ctx();
-  }
+  if (!mp.audioCtx) { const Ctx = window.AudioContext || window.webkitAudioContext; mp.audioCtx = new Ctx(); }
   if (mp.audioCtx.state === 'suspended') mp.audioCtx.resume().catch(() => {});
   return mp.audioCtx;
 }
 
 function attachSpeechAnalyser(stream) {
   try {
-    const ctx = getAudioCtx();
-    const source = ctx.createMediaStreamSource(stream);
-    const analyser = ctx.createAnalyser();
-    analyser.fftSize = 512;
-    analyser.smoothingTimeConstant = 0.75;
-    source.connect(analyser);
+    const ctx = getAudioCtx(); const source = ctx.createMediaStreamSource(stream); const analyser = ctx.createAnalyser();
+    analyser.fftSize = 512; analyser.smoothingTimeConstant = 0.75; source.connect(analyser);
     const data = new Uint8Array(analyser.frequencyBinCount);
     return {
       analyser, source,
       isSpeaking() {
         analyser.getByteFrequencyData(data);
-        let sum = 0;
-        for (let i = 0; i < data.length; i++) sum += data[i];
+        let sum = 0; for (let i = 0; i < data.length; i++) sum += data[i];
         return (sum / data.length) > 10;
       },
       destroy() { try { source.disconnect(); } catch (e) {} }
     };
-  } catch (e) {
-    return null;
-  }
+  } catch (e) { return null; }
 }
 
 let speakingLoopRunning = false;
@@ -582,22 +471,15 @@ function ensureSpeakingLoop() {
         if (ring) ring.classList.toggle('speaking', speaking);
       }
     });
-
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
 }
 
-
 function getVoiceAudioEl(peerId) {
   let el = document.getElementById('voice-audio-' + peerId);
   if (!el) {
-    el = document.createElement('audio');
-    el.id = 'voice-audio-' + peerId;
-    el.autoplay = true;
-    el.playsInline = true;
-    el.style.display = 'none';
-    document.body.appendChild(el);
+    el = document.createElement('audio'); el.id = 'voice-audio-' + peerId; el.autoplay = true; el.playsInline = true; el.style.display = 'none'; document.body.appendChild(el);
   }
   return el;
 }
@@ -613,68 +495,40 @@ function teardownVoicePeer(peerId) {
   if (el) el.remove();
   
   const pairKey = voicePairKey(mp.myId, peerId);
-  if (mp.myId < peerId && mp.code) {
-    db.ref(`imposterRooms/${mp.code}/voice/${pairKey}`).remove();
-  }
+  if (mp.myId < peerId && mp.code) { db.ref(`imposterRooms/${mp.code}/voice/${pairKey}`).remove(); }
   delete mp.voicePeers[peerId];
   updateVoiceStatusUI();
 }
 
 function fullTeardownVoice() {
   Object.keys(mp.voicePeers).forEach(teardownVoicePeer);
-  if (mp.localStream) {
-    mp.localStream.getTracks().forEach(t => t.stop());
-    mp.localStream = null;
-  }
+  if (mp.localStream) { mp.localStream.getTracks().forEach(t => t.stop()); mp.localStream = null; }
   if (mp.localAnalyser) { mp.localAnalyser.destroy(); mp.localAnalyser = null; }
   mp.localSpeaking = false;
-  if (mp.code) {
-    db.ref(`imposterRooms/${mp.code}/voiceActive/${mp.myId}`).remove();
-  }
-  mp.voiceJoined = false;
-  mp.micOn = false;
-  mp.speakerOn = false;
-  mp.micRequesting = false;
-  mp.micError = null;
+  if (mp.code) { db.ref(`imposterRooms/${mp.code}/voiceActive/${mp.myId}`).remove(); }
+  mp.voiceJoined = false; mp.micOn = false; mp.speakerOn = false; mp.micRequesting = false; mp.micError = null;
 }
 
 function connectVoicePeer(peerId, token) {
   if (peerId === mp.myId || mp.voicePeers[peerId]) return;
-  const code = mp.code;
-  const pairKey = voicePairKey(mp.myId, peerId);
-  const amOfferer = mp.myId < peerId;
-  const myTag = amOfferer ? 'a' : 'b';
-  const theirTag = amOfferer ? 'b' : 'a';
+  const code = mp.code; const pairKey = voicePairKey(mp.myId, peerId);
+  const amOfferer = mp.myId < peerId; const myTag = amOfferer ? 'a' : 'b'; const theirTag = amOfferer ? 'b' : 'a';
 
-  if (amOfferer) {
-    db.ref(`imposterRooms/${code}/voice/${pairKey}`).remove();
-  }
+  if (amOfferer) { db.ref(`imposterRooms/${code}/voice/${pairKey}`).remove(); }
 
   const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
   const entry = { pc, listeners: [], candQueue: [], analyser: null, speaking: false, retryTimer: null, token: token };
   mp.voicePeers[peerId] = entry;
 
-  if (mp.localStream) {
-    mp.localStream.getTracks().forEach(t => pc.addTrack(t, mp.localStream));
-  } else {
-    pc.addTransceiver('audio', { direction: 'recvonly' });
-  }
+  if (mp.localStream) { mp.localStream.getTracks().forEach(t => pc.addTrack(t, mp.localStream)); } else { pc.addTransceiver('audio', { direction: 'recvonly' }); }
 
   pc.ontrack = (e) => {
-    const el = getVoiceAudioEl(peerId);
-    el.srcObject = e.streams[0];
-    el.muted = !mp.speakerOn;
+    const el = getVoiceAudioEl(peerId); el.srcObject = e.streams[0]; el.muted = !mp.speakerOn;
     el.play().catch(err => console.log("Audio autoplay prevented:", err));
-    entry.analyser = attachSpeechAnalyser(e.streams[0]);
-    ensureSpeakingLoop();
-    updateVoiceStatusUI();
+    entry.analyser = attachSpeechAnalyser(e.streams[0]); ensureSpeakingLoop(); updateVoiceStatusUI();
   };
 
-  pc.onicecandidate = (e) => {
-    if (e.candidate) {
-      db.ref(`imposterRooms/${code}/voice/${pairKey}/cand_${myTag}`).push(e.candidate.toJSON());
-    }
-  };
+  pc.onicecandidate = (e) => { if (e.candidate) { db.ref(`imposterRooms/${code}/voice/${pairKey}/cand_${myTag}`).push(e.candidate.toJSON()); } };
 
   pc.oniceconnectionstatechange = () => {
     const st = pc.iceConnectionState;
@@ -684,9 +538,7 @@ function connectVoicePeer(peerId, token) {
         if (!mp.voicePeers[peerId]) return;
         if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
           teardownVoicePeer(peerId);
-          if (mp.room && mp.room.voiceActive && mp.room.voiceActive[peerId]) {
-            connectVoicePeer(peerId, mp.room.voiceActive[peerId]);
-          }
+          if (mp.room && mp.room.voiceActive && mp.room.voiceActive[peerId]) { connectVoicePeer(peerId, mp.room.voiceActive[peerId]); }
         }
       }, 2500);
     } else if (st === 'connected' || st === 'completed') {
@@ -698,29 +550,17 @@ function connectVoicePeer(peerId, token) {
   const remoteCandRef = db.ref(`imposterRooms/${code}/voice/${pairKey}/cand_${theirTag}`);
   const remoteCandFn = remoteCandRef.on('child_added', (snap) => {
     const cand = snap.val();
-    if (pc.remoteDescription) {
-      pc.addIceCandidate(new RTCIceCandidate(cand)).catch(() => {});
-    } else {
-      entry.candQueue.push(cand);
-    }
+    if (pc.remoteDescription) { pc.addIceCandidate(new RTCIceCandidate(cand)).catch(() => {}); } else { entry.candQueue.push(cand); }
   });
   entry.listeners.push({ ref: remoteCandRef, event: 'child_added', fn: remoteCandFn });
 
-  function flushCandQueue() {
-    entry.candQueue.forEach(c => pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {}));
-    entry.candQueue = [];
-  }
+  function flushCandQueue() { entry.candQueue.forEach(c => pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {})); entry.candQueue = []; }
 
   if (amOfferer) {
-    pc.createOffer({ offerToReceiveAudio: true }).then(offer => pc.setLocalDescription(offer)).then(() => {
-      db.ref(`imposterRooms/${code}/voice/${pairKey}/offer`).set(pc.localDescription.toJSON());
-    });
+    pc.createOffer({ offerToReceiveAudio: true }).then(offer => pc.setLocalDescription(offer)).then(() => { db.ref(`imposterRooms/${code}/voice/${pairKey}/offer`).set(pc.localDescription.toJSON()); });
     const answerRef = db.ref(`imposterRooms/${code}/voice/${pairKey}/answer`);
     const answerFn = answerRef.on('value', (snap) => {
-      const answer = snap.val();
-      if (answer && !pc.currentRemoteDescription) {
-        pc.setRemoteDescription(new RTCSessionDescription(answer)).then(flushCandQueue).catch(() => {});
-      }
+      const answer = snap.val(); if (answer && !pc.currentRemoteDescription) { pc.setRemoteDescription(new RTCSessionDescription(answer)).then(flushCandQueue).catch(() => {}); }
     });
     entry.listeners.push({ ref: answerRef, event: 'value', fn: answerFn });
   } else {
@@ -729,58 +569,38 @@ function connectVoicePeer(peerId, token) {
       const offer = snap.val();
       if (offer && !pc.currentRemoteDescription) {
         pc.setRemoteDescription(new RTCSessionDescription(offer))
-          .then(flushCandQueue)
-          .then(() => pc.createAnswer())
-          .then(answer => pc.setLocalDescription(answer))
-          .then(() => db.ref(`imposterRooms/${code}/voice/${pairKey}/answer`).set(pc.localDescription.toJSON()))
-          .catch(() => {});
+          .then(flushCandQueue).then(() => pc.createAnswer()).then(answer => pc.setLocalDescription(answer))
+          .then(() => db.ref(`imposterRooms/${code}/voice/${pairKey}/answer`).set(pc.localDescription.toJSON())).catch(() => {});
       }
     });
     entry.listeners.push({ ref: offerRef, event: 'value', fn: offerFn });
   }
-
   updateVoiceStatusUI();
 }
 
 function syncVoiceConnections(room) {
   if (!mp.voiceJoined) return;
   const active = (room && room.voiceActive) || {};
-  
   Object.keys(active).forEach(id => {
     if (id === mp.myId) return;
     const peerToken = active[id];
-    
-    if (mp.voicePeers[id] && mp.voicePeers[id].token !== peerToken) {
-      teardownVoicePeer(id);
-    }
-    
+    if (mp.voicePeers[id] && mp.voicePeers[id].token !== peerToken) { teardownVoicePeer(id); }
     if (!mp.voicePeers[id]) {
       const amOfferer = mp.myId < id;
       if (!amOfferer) {
-          setTimeout(() => {
-              if (mp.voiceJoined && mp.room && mp.room.voiceActive && mp.room.voiceActive[id] === peerToken) {
-                  connectVoicePeer(id, peerToken);
-              }
-          }, 800);
-      } else {
-          connectVoicePeer(id, peerToken);
-      }
+          setTimeout(() => { if (mp.voiceJoined && mp.room && mp.room.voiceActive && mp.room.voiceActive[id] === peerToken) { connectVoicePeer(id, peerToken); } }, 800);
+      } else { connectVoicePeer(id, peerToken); }
     }
   });
-  
-  Object.keys(mp.voicePeers).forEach(id => {
-    if (!active[id]) teardownVoicePeer(id);
-  });
+  Object.keys(mp.voicePeers).forEach(id => { if (!active[id]) teardownVoicePeer(id); });
 }
 
 function updateVoiceMesh() {
   const shouldBeJoined = mp.speakerOn || mp.micOn;
-  
   if (shouldBeJoined && !mp.voiceJoined) {
       mp.voiceJoined = true;
       const myVoiceRef = db.ref(`imposterRooms/${mp.code}/voiceActive/${mp.myId}`);
-      myVoiceRef.set(Date.now());
-      myVoiceRef.onDisconnect().remove();
+      myVoiceRef.set(Date.now()); myVoiceRef.onDisconnect().remove();
       syncVoiceConnections(mp.room);
   } else if (!shouldBeJoined && mp.voiceJoined) {
       fullTeardownVoice(); 
@@ -788,6 +608,35 @@ function updateVoiceMesh() {
       syncVoiceConnections(mp.room);
   }
   updateVoiceStatusUI();
+}
+
+function updateVoiceStatusUI() {
+  const micBtn = document.getElementById('voiceMicBtn'); const spkBtn = document.getElementById('voiceSpeakerBtn');
+  const statusDot = document.getElementById('voiceStatusDot'); const statusTitle = document.getElementById('voiceStatusTitle'); const statusSub = document.getElementById('voiceStatusSub');
+  if (!micBtn) return; 
+
+  micBtn.classList.toggle('loading', mp.micRequesting);
+  micBtn.classList.toggle('mic-on', mp.micOn && !mp.micRequesting);
+  micBtn.classList.toggle('mic-off-state', !mp.micOn && !mp.micRequesting && !!mp.localStream);
+  micBtn.innerHTML = `<span class="voice-ring"></span><span class="voice-spinner"></span>${mp.micOn ? icons.mic : icons.micOff}`;
+
+  if (spkBtn) { spkBtn.classList.toggle('speaker-on', mp.speakerOn); spkBtn.innerHTML = mp.speakerOn ? icons.speaker : icons.speakerOff; }
+
+  const connectedCount = Object.values(mp.voicePeers).filter(e => e.pc && (e.pc.iceConnectionState === 'connected' || e.pc.iceConnectionState === 'completed')).length;
+  const totalPeers = Object.keys(mp.voicePeers).length;
+
+  if (statusDot && statusTitle && statusSub) {
+    if (mp.micRequesting) {
+      statusDot.className = 'voice-dot connecting'; statusTitle.textContent = 'Requesting mic access…'; statusSub.textContent = 'Allow the permission prompt to continue';
+    } else if (mp.micOn || mp.speakerOn) {
+      const connecting = totalPeers > connectedCount;
+      statusDot.className = 'voice-dot ' + (connecting ? 'connecting' : 'live');
+      statusTitle.textContent = mp.micOn ? 'Voice chat live' : 'Listening only';
+      statusSub.textContent = connecting ? `Connecting to ${totalPeers - connectedCount} of ${totalPeers}…` : (totalPeers > 0 ? `Connected to ${totalPeers} player${totalPeers !== 1 ? 's' : ''}` : 'Waiting for others to join in');
+    } else {
+      statusDot.className = 'voice-dot'; statusTitle.textContent = 'Voice chat off'; statusSub.textContent = 'Tap the mic to talk with the room';
+    }
+  }
 }
 
 window.toggleSpeaker = () => {
@@ -829,7 +678,7 @@ window.toggleMic = () => {
           }).catch(err => {
               mp.micRequesting = false;
               mp.micError = err.name === 'NotAllowedError' ? 'Microphone permission was denied. Check your browser settings.' : ('Microphone error: ' + err.message);
-              alert(mp.micError); updateVoiceStatusUI();
+              showToast(mp.micError); updateVoiceStatusUI();
           });
       }
   }
@@ -880,6 +729,15 @@ function healMyPlayerEntry(room) {
 const app = document.getElementById('app');
 const ONLINE_HASHES = ['#mode','#online','#online-host','#online-join','#online-lobby','#online-play','#online-interrogate','#online-vote','#online-results'];
 
+function navigate(hash) {
+  if (window.location.hash === hash) {
+    render();
+  } else {
+    window.location.hash = hash;
+  }
+}
+window.navigate = navigate;
+
 function render() {
   const hash = window.location.hash;
   state.screen = hash ? hash.substring(1) : 'welcome';
@@ -887,7 +745,7 @@ function render() {
   document.body.classList.toggle('welcome-bg', hash === '' || hash === '#welcome');
 
   if (!ONLINE_HASHES.slice(3).includes(hash)) { detachRoomListener(); }
-  if (hash !== '#online-interrogate' && (mp.micOn || mp.speakerOn || mp.localStream)) { fullTeardownVoice(); }
+  if (hash !== '#online-interrogate' && hash !== '#online-lobby' && (mp.micOn || mp.speakerOn || mp.localStream)) { fullTeardownVoice(); }
 
   if (hash === '' || hash === '#welcome') { app.className = 'app-container welcome-container'; renderWelcome(); }
   else {
@@ -944,14 +802,17 @@ function renderWelcome() {
 }
 
 window.showOnamPopup = () => { document.getElementById('onamModal').style.display = 'flex'; };
-window.closePopupAndStart = () => { document.getElementById('onamModal').style.display = 'none'; window.location.hash = '#mode'; };
+window.closePopupAndStart = () => { document.getElementById('onamModal').style.display = 'none'; navigate('#mode'); };
 
 function renderModeSelect() {
   app.innerHTML = `
     <div class="setup-screen">
-      <h1 style="margin-top: 30px;">How do you want to play?</h1>
+      <div style="display:flex; justify-content:flex-end;">
+         <button class="admin-btn-secondary" style="width:auto; padding:6px 12px; font-size:12px; border:none; background:transparent;" onclick="navigate('#admin')">⚙️ Admin Panel</button>
+      </div>
+      <h1 style="margin-top: 10px;">How do you want to play?</h1>
       <div class="subtitle">Choose one, you can switch anytime</div>
-      <div class="card" style="padding:22px; cursor:pointer;" onclick="window.location.hash='#setup'">
+      <div class="card" style="padding:22px; cursor:pointer;" onclick="navigate('#setup')">
         <div style="display:flex; align-items:center; gap:16px;">
           <div style="font-size:34px;">📱</div>
           <div style="text-align:left;">
@@ -960,7 +821,7 @@ function renderModeSelect() {
           </div>
         </div>
       </div>
-      <div class="card" style="padding:22px; cursor:pointer;" onclick="window.location.hash='#online'">
+      <div class="card" style="padding:22px; cursor:pointer;" onclick="navigate('#online')">
         <div style="display:flex; align-items:center; gap:16px;">
           <div style="font-size:34px;">🌐</div>
           <div style="text-align:left;">
@@ -978,7 +839,7 @@ function renderOnlineHome() {
     <div class="setup-screen">
       <h1 style="margin-top: 30px;">Multiplayer</h1>
       <div class="subtitle">Host a room or join one with a code</div>
-      <div class="card" style="padding:22px; cursor:pointer;" onclick="window.location.hash='#online-host'">
+      <div class="card" style="padding:22px; cursor:pointer;" onclick="navigate('#online-host')">
         <div style="display:flex; align-items:center; gap:16px;">
           <div style="font-size:34px;">🛠️</div>
           <div style="text-align:left;">
@@ -987,7 +848,7 @@ function renderOnlineHome() {
           </div>
         </div>
       </div>
-      <div class="card" style="padding:22px; cursor:pointer;" onclick="window.location.hash='#online-join'">
+      <div class="card" style="padding:22px; cursor:pointer;" onclick="navigate('#online-join')">
         <div style="display:flex; align-items:center; gap:16px;">
           <div style="font-size:34px;">🔑</div>
           <div style="text-align:left;">
@@ -996,7 +857,7 @@ function renderOnlineHome() {
           </div>
         </div>
       </div>
-      <button class="admin-btn-secondary" onclick="window.location.hash='#mode'">Back</button>
+      <button class="admin-btn-secondary" onclick="navigate('#mode')">Back</button>
     </div>
   `;
 }
@@ -1010,28 +871,31 @@ function renderOnlineHost() {
         <input type="text" id="hostName" class="admin-input" placeholder="Your name" value="${escapeHtml(mp.myName)}" maxlength="18">
         <button class="admin-btn" id="createRoomBtn" style="width:100%;" onclick="createRoom()">Create Room</button>
       </div>
-      <button class="admin-btn-secondary" onclick="window.location.hash='#online'">Back</button>
+      <button class="admin-btn-secondary" onclick="navigate('#online')">Back</button>
     </div>
   `;
 }
 
 window.createRoom = () => {
   const name = document.getElementById('hostName').value.trim();
-  if (!name) return alert('Enter your name first.');
+  if (!name) return showToast('Enter your name first.');
   const btn = document.getElementById('createRoomBtn');
   btn.disabled = true; btn.textContent = 'Creating...';
   mp.myName = name; localStorage.setItem('imposter_pname', name);
   const code = generateRoomCode();
+  
+  const current = Array.isArray(state.activeCategories) ? state.activeCategories : Object.values(state.activeCategories || {});
+  
   const roomData = {
     hostId: mp.myId, status: 'lobby', createdAt: firebase.database.ServerValue.TIMESTAMP,
-    settings: { activeCategories: state.activeCategories, imposterCount: 1, imposterSeesCategory: true, showImposterHint: false },
+    settings: { activeCategories: current, imposterCount: 1, imposterSeesCategory: true, showImposterHint: false },
     players: { [mp.myId]: { name, joinedAt: firebase.database.ServerValue.TIMESTAMP, ready: false } }
   };
   db.ref('imposterRooms/' + code).set(roomData, (error) => {
-    if (error) { alert('Could not create room: ' + error.message); btn.disabled = false; btn.textContent = 'Create Room'; return; }
+    if (error) { showToast('Could not create room: ' + error.message); btn.disabled = false; btn.textContent = 'Create Room'; return; }
     mp.code = code; mp.isHost = true; localStorage.setItem('imposter_room_code', code);
     db.ref(`imposterRooms/${code}/players/${mp.myId}`).onDisconnect().remove();
-    window.location.hash = '#online-lobby';
+    navigate('#online-lobby');
   });
 };
 
@@ -1045,7 +909,7 @@ function renderOnlineJoin() {
         <input type="text" id="joinName" class="admin-input" placeholder="Your name" value="${escapeHtml(mp.myName)}" maxlength="18">
         <button class="admin-btn" id="joinRoomBtn" style="width:100%;" onclick="joinRoom()">Join Room</button>
       </div>
-      <button class="admin-btn-secondary" onclick="window.location.hash='#online'">Back</button>
+      <button class="admin-btn-secondary" onclick="navigate('#online')">Back</button>
     </div>
   `;
 }
@@ -1053,25 +917,25 @@ function renderOnlineJoin() {
 window.joinRoom = () => {
   const code = document.getElementById('joinCode').value.trim().toUpperCase();
   const name = document.getElementById('joinName').value.trim();
-  if (code.length !== 4) return alert('Enter the 4-letter room code.');
-  if (!name) return alert('Enter your name first.');
+  if (code.length !== 4) return showToast('Enter the 4-letter room code.');
+  if (!name) return showToast('Enter your name first.');
   const btn = document.getElementById('joinRoomBtn'); btn.disabled = true; btn.textContent = 'Joining...';
   db.ref('imposterRooms/' + code).once('value', (snap) => {
     const room = snap.val();
-    if (!room) { alert('No room found with that code.'); btn.disabled = false; btn.textContent = 'Join Room'; return; }
-    if (room.status !== 'lobby') { alert('That game has already started. Ask the host to start a new round.'); btn.disabled = false; btn.textContent = 'Join Room'; return; }
+    if (!room) { showToast('No room found with that code.'); btn.disabled = false; btn.textContent = 'Join Room'; return; }
+    if (room.status !== 'lobby') { showToast('That game has already started. Ask the host to start a new round.'); btn.disabled = false; btn.textContent = 'Join Room'; return; }
     mp.myName = name; localStorage.setItem('imposter_pname', name); mp.code = code; mp.isHost = (room.hostId === mp.myId);
     db.ref(`imposterRooms/${code}/players/${mp.myId}`).set({ name, joinedAt: firebase.database.ServerValue.TIMESTAMP, ready: false }, (error) => {
-      if (error) { alert('Could not join room: ' + error.message); btn.disabled = false; btn.textContent = 'Join Room'; return; }
+      if (error) { showToast('Could not join room: ' + error.message); btn.disabled = false; btn.textContent = 'Join Room'; return; }
       localStorage.setItem('imposter_room_code', code);
       db.ref(`imposterRooms/${code}/players/${mp.myId}`).onDisconnect().remove();
-      window.location.hash = '#online-lobby';
+      navigate('#online-lobby');
     });
   });
 };
 
 function renderOnlineLobby() {
-  if (!mp.code) { window.location.hash = '#online'; return; }
+  if (!mp.code) { navigate('#online'); return; }
   attachRoomListener(mp.code, (room) => {
     if (!room) { showToast("Room was closed."); return leaveRoom(); }
     mp.isHost = (room.hostId === mp.myId);
@@ -1079,10 +943,10 @@ function renderOnlineLobby() {
     
     if (!room.players || !room.players[mp.myId]) return;
 
-    if (room.status === 'playing') { window.location.hash = '#online-play'; } 
-    else if (room.status === 'interrogate') { window.location.hash = '#online-interrogate'; } 
-    else if (room.status === 'voting') { window.location.hash = '#online-vote'; } 
-    else if (room.status === 'results') { window.location.hash = '#online-results'; } 
+    if (room.status === 'playing') { navigate('#online-play'); } 
+    else if (room.status === 'interrogate') { navigate('#online-interrogate'); } 
+    else if (room.status === 'voting') { navigate('#online-vote'); } 
+    else if (room.status === 'results') { navigate('#online-results'); } 
     else { drawOnlineLobby(room); }
   });
 }
@@ -1092,18 +956,22 @@ function drawOnlineLobby(room) {
   const settings = room.settings || { activeCategories: DEFAULT_CATEGORIES, imposterCount: 1, imposterSeesCategory: true, showImposterHint: false };
   const voiceActive = room.voiceActive || {};
 
+  const rawCats = settings.activeCategories || DEFAULT_CATEGORIES;
+  const activeCats = Array.isArray(rawCats) ? rawCats : Object.values(rawCats);
+
   const categoriesHTML = DEFAULT_CATEGORIES.map(cat => {
-    const isActive = settings.activeCategories.includes(cat); const count = PACKS[cat] ? PACKS[cat].length : 0; const isEmpty = count === 0;
+    const isActive = activeCats.includes(cat);
+    const count = PACKS[cat] ? PACKS[cat].length : 0;
+    const isEmpty = count === 0;
     return `<div class="chip ${isActive ? 'active' : ''}" style="${isEmpty ? 'opacity:0.5;' : ''} ${mp.isHost ? '' : 'pointer-events:none;'}" onclick="toggleMpCategory('${cat}')">${cat} (${count})${isEmpty ? ' ⚠️' : ''}</div>`;
   }).join('');
 
   function voiceAvatarHTML(p, i) {
     const inVoice = !!voiceActive[p.id];
-    const micIsOn = inVoice && (voiceActive[p.id].micOn === undefined ? true : voiceActive[p.id].micOn);
     const isMe = p.id === mp.myId;
     const speaking = isMe ? mp.localSpeaking : !!(mp.voicePeers[p.id] && mp.voicePeers[p.id].speaking);
     return `
-      <div class="voice-avatar-ring ${speaking ? 'speaking' : ''} ${inVoice ? '' : 'muted-peer'} voice-mini-mute ${inVoice && !micIsOn ? 'is-muted' : ''}" id="voice-avatar-${p.id}">
+      <div class="voice-avatar-ring ${speaking ? 'speaking' : ''} ${inVoice ? '' : 'muted-peer'}" id="voice-avatar-${p.id}">
         <div class="player-idx" style="width:38px;height:38px;">${i + 1}</div>
       </div>
     `;
@@ -1154,7 +1022,7 @@ function drawOnlineLobby(room) {
 
       <div class="card">
         <div class="setting-row" style="border-bottom:none;">
-          <div class="setting-info"><div class="setting-icon">${icons.tag}</div><div class="setting-text"><h3>Categories</h3><p>${settings.activeCategories.length} selected</p></div></div>
+          <div class="setting-info"><div class="setting-icon">${icons.tag}</div><div class="setting-text"><h3>Categories</h3><p>${activeCats.length} selected</p></div></div>
         </div>
         <div class="chip-container">${categoriesHTML}</div>
       </div>
@@ -1186,56 +1054,91 @@ function drawOnlineLobby(room) {
 }
 
 window.copyRoomCode = () => { navigator.clipboard?.writeText(mp.code).then(() => showToast('Room code copied')).catch(() => {}); };
+
 window.toggleMpCategory = (cat) => {
   if (!mp.isHost || !mp.room) return;
-  const current = (mp.room.settings && mp.room.settings.activeCategories) || []; let next;
-  if (current.includes(cat)) { if (current.length <= 1) return; next = current.filter(c => c !== cat); } else { next = [...current, cat]; }
+  const rawCats = (mp.room.settings && mp.room.settings.activeCategories) || DEFAULT_CATEGORIES;
+  const current = Array.isArray(rawCats) ? rawCats : Object.values(rawCats);
+  let next;
+  if (current.includes(cat)) {
+    if (current.length <= 1) return;
+    next = current.filter(c => c !== cat);
+  } else {
+    next = [...current, cat];
+  }
   db.ref(`imposterRooms/${mp.code}/settings/activeCategories`).set(next);
 };
+
 window.toggleMpSetting = (key) => {
   if (!mp.isHost || !mp.room) return;
-  const cur = mp.room.settings ? !!mp.room.settings[key] : false; db.ref(`imposterRooms/${mp.code}/settings/${key}`).set(!cur);
+  const cur = mp.room.settings ? !!mp.room.settings[key] : false;
+  db.ref(`imposterRooms/${mp.code}/settings/${key}`).set(!cur);
 };
+
 window.setMpImposterCount = (n) => {
   if (!mp.isHost || !mp.room) return;
-  const players = mpPlayerList(mp.room); const max = Math.max(1, players.length - 2); const clamped = Math.max(1, Math.min(max, n));
+  const players = mpPlayerList(mp.room);
+  const max = Math.max(1, players.length - 2);
+  const clamped = Math.max(1, Math.min(max, n));
   db.ref(`imposterRooms/${mp.code}/settings/imposterCount`).set(clamped);
 };
+
 window.leaveRoom = () => {
   fullTeardownVoice();
-  if (mp.code && mp.myId) { db.ref(`imposterRooms/${mp.code}/players/${mp.myId}`).remove(); }
-  detachRoomListener(); mp.code = null; mp.isHost = false; localStorage.removeItem('imposter_room_code');
-  window.location.hash = '#online';
+  if (mp.code && mp.myId) {
+    db.ref(`imposterRooms/${mp.code}/players/${mp.myId}`).remove();
+  }
+  detachRoomListener();
+  mp.code = null;
+  mp.isHost = false;
+  localStorage.removeItem('imposter_room_code');
+  navigate('#online');
 };
+
 window.startOnlineGame = () => {
   if (!mp.isHost || !mp.room) return;
-  const room = mp.room; const players = mpPlayerList(room);
+  const room = mp.room;
+  const players = mpPlayerList(room);
   if (players.length < 3) return;
 
-  const settings = room.settings; const categoriesWithWords = settings.activeCategories.filter(cat => PACKS[cat] && PACKS[cat].length > 0);
-  if (categoriesWithWords.length === 0) return alert('All selected categories are empty! Add words in the Admin panel (/#admin) first.');
+  const settings = room.settings;
+  const rawCats = (settings && settings.activeCategories) || DEFAULT_CATEGORIES;
+  const activeCats = Array.isArray(rawCats) ? rawCats : Object.values(rawCats);
+  const categoriesWithWords = activeCats.filter(cat => PACKS[cat] && PACKS[cat].length > 0);
+  if (categoriesWithWords.length === 0) return showToast('All selected categories are empty! Add words in the Admin panel (/#admin) first.');
 
   const category = categoriesWithWords[getSecureRandom(categoriesWithWords.length)];
-  const wordList = PACKS[category]; const wordIdx = getSecureRandom(wordList.length); const word = wordList[wordIdx];
+  const wordList = PACKS[category];
+  const wordIdx = getSecureRandom(wordList.length);
+  const word = wordList[wordIdx];
+
   let hintWord = "";
   if (settings.showImposterHint && wordList.length > 1) {
-    let hintIdx = wordIdx; let failsafe = 100;
-    while (hintIdx === wordIdx && failsafe > 0) { hintIdx = getSecureRandom(wordList.length); failsafe--; }
+    let hintIdx = wordIdx;
+    let failsafe = 100;
+    while (hintIdx === wordIdx && failsafe > 0) { 
+      hintIdx = getSecureRandom(wordList.length);
+      failsafe--;
+    }
     hintWord = wordList[hintIdx];
   }
+
   const shuffled = shuffleArray(players);
   const imposterCount = Math.max(1, Math.min(settings.imposterCount || 1, players.length - 2));
   const imposterIds = new Set(shuffled.slice(0, imposterCount).map(p => p.id));
-  const roles = {}; players.forEach(p => { roles[p.id] = imposterIds.has(p.id) ? 'imposter' : 'crew'; });
+  const roles = {};
+  players.forEach(p => { roles[p.id] = imposterIds.has(p.id) ? 'imposter' : 'crew'; });
 
   db.ref(`imposterRooms/${mp.code}`).update({
-    status: 'playing', game: { secretWord: word, secretCategory: category, imposterHintWord: hintWord, roles },
-    votes: null, players: Object.fromEntries(players.map(p => [p.id, { name: p.name, joinedAt: p.joinedAt || 0, ready: false }]))
+    status: 'playing',
+    game: { secretWord: word, secretCategory: category, imposterHintWord: hintWord, roles },
+    votes: null,
+    players: Object.fromEntries(players.map(p => [p.id, { name: p.name, joinedAt: p.joinedAt || 0, ready: false }]))
   });
 };
 
 function renderOnlinePlay() {
-  if (!mp.code) { window.location.hash = '#online'; return; }
+  if (!mp.code) { navigate('#online'); return; }
   mp.cardRevealed = false;
   
   attachRoomListener(mp.code, (room) => {
@@ -1244,12 +1147,11 @@ function renderOnlinePlay() {
     cancelMyDisconnectHook(); 
     healMyPlayerEntry(room);
     
-    if (room.status === 'interrogate') { window.location.hash = '#online-interrogate'; return; }
-    if (room.status === 'voting') { window.location.hash = '#online-vote'; return; }
-    if (room.status === 'results') { window.location.hash = '#online-results'; return; }
-    if (room.status === 'lobby') { window.location.hash = '#online-lobby'; return; }
+    if (room.status === 'interrogate') { navigate('#online-interrogate'); return; }
+    if (room.status === 'voting') { navigate('#online-vote'); return; }
+    if (room.status === 'results') { navigate('#online-results'); return; }
+    if (room.status === 'lobby') { navigate('#online-lobby'); return; }
     
-    // Auto-advance if Host and everyone is ready
     if (mp.isHost && room.status === 'playing' && room.game && room.game.roles) {
       const players = mpPlayerList(room);
       const expected = Object.keys(room.game.roles).length;
@@ -1264,9 +1166,12 @@ function renderOnlinePlay() {
 }
 
 function drawOnlinePlay(room) {
-  const game = room.game; if (!game) return;
-  const players = mpPlayerList(room); const myRole = game.roles[mp.myId];
-  const readyCount = players.filter(p => p.ready).length; const iAmReady = !!(room.players[mp.myId] && room.players[mp.myId].ready);
+  const game = room.game;
+  if (!game) return;
+  const players = mpPlayerList(room);
+  const myRole = game.roles[mp.myId];
+  const readyCount = players.filter(p => p.ready).length;
+  const iAmReady = !!(room.players[mp.myId] && room.players[mp.myId].ready);
 
   app.innerHTML = `
     <div class="game-screen">
@@ -1310,22 +1215,17 @@ window.markMpReady = () => {
 
 window.forceStartInterrogation = () => {
   if (!mp.isHost || !mp.room) return; 
-  const players = mpPlayerList(mp.room);
-  const readyCount = players.filter(p => p.ready).length;
-  if (readyCount < players.length) {
-      if (!confirm('Some players may not have seen their card yet. Start discussion anyway?')) return;
-  }
   db.ref(`imposterRooms/${mp.code}/status`).set('interrogate');
 };
 
 let mpTimerRAF = null;
 function renderOnlineInterrogate() {
-  if (!mp.code) { window.location.hash = '#online'; return; }
+  if (!mp.code) { navigate('#online'); return; }
   attachRoomListener(mp.code, (room) => {
     if (!room) { showToast("Room was closed."); return leaveRoom(); }
     mp.isHost = (room.hostId === mp.myId); cancelMyDisconnectHook(); healMyPlayerEntry(room);
-    if (room.status === 'voting') { window.location.hash = '#online-vote'; return; }
-    if (room.status === 'results') { window.location.hash = '#online-results'; return; }
+    if (room.status === 'voting') { navigate('#online-vote'); return; }
+    if (room.status === 'results') { navigate('#online-results'); return; }
     drawOnlineInterrogate(room);
   });
 }
@@ -1412,7 +1312,7 @@ window.resetMpTimer = () => { if (!mp.isHost) return; db.ref(`imposterRooms/${mp
 window.startMpVoting = () => { if (!mp.isHost) return; db.ref(`imposterRooms/${mp.code}`).update({ status: 'voting', votes: null }); };
 
 function renderOnlineVote() {
-  if (!mp.code) { window.location.hash = '#online'; return; }
+  if (!mp.code) { navigate('#online'); return; }
   mp.votedThisRound = false;
 
   attachRoomListener(mp.code, (room) => {
@@ -1421,9 +1321,8 @@ function renderOnlineVote() {
     cancelMyDisconnectHook(); 
     healMyPlayerEntry(room);
     
-    if (room.status === 'results') { window.location.hash = '#online-results'; return; }
+    if (room.status === 'results') { navigate('#online-results'); return; }
 
-    // Auto-advance if Host and everyone voted
     if (mp.isHost && room.status === 'voting' && room.game && room.game.roles) {
       const expected = Object.keys(room.game.roles).length;
       const votesIn = room.votes ? Object.keys(room.votes).length : 0;
@@ -1438,7 +1337,9 @@ function renderOnlineVote() {
 
 function drawOnlineVote(room) {
   const players = mpPlayerList(room);
-  const votes = room.votes || {}; const myVote = votes[mp.myId]; const votesIn = Object.keys(votes).length;
+  const votes = room.votes || {};
+  const myVote = votes[mp.myId];
+  const votesIn = Object.keys(votes).length;
 
   if (myVote !== undefined) {
     app.innerHTML = `
@@ -1486,22 +1387,17 @@ window.submitMpVote = () => {
 };
 
 window.finishMpVoting = () => {
-  if (!mp.isHost || !mp.room) return; 
-  const players = mpPlayerList(mp.room);
-  const votesIn = mp.room.votes ? Object.keys(mp.room.votes).length : 0;
-  if (votesIn < players.length) {
-      if (!confirm('Some players may not have voted yet. Reveal results anyway?')) return;
-  }
+  if (!mp.isHost) return; 
   db.ref(`imposterRooms/${mp.code}/status`).set('results');
 };
 
 function renderOnlineResults() {
-  if (!mp.code) { window.location.hash = '#online'; return; }
+  if (!mp.code) { navigate('#online'); return; }
   attachRoomListener(mp.code, (room) => {
     if (!room) { showToast("Room was closed."); return leaveRoom(); }
     mp.isHost = (room.hostId === mp.myId); cancelMyDisconnectHook();
-    if (room.status === 'playing') { window.location.hash = '#online-play'; return; }
-    if (room.status === 'lobby') { window.location.hash = '#online-lobby'; return; }
+    if (room.status === 'playing') { navigate('#online-play'); return; }
+    if (room.status === 'lobby') { navigate('#online-lobby'); return; }
     drawOnlineResults(room);
   });
 }
